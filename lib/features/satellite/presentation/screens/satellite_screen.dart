@@ -86,9 +86,10 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                   ),
                 )
               else if (satelliteState.mode == SatelliteMode.eumetsat) ...[
-                // Basemap for geographical context
+                // High-resolution Earth Observation basemap for authentic space view
                 TileLayer(
-                  urlTemplate: MapUrls.openStreetMap,
+                  urlTemplate:
+                      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                   tileProvider: SafeTileProvider(
                     dio: ref.read(tileDioProvider),
                     userAgent: kIsWeb ? null : 'Navikka/1.0',
@@ -102,6 +103,9 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                       if (satelliteState.eumetsatPreset ==
                           EumetsatPreset.cloudStructure)
                         FmiConstants.layerRadarRainIntensity
+                      else if (satelliteState.eumetsatPreset ==
+                          EumetsatPreset.fogDetection)
+                        'Radar:suomi_rr1h_eureffin'
                       else
                         FmiConstants.layerRadarReflectivity,
                     ],
