@@ -130,14 +130,14 @@ class SatelliteControlsDock extends ConsumerWidget {
                           color: AppPalette.navikkaCanvas.withValues(
                             alpha: 0.6,
                           ),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: colors.glassBorder),
                         ),
                         child: Text(
-                          'Korkearesoluutioinen optinen taustakuva (Zoom 1-19)',
+                          '📸 Maanmittauslaitos & Maxar kesäortokuva · Korkea resoluutio (Zoom 1-19)',
                           style: TextStyle(
                             color: colors.textSecondary,
-                            fontSize: 11.5,
+                            fontSize: 11,
                           ),
                         ),
                       ),

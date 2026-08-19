@@ -190,29 +190,36 @@ class SatelliteTopCapsule extends ConsumerWidget {
   String _getMetadataText(SatelliteState state) {
     switch (state.mode) {
       case SatelliteMode.sentinel2:
-        return '🛰️ Tuorein ylilento · 10m optinen RGB';
+        switch (state.sentinelPreset) {
+          case SentinelPreset.cloudless:
+            return '🛰️ Sentinel-2 · Pilvetön kesämosaiikki (ESA) · 10m/px';
+          case SentinelPreset.trueColor:
+            return '🛰️ Sentinel-2 · Tuorein ylilento (2–3 pv sykli) · 10m/px';
+          case SentinelPreset.waterIndex:
+            return '🛰️ Sentinel-2 · Vesi- & Leväindeksi · 10m/px';
+        }
       case SatelliteMode.eumetsat:
         final time = state.currentTimestamp;
         if (time != null) {
           final local = time.toLocal();
           final formatted =
-              "${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}";
-          return '⛈️ Sääsatelliitti klo $formatted (15 min päivitys)';
+              "${local.day}.${local.month}.${local.year} klo ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}";
+          return '⛈️ EUMETSAT: $formatted (15 min sykli)';
         }
-        return '⛈️ Sääsatelliitti (15 min päivitys)';
+        return '⛈️ EUMETSAT Sääsatelliitti (15 min reaaliaika)';
       case SatelliteMode.highResBasemap:
-        return '🌍 Korkearesoluutioinen ortokuva';
+        return '🌍 HD Ilmakuva: Kesäkausi (MML / Maxar ortokuva)';
     }
   }
 
   String _getSourceLabel(SatelliteMode mode) {
     switch (mode) {
       case SatelliteMode.sentinel2:
-        return 'ESA / Copernicus';
+        return 'ESA Copernicus';
       case SatelliteMode.eumetsat:
         return 'FMI / EUMETSAT';
       case SatelliteMode.highResBasemap:
-        return 'ESRI / Maxar';
+        return 'ESRI / Maxar HD';
     }
   }
 }
