@@ -173,16 +173,21 @@ List<Polygon> fairwayAreaPolygons(Ref ref) {
       .map(
         (area) => Polygon(
           points: area.rings.first,
-          color: AppTheme.kVibrantBlue.withValues(alpha: 0.15),
-          borderColor: AppTheme.kVibrantBlue.withValues(alpha: 0.4),
-          borderStrokeWidth: 2,
+          color: AppTheme.kVibrantBlue.withValues(alpha: 0.05),
+          borderColor: AppTheme.kVibrantBlue.withValues(alpha: 0.35),
+          borderStrokeWidth: 1.5,
           label: area.navigationDepth != null
               ? '${area.navigationDepth!.toStringAsFixed(1)}m'
               : null,
-          labelStyle: TextStyle(
-            color: AppPalette.textPrimary.withValues(alpha: 0.7),
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
+          labelStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            letterSpacing: 0.5,
+            shadows: [
+              Shadow(blurRadius: 3, offset: Offset(1, 1)),
+              Shadow(blurRadius: 3, offset: Offset(-1, -1)),
+            ],
           ),
         ),
       )

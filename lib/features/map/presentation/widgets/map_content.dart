@@ -264,7 +264,7 @@ class _MapContentState extends ConsumerState<MapContent> {
     final routePolylines = ref.watch(memoizedRoutePolylinesProvider);
     ref.watch(speedAlertProvider);
 
-    final navMode = ref.watch(mapNavigationModeProvider);
+    ref.watch(mapNavigationModeProvider);
     ref.watch(map3dTiltProvider);
 
     ref.listen(mapProvider, _onMapChange);
@@ -335,53 +335,17 @@ class _MapContentState extends ConsumerState<MapContent> {
         },
       ),
       children: [
-        // 1. Optimized Base Map Tile Layer (Marine Focus Filter in Boating Mode)
-        if (navMode == MapNavigationMode.boatingHeadingUp)
-          ColorFiltered(
-            colorFilter: const ColorFilter.matrix(<double>[
-              0.75,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0.8,
-              0,
-              0,
-              0,
-              0,
-              0,
-              1.1,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0.88,
-              0,
-            ]),
-            child: TileLayer(
-              urlTemplate: layerFilter.showOsmBasemap
-                  ? MapUrls.openStreetMap
-                  : MapUrls.traficomWmts,
-              tileProvider: _tileProvider,
-              evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
-              minZoom: 5,
-              maxZoom: 19,
-              maxNativeZoom: layerFilter.showOsmBasemap ? 19 : 15,
-            ),
-          )
-        else
-          TileLayer(
-            urlTemplate: layerFilter.showOsmBasemap
-                ? MapUrls.openStreetMap
-                : MapUrls.traficomWmts,
-            tileProvider: _tileProvider,
-            evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
-            minZoom: 5,
-            maxZoom: 19,
-            maxNativeZoom: layerFilter.showOsmBasemap ? 19 : 15,
-          ),
+        // 1. Base Map Tile Layer (Crisp, native brightness without desaturating color filters)
+        TileLayer(
+          urlTemplate: layerFilter.showOsmBasemap
+              ? MapUrls.openStreetMap
+              : MapUrls.traficomWmts,
+          tileProvider: _tileProvider,
+          evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
+          minZoom: 5,
+          maxZoom: 19,
+          maxNativeZoom: layerFilter.showOsmBasemap ? 19 : 15,
+        ),
 
         // 2. Track Recording Breadcrumb Trail
         const RepaintBoundary(child: TrackLayer()),

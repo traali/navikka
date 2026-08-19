@@ -23,9 +23,9 @@ void main() {
       );
 
       final color = ZoneColors.getZoneColor(zone);
-      // AppPalette.zoneSpeedLimit = 0xFFDC2626 with alpha 0.3
+      // AppPalette.zoneSpeedLimit = 0xFFDC2626 with alpha 0.10
       expect(color.r, closeTo(0.86, 0.02));
-      expect(color.a, closeTo(0.3, 0.01));
+      expect(color.a, closeTo(0.10, 0.01));
     });
 
     test('Returns ORANGE for No Wake Zones (02)', () {
@@ -40,7 +40,7 @@ void main() {
       // AppPalette.zoneDefault = 0xFFF97316 (r=0.98, g=0.45, b=0.09)
       expect(color.r, closeTo(0.98, 0.02));
       expect(color.g, greaterThan(0));
-      expect(color.a, closeTo(0.2, 0.01));
+      expect(color.a, closeTo(0.08, 0.01));
     });
 
     group('getRouteSegmentColor', () {

@@ -10,21 +10,21 @@ import 'package:sakkoja/features/speed_limits/domain/entities/speed_limit_zone.d
 /// rather than raw Material Colors.xxx references.
 class ZoneColors {
   static final Color _colorSpeedLimit = AppPalette.zoneSpeedLimit.withValues(
-    alpha: 0.3,
+    alpha: 0.10,
   );
   static final Color _colorRecommendation = AppPalette.zoneRecommendation
-      .withValues(alpha: 0.3);
+      .withValues(alpha: 0.08);
   static final Color _colorNoWake = AppPalette.zoneNoWake.withValues(
-    alpha: 0.3,
+    alpha: 0.12,
   );
   static final Color _colorProhibited = AppPalette.zoneProhibited.withValues(
-    alpha: 0.3,
+    alpha: 0.12,
   );
   static final Color _colorNature = AppPalette.zoneNature.withValues(
-    alpha: 0.3,
+    alpha: 0.08,
   );
   static final Color _colorTraffic = AppPalette.zoneTraffic.withValues(
-    alpha: 0.3,
+    alpha: 0.08,
   );
 
   static Color getZoneColor(SpeedLimitZone zone) {
@@ -33,19 +33,19 @@ class ZoneColors {
 
     if (isNoWake) {
       if (zone.speedLimitKmh > 0) {
-        return AppPalette.zoneStrict.withValues(alpha: 0.6);
+        return AppPalette.zoneStrict.withValues(alpha: 0.14);
       }
       return _colorNoWake;
     }
 
     if (zone.speedLimitKmh == 5) {
-      return AppPalette.zoneSpeedLimitLow.withValues(alpha: 0.6);
+      return AppPalette.zoneSpeedLimitLow.withValues(alpha: 0.14);
     }
     if (zone.speedLimitKmh == 10) {
-      return AppPalette.zoneSpeedLimit.withValues(alpha: 0.5);
+      return AppPalette.zoneSpeedLimit.withValues(alpha: 0.10);
     }
     if (zone.speedLimitKmh > 0 && zone.speedLimitKmh < 10) {
-      return AppPalette.zoneSpeedLimit.withValues(alpha: 0.5);
+      return AppPalette.zoneSpeedLimit.withValues(alpha: 0.10);
     }
 
     final code = zone.typeCode;
@@ -65,7 +65,7 @@ class ZoneColors {
       return _colorTraffic;
     }
 
-    return AppPalette.zoneDefault.withValues(alpha: 0.2);
+    return AppPalette.zoneDefault.withValues(alpha: 0.08);
   }
 
   static Color getZoneBorderColor(SpeedLimitZone zone) {
