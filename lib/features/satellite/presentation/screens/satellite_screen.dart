@@ -1,7 +1,10 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sakkoja/core/constants/fmi_constants.dart';
+import 'package:sakkoja/core/providers/core_providers.dart';
 import 'package:sakkoja/core/theme/theme_provider.dart';
 import 'package:sakkoja/core/utils/safe_haptics.dart';
 import 'package:sakkoja/features/map/data/services/map_config_service.dart';
@@ -12,6 +15,7 @@ import 'package:sakkoja/features/satellite/domain/entities/satellite_state.dart'
 import 'package:sakkoja/features/satellite/presentation/providers/satellite_providers.dart';
 import 'package:sakkoja/features/satellite/presentation/widgets/satellite_controls_dock.dart';
 import 'package:sakkoja/features/satellite/presentation/widgets/satellite_top_capsule.dart';
+import 'package:sakkoja/features/weather/presentation/widgets/safe_tile_provider.dart';
 
 /// Dedicated Space & Earth Observation Satellite Screen for Sakkoja.
 /// Renders fresh Copernicus Sentinel-2 optical imagery & live FMI/EUMETSAT weather satellite imagery.
@@ -66,39 +70,54 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                 TileLayer(
                   urlTemplate:
                       'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg',
-                  userAgentPackageName: 'fi.sakkoja.navigator',
+                  tileProvider: SafeTileProvider(
+                    dio: ref.read(tileDioProvider),
+                    userAgent: kIsWeb ? null : 'Navikka/1.0',
+                  ),
                   maxNativeZoom: 15,
                 )
               else if (satelliteState.mode == SatelliteMode.highResBasemap)
                 TileLayer(
                   urlTemplate:
                       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                  userAgentPackageName: 'fi.sakkoja.navigator',
+                  tileProvider: SafeTileProvider(
+                    dio: ref.read(tileDioProvider),
+                    userAgent: kIsWeb ? null : 'Navikka/1.0',
+                  ),
                 )
               else if (satelliteState.mode == SatelliteMode.eumetsat) ...[
-                // Dark basemap for high-contrast cloud rendering
+                // Basemap for geographical context
                 TileLayer(
                   urlTemplate: MapUrls.openStreetMap,
-                  userAgentPackageName: 'fi.sakkoja.navigator',
+                  tileProvider: SafeTileProvider(
+                    dio: ref.read(tileDioProvider),
+                    userAgent: kIsWeb ? null : 'Navikka/1.0',
+                  ),
                 ),
-                // FMI / EUMETSAT Live Weather Satellite WMS Layer
+                // FMI Live Weather Satellite / Radar Cloud Layer
                 TileLayer(
                   wmsOptions: WMSTileLayerOptions(
-                    baseUrl: 'https://openwms.fmi.fi/geoserver/wms',
+                    baseUrl: FmiConstants.wmsBaseUrl,
                     layers: [
                       if (satelliteState.eumetsatPreset ==
-                          EumetsatPreset.fogDetection)
-                        'fmi:msg_eumetsat_fog'
+                          EumetsatPreset.cloudStructure)
+                        FmiConstants.layerRadarRainIntensity
                       else
-                        'fmi:msg_eumetsat_rgb',
+                        FmiConstants.layerRadarReflectivity,
                     ],
+                    version: '1.3.0',
                     otherParameters: {
                       if (satelliteState.currentTimestamp != null)
-                        'time': satelliteState.currentTimestamp!
-                            .toIso8601String(),
+                        'time':
+                            "${satelliteState.currentTimestamp!.toUtc().toIso8601String().split('.')[0]}Z",
                     },
                   ),
-                  userAgentPackageName: 'fi.sakkoja.navigator',
+                  tileProvider: SafeTileProvider(
+                    dio: ref.read(tileDioProvider),
+                    userAgent: kIsWeb ? null : 'Navikka/1.0',
+                  ),
+                  minZoom: 4,
+                  maxZoom: 19,
                 ),
               ],
 
@@ -108,7 +127,10 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                   opacity: satelliteState.nauticalOverlayOpacity,
                   child: TileLayer(
                     urlTemplate: MapUrls.traficomWmts,
-                    userAgentPackageName: 'fi.sakkoja.navigator',
+                    tileProvider: SafeTileProvider(
+                      dio: ref.read(tileDioProvider),
+                      userAgent: kIsWeb ? null : 'Navikka/1.0',
+                    ),
                     maxNativeZoom: 16,
                   ),
                 ),
