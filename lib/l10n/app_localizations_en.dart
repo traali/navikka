@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Sakkoja';
+  String get appTitle => 'Navikka';
 
   @override
   String get initializing => 'Initializing Sea Chart';
