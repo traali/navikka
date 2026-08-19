@@ -1,0 +1,8 @@
+<svg width="60" height="100" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Topmark: Down Down -->
+    <path d="M22 5 L38 5 L30 15 Z" fill="black"/>
+    <path d="M22 18 L38 18 L30 28 Z" fill="black"/>
+    <!-- Body: Yellow over Black -->
+    <rect x="25" y="30" width="10" height="25" fill="#FFD700" stroke="black" stroke-width="1"/>
+    <rect x="25" y="55" width="10" height="25" fill="black" stroke="black" stroke-width="1"/>
+</svg>

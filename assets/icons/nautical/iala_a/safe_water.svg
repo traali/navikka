@@ -1,0 +1,10 @@
+<svg width="60" height="100" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Topmark: Single Sphere -->
+    <circle cx="30" cy="15" r="10" fill="#E63946" stroke="black" stroke-width="1"/>
+    <!-- Body: Red/White Stripes -->
+    <rect x="25" y="30" width="10" height="10" fill="#E63946" stroke="black" stroke-width="1"/>
+    <rect x="25" y="40" width="10" height="10" fill="white" stroke="black" stroke-width="1"/>
+    <rect x="25" y="50" width="10" height="10" fill="#E63946" stroke="black" stroke-width="1"/>
+    <rect x="25" y="60" width="10" height="10" fill="white" stroke="black" stroke-width="1"/>
+    <rect x="25" y="70" width="10" height="10" fill="#E63946" stroke="black" stroke-width="1"/>
+</svg>

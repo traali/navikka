@@ -1,0 +1,31 @@
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/*.map
+  Content-Type: application/json
+
+/*.wasm
+  Content-Type: application/wasm
+  Access-Control-Allow-Origin: *
+
+/*.js
+  Content-Type: application/javascript
+
+/*.svg
+  Content-Type: image/svg+xml
+
+/*.gz
+  Content-Type: application/gzip

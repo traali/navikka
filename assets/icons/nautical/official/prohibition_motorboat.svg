@@ -1,0 +1,17 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official Finnish Waterway Sign: Prohibition -->
+  <rect x="0" y="0" width="200" height="200" fill="white" />
+  <rect x="10" y="10" width="180" height="180" stroke="#E30613" stroke-width="20" fill="none" />
+  
+  <!-- Content: Propeller/Motor Symbol (Thicker) -->
+  <g transform="translate(100, 100)">
+    <circle cx="0" cy="0" r="18" fill="black" />
+    <path d="M-12,-6 Q-35,-35 0,-55 Q35,-35 12,-6" fill="black" />
+    <path d="M12,6 Q35,35 0,55 Q-35,35 -12,6" fill="black" />
+    <path d="M-6,12 Q-35,35 -55,0 Q-35,-35 -6,-12" fill="black" transform="rotate(90)" />
+    <path d="M6,-12 Q35,-35 55,0 Q35,35 6,-12" fill="black" transform="rotate(90)" />
+  </g>
+  
+  <!-- Prohibition Slash -->
+  <line x1="20" y1="20" x2="180" y2="180" stroke="#E30613" stroke-width="15" />
+</svg>

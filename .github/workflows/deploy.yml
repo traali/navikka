@@ -1,0 +1,78 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Future-proof for June 2026
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Compile Drift Worker
+        run: dart compile js -O4 web/drift_worker.dart -o web/drift_worker.js
+
+      - name: Extract Metadata
+        run: |
+          VERSION=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2)
+          BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "APP_BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
+
+      - name: Build Web
+        run: |
+          echo "APP_VERSION=$APP_VERSION"
+          echo "APP_BUILD_TIME=$APP_BUILD_TIME"
+          flutter build web \
+            --release \
+            --base-href "/" \
+            --dart-define="APP_VERSION=${APP_VERSION}" \
+            --dart-define="APP_VERSION_HASH=${GITHUB_SHA}" \
+            --dart-define="APP_VERSION_BRANCH=main" \
+            --dart-define="APP_VERSION_BUILD_TIME=${APP_BUILD_TIME}" \
+            --dart-define="APP_ENV=production" \
+            --dart-define="PROXY_AUTH_SECRET=${{ secrets.PROXY_AUTH_SECRET }}"
+
+      - name: Verify required bundled assets exist
+        # Note: Flutter web preserves the "assets/" folder structure defined in pubspec.yaml.
+        # This leads to a double "assets/assets/..." prefix in the build output.
+        # We must keep it this way because AssetManifest and the service worker expect it.
+        run: |
+          test -f build/web/assets/assets/data/fishing_restrictions.json.gz
+          test -f build/web/assets/assets/data/speed_limits.geojson.gz
+          test -f build/web/assets/assets/data/navigation_aids/fairway_areas.json.gz
+
+      - name: Strip secrets from web build
+        run: echo "" > build/web/assets/.env
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy build/web 
+            --project-name=navikka 
+            --branch=main 
+            --commit-dirty=true

@@ -1,0 +1,12 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official Finnish Waterway Sign: Restriction (Square, Red Border) -->
+  <rect x="0" y="0" width="200" height="200" fill="white" />
+  <rect x="10" y="10" width="180" height="180" stroke="#E30613" stroke-width="20" fill="none" />
+  
+  <!-- Content: Width Markers (Arrows pointing in) -->
+  <path d="M30,100 L50,85 L50,115 Z" fill="black" />
+  <path d="M170,100 L150,85 L150,115 Z" fill="black" />
+  
+  <!-- Content: Value -->
+  <text x="100" y="115" font-family="Arial, sans-serif" font-weight="bold" font-size="70" text-anchor="middle" fill="black">5.0</text>
+</svg>

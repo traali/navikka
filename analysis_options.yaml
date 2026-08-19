@@ -1,0 +1,62 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  # Strong mode checks
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+  errors:
+    # Treat all warnings as errors for "Zero Broken Windows" policy
+    todo: ignore
+    avoid_print: error
+    lines_longer_than_80_chars: ignore
+    sort_pub_dependencies: error
+    always_use_package_imports: error
+    missing_required_param: error
+    parameter_assignments: error
+    # Suppress common info-level style issues
+    avoid_catches_without_on_clauses: ignore
+    prefer_constructors_over_static_methods: ignore
+    avoid_dynamic_calls: ignore
+    unawaited_futures: ignore
+    discarded_futures: ignore
+    avoid_positional_boolean_parameters: ignore
+    unnecessary_ignore: ignore
+    document_ignores: ignore
+    unreachable_from_main: ignore
+    prefer_foreach: ignore
+    one_member_abstracts: ignore
+    inference_failure_on_collection_literal: warning
+    implementation_imports: ignore
+    matching_super_parameters: ignore
+    avoid_equals_and_hash_code_on_mutable_classes: ignore
+    flutter_style_todos: ignore
+    sort_constructors_first: ignore
+    comment_references: ignore
+    avoid_slow_async_io: ignore
+    only_throw_errors: ignore
+    depend_on_referenced_packages: ignore
+    experimental_member_use: ignore
+    omit_local_variable_types: ignore
+
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "test/**"
+    - "integration_test/**"
+    - "scripts/**"
+
+linter:
+  rules:
+    avoid_print: true
+    always_use_package_imports: true
+    prefer_relative_imports: false
+    public_member_api_docs: false # Disable for internal project speeds
+    lines_longer_than_80_chars: false # Disabled - too many false positives
+    use_setters_to_change_properties: false
+    cascade_invocations: false

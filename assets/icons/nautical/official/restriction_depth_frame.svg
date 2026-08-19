@@ -1,0 +1,9 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official Finnish Waterway Sign: Depth Restriction Frame -->
+  <rect x="0" y="0" width="200" height="200" fill="white" />
+  <rect x="10" y="10" width="180" height="180" stroke="#E30613" stroke-width="20" fill="none" />
+  
+  <!-- Content: Depth Markers -->
+  <path d="M100,50 L85,30 L115,30 Z" fill="black" />
+  <path d="M100,150 L85,170 L115,170 Z" fill="black" />
+</svg>

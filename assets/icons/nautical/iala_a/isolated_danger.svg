@@ -1,0 +1,9 @@
+<svg width="60" height="100" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Topmark: Two Spheres -->
+    <circle cx="30" cy="10" r="5" fill="black"/>
+    <circle cx="30" cy="22" r="5" fill="black"/>
+    <!-- Body: Black with Red Band -->
+    <rect x="25" y="30" width="10" height="16" fill="black" stroke="black" stroke-width="1"/>
+    <rect x="25" y="46" width="10" height="18" fill="#E63946" stroke="black" stroke-width="1"/>
+    <rect x="25" y="64" width="10" height="16" fill="black" stroke="black" stroke-width="1"/>
+</svg>

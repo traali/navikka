@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-08-14T06:38:14.751Z",
+  "targetUrl": "https://sakkoja.pages.dev",
+  "metrics": {
+    "JSHeapUsedSizeMB": 139.16,
+    "JSHeapTotalSizeMB": 176.57,
+    "TaskDurationSec": 25.61,
+    "ScriptDurationSec": 24.55,
+    "LayoutDurationSec": 0.01,
+    "RecalcStyleDurationSec": 0.01
+  },
+  "passCriteria": {
+    "noSkwasmHtml": true,
+    "noCoepRequireCorp": true,
+    "flutterViewBootUnder15s": true
+  }
+}

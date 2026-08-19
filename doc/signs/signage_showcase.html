@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Finnish Waterway Signs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .icon {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 15px;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .sub-label {
+            color: #7f8c8d;
+            font-size: 0.8em;
+        }
+
+        .category {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-bottom: 2px solid #e1e1e1;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Official Finnish Waterway Signs</h1>
+
+    <div class="grid">
+        <div class="category">Prohibitions (Kieltomerkit)</div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/prohibition_no_waves.svg" class="icon" alt="No Waves">
+            <div class="label">Aallokon aiheuttamisen kielto</div>
+            <div class="sub-label">No Waves</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/prohibition_motorboat.svg" class="icon" alt="No Motor">
+            <div class="label">Moottorivoima kielletty</div>
+            <div class="sub-label">No Motor Power</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/prohibition_anchoring.svg" class="icon" alt="No Anchoring">
+            <div class="label">Ankkurin käyttökielto</div>
+            <div class="sub-label">No Anchoring</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/prohibition_docking.svg" class="icon" alt="No Docking">
+            <div class="label">Kiinnittymiskielto</div>
+            <div class="sub-label">No Docking</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/prohibition_overtaking.svg" class="icon" alt="No Overtaking">
+            <div class="label">Ohittamiskielto</div>
+            <div class="sub-label">No Overtaking</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/prohibition_meeting.svg" class="icon" alt="No Meeting">
+            <div class="label">Kohtaamiskielto</div>
+            <div class="sub-label">No Meeting/Passing</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/prohibition_jetski.svg" class="icon" alt="No Jet Ski">
+            <div class="label">Vesiskootteri kielletty</div>
+            <div class="sub-label">No Jet Ski</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/prohibition_waterski.svg" class="icon" alt="No Water Ski">
+            <div class="label">Vesihiihto kielletty</div>
+            <div class="sub-label">No Water Ski</div>
+        </div>
+
+        <div class="category">Restrictions & Limits (Rajoitusmerkit)</div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/limit_speed_generic.svg" class="icon" alt="Speed Limit">
+            <div class="label">Nopeusrajoitus</div>
+            <div class="sub-label">Speed Limit</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/restriction_height.svg" class="icon"
+                alt="Height Restriction">
+            <div class="label">Alikulkukorkeus</div>
+            <div class="sub-label">Height Restriction</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/restriction_depth.svg" class="icon" alt="Depth Restriction">
+            <div class="label">Kulkusyvyys</div>
+            <div class="sub-label">Depth Restriction</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/restriction_width.svg" class="icon" alt="Width Restriction">
+            <div class="label">Kulkuleveys</div>
+            <div class="sub-label">Width Restriction</div>
+        </div>
+
+        <div class="category">Warnings & Information (Varoitus- ja tiedotusmerkit)</div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/warning_general.svg" class="icon" alt="General Warning">
+            <div class="label">Yleinen varoitus</div>
+            <div class="sub-label">General Warning</div>
+        </div>
+
+        <div class="card">
+            <img src="../../assets/icons/nautical/official/info_phone.svg" class="icon" alt="Radio Req">
+            <div class="label">Radiopuhelinvelvollisuus</div>
+            <div class="sub-label">Radio Requirement</div>
+        </div>
+    </div>
+
+</body>
+
+</html>

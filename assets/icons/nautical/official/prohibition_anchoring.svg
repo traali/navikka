@@ -1,0 +1,11 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official Finnish Waterway Sign: Prohibition -->
+  <rect x="0" y="0" width="200" height="200" fill="white" />
+  <rect x="10" y="10" width="180" height="180" stroke="#E30613" stroke-width="20" fill="none" />
+  
+  <!-- Content: Anchor (Thicker) -->
+  <path d="M100,40 L100,140 M65,140 Q100,180 135,140 M100,35 A6,6 0 1,0 100,47 A6,6 0 1,0 100,35 M65,60 L135,60" stroke="black" stroke-width="14" fill="none" stroke-linecap="round" />
+  
+  <!-- Prohibition Slash -->
+  <line x1="20" y1="20" x2="180" y2="180" stroke="#E30613" stroke-width="15" />
+</svg>

@@ -1,0 +1,6 @@
+<svg width="60" height="100" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Topmark: X Cross -->
+    <path d="M22 10 L38 26 M38 10 L22 26" stroke="#FFD700" stroke-width="3"/>
+    <!-- Body: Yellow -->
+    <rect x="25" y="30" width="10" height="50" fill="#FFD700" stroke="black" stroke-width="1"/>
+</svg>

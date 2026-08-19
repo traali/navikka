@@ -1,0 +1,11 @@
+# Lefthook Git Hooks Configuration for Sakkoja
+# https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: false
+  commands:
+    format:
+      glob: "*.dart"
+      run: dart format --set-exit-if-changed {staged_files}
+    analyze:
+      run: dart analyze

@@ -1,0 +1,17 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official Finnish Waterway Sign: Prohibition -->
+  <rect x="0" y="0" width="200" height="200" fill="white" />
+  <rect x="10" y="10" width="180" height="180" stroke="#E30613" stroke-width="20" fill="none" />
+  
+  <!-- Content: Skier -->
+  <circle cx="120" cy="50" r="10" fill="black" /> <!-- Head -->
+  <line x1="120" y1="60" x2="110" y2="90" stroke="black" stroke-width="8" stroke-linecap="round"/> <!-- Body -->
+  <line x1="110" y1="90" x2="100" y2="120" stroke="black" stroke-width="8" stroke-linecap="round"/> <!-- Leg -->
+  <line x1="110" y1="90" x2="130" y2="110" stroke="black" stroke-width="8" stroke-linecap="round"/> <!-- Leg -->
+  <line x1="60" y1="130" x2="140" y2="130" stroke="black" stroke-width="8" stroke-linecap="round" /> <!-- Ski -->
+  <line x1="120" y1="70" x2="80" y2="80" stroke="black" stroke-width="5" /> <!-- Rope -->
+  <rect x="70" y="75" width="10" height="10" fill="black" /> <!-- Handle -->
+
+  <!-- Prohibition Slash -->
+  <line x1="20" y1="20" x2="180" y2="180" stroke="#E30613" stroke-width="15" />
+</svg>

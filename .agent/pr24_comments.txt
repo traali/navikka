@@ -1,0 +1,114 @@
+author:	cloudflare-workers-and-pages
+association:	none
+edited:	true
+status:	none
+--
+## Deploying sakkoja with &nbsp;<a href="https://pages.dev"><img alt="Cloudflare Pages" src="https://user-images.githubusercontent.com/23264/106598434-9e719e00-654f-11eb-9e59-6167043cfa01.png" width="16"></a> &nbsp;Cloudflare Pages
+
+<table><tr><td><strong>Latest commit:</strong> </td><td>
+<code>713fb6c</code>
+</td></tr>
+<tr><td><strong>Status:</strong></td><td>&nbsp;✅&nbsp; Deploy successful!</td></tr>
+<tr><td><strong>Preview URL:</strong></td><td>
+<a href='https://345d84ae.sakkoja.pages.dev'>https://345d84ae.sakkoja.pages.dev</a>
+</td></tr>
+<tr><td><strong>Branch Preview URL:</strong></td><td>
+<a href='https://fix-phase6-db-review-finding.sakkoja.pages.dev'>https://fix-phase6-db-review-finding.sakkoja.pages.dev</a>
+</td></tr>
+</table>
+
+[View logs](https://dash.cloudflare.com/?to=/5a01b546bdf7de66a7ff19c5117911c7/pages/view/sakkoja/345d84ae-0ab9-499b-8bcf-72b2e51f0a84)
+
+--
+author:	copilot-pull-request-reviewer
+association:	none
+edited:	false
+status:	commented
+--
+## Pull request overview
+
+This PR targets the weather/database layer by centralizing DB error handling, refactoring cached weather data access paths, and bundling the related release/dependency/config updates for version 1.18.0.
+
+**Changes:**
+- Added a shared `DatabaseErrorHandler` and wired it into `DriftWeatherStore` query, stream, cleanup, and transaction paths.
+- Refactored cached weather/wave/sea-level reads and writes, including provider-id handling and batched station lookups.
+- Removed the direct `sembast` dependency and updated release metadata, generated files, iOS xcconfigs, and project notes.
+
+### Reviewed changes
+
+Copilot reviewed 10 out of 12 changed files in this pull request and generated 5 comments.
+
+<details>
+<summary>Show a summary per file</summary>
+
+| File | Description |
+| ---- | ----------- |
+| `test/core/db/database_error_handler_test.dart` | Adds unit tests for the new database error handler. |
+| `task.md` | Updates internal phase/checklist tracking for DB work and follow-ups. |
+| `pubspec.yaml` | Bumps app version and removes direct `sembast` dependency. |
+| `pubspec.lock` | Refreshes resolved package versions after dependency changes. |
+| `lib/features/weather/data/datasources/drift_weather_store.dart` | Integrates centralized DB error handling and refactors weather cache/query logic. |
+| `lib/features/fishing/presentation/providers/fishing_data_providers.g.dart` | Regenerated provider hashes. |
+| `lib/core/db/database_error_handler.dart` | Introduces the shared DB error-handling helper. |
+| `ios/Flutter/Release.xcconfig` | Adds optional CocoaPods release xcconfig include. |
+| `ios/Flutter/Debug.xcconfig` | Adds optional CocoaPods debug xcconfig include. |
+| `CHANGELOG.md` | Adds the 1.18.0 release notes entry. |
+| `.gitignore` | Ignores `.aider*` artifacts. |
+</details>
+
+
+
+<details>
+<summary>Comments suppressed due to low confidence (2)</summary>
+
+**lib/features/weather/data/datasources/drift_weather_store.dart:123**
+* cacheObservations now resolves the provider only once from `data.first`, but the weather fetch path passes a mixed-provider list (FMI/OpenWeather/MET). That means every cached observation in this batch is written under the first provider's DB id, which corrupts provider attribution and breaks the priority logic in `insertObservationBatch()`.
+```
+      final dbProviderId = await _resolveDbId(data.first.providerId);
+      final companions = <WeatherObservationsCompanion>[];
+
+      for (final dto in data) {
+        companions.add(
+          WeatherObservationsCompanion.insert(
+            stationId: stationId,
+            providerId: dbProviderId,
+```
+**lib/features/weather/data/datasources/drift_weather_store.dart:293**
+* cacheForecast has the same mixed-provider problem as observations: `fetchWeatherForecast()` aggregates rows from multiple providers, but this code resolves the DB provider id only from `data.first` and reuses it for the whole batch. All forecast rows will therefore be attributed to the wrong provider whenever more than one provider returns data.
+```
+      final companions = <WeatherForecastsCompanion>[];
+
+      for (final dto in data) {
+        companions.add(
+          WeatherForecastsCompanion.insert(
+            stationId: stationId,
+            providerId: dbProviderId,
+            forecastTime: dto.timestamp,
+            issuedAt: dto.issuedAt ?? now,
+```
+</details>
+
+
+
+---
+
+💡 <a href="/traali/sakkoja/new/main?filename=.github/instructions/*.instructions.md" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Add Copilot custom instructions</a> for smarter, more guided reviews. <a href="https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Learn how to get started</a>.
+--
+author:	traali
+association:	owner
+edited:	false
+status:	commented
+--
+Review complete! The abstraction to `DatabaseErrorHandler` looks solid and properly removes the native `DriftException` dependency from the core code, which should fix the Web build. 
+
+However, there is a failing unit test in `test/core/db/database_error_handler_test.dart`:
+```
+00:00 +2 -1: DatabaseErrorHandler.perform returns Left(DatabaseFailure) on generic Exception [E]
+  Expected: contains 'Unexpected database error'
+    Actual: 'Database error: Exception: Generic error'
+     Which: does not contain 'Unexpected database error'
+```
+The test on line 60 expects the message to contain `'Unexpected database error'`, but the `DatabaseErrorHandler.perform` implementation returns `'Database error: $errorMessage'`. You need to update the test assertion to match the actual implementation. 
+
+Otherwise, the changes look great!
+--

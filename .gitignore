@@ -1,0 +1,102 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# Environment Variables (API Keys - NEVER COMMIT)
+.env
+.env.*
+*.env
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.fvm/
+.pub-cache/
+.pub/
+/build/
+/coverage/
+**/failures/
+*.deps
+web/*.map
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+
+
+
+# AI & Agents (Local)
+# AGENTS.md is now PUBLIC (spec-compliant, helps contributors)
+# Detailed constitutional docs remain private
+PROJECT_DOCUMENTATION.md
+DEVELOPMENT_CONSTITUTION.md
+plans/
+docs/internal/
+
+# Antigravity artifacts (ephemeral, per-conversation)
+task.md
+implementation_plan.md
+walkthrough.md
+*.gemini/
+.gemini/
+brain/
+artifacts/
+
+# Script outputs
+scripts/**/*.txt
+scripts/**/*.json
+scripts/**/*.xml
+
+# Temporary output files
+*_output.txt
+*_output_retry.txt
+analysis*.txt
+lints.txt
+test_results*.txt
+all_tests.txt
+*.patch
+prs_*.json
+Test.prompt.yml
+capabilities.xml
+listStoredQueries.xml
+external_main.js
+assets/data/fishing_restrictions.json
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/
+.aider*
+.deepseek*
+.opencode*
+.claude*
+issues_list.json
+e2e/tests/*-snapshots/
+_apiKeyOverride

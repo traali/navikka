@@ -1,0 +1,59 @@
+{
+    "odata.metadata": "https://rajapinnat.ymparisto.fi/api/vesla/2.0/odata/$metadata#YmpHavainto",
+    "value": [
+        {
+            "YmpHavainto_Id": 1001,
+            "Naytteenotto_Id": 5001,
+            "LiukoinenHappi": 8.2,
+            "pH": 7.8,
+            "Klorofylli_a": 12.3,
+            "Sameus": 2.1,
+            "NaytteenSyvyys": 0.5,
+            "Naytteenotto": {
+                "Aika": "2024-07-15T10:00:00Z",
+                "Paikka": {
+                    "Nimi": "Helsinki, Vanhankaupunginlahti",
+                    "KoordinaattiWkt": "POINT(24.9978 60.1985)",
+                    "Leveysaste": 60.1985,
+                    "Pituusaste": 24.9978
+                }
+            }
+        },
+        {
+            "YmpHavainto_Id": 1002,
+            "Naytteenotto_Id": 5002,
+            "LiukoinenHappi": 9.1,
+            "pH": 7.6,
+            "Klorofylli_a": 8.7,
+            "Sameus": 1.5,
+            "NaytteenSyvyys": 0.5,
+            "Naytteenotto": {
+                "Aika": "2024-07-15T11:30:00Z",
+                "Paikka": {
+                    "Nimi": "Turku, Aurajoki",
+                    "KoordinaattiWkt": "POINT(22.2728 60.4518)",
+                    "Leveysaste": 60.4518,
+                    "Pituusaste": 22.2728
+                }
+            }
+        },
+        {
+            "YmpHavainto_Id": 1003,
+            "Naytteenotto_Id": 5003,
+            "LiukoinenHappi": 10.5,
+            "pH": 7.4,
+            "Klorofylli_a": 4.2,
+            "Sameus": 0.8,
+            "NaytteenSyvyys": 0.5,
+            "Naytteenotto": {
+                "Aika": "2024-07-15T09:00:00Z",
+                "Paikka": {
+                    "Nimi": "Oulu, Oulujoki",
+                    "KoordinaattiWkt": "POINT(25.4682 65.0124)",
+                    "Leveysaste": 65.0124,
+                    "Pituusaste": 25.4682
+                }
+            }
+        }
+    ]
+}

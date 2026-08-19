@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:om="http://www.opengis.net/om/2.0" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" timeStamp="2024-05-20T10:00:00Z" numberMatched="1" numberReturned="1">
+    <wfs:member>
+        <omso:GridSeriesObservation xmlns:omso="http://inspire.ec.europa.eu/schemas/omso/3.0" gml:id="obs-1">
+            <om:result>
+                <gmlcov:MultiPointCoverage gml:id="mpcv-1">
+                    <gml:domainSet>
+                        <gmlcov:SimpleMultiPoint gml:id="mp-1" srsName="http://www.opengis.net/def/crs/EPSG/0/4258" srsDimension="3">
+                            <gmlcov:positions>
+                                60.1 25.0 1716199200
+                                60.1 25.0 1716202800
+                            </gmlcov:positions>
+                        </gmlcov:SimpleMultiPoint>
+                    </gml:domainSet>
+                    <gml:rangeSet>
+                        <gml:DataBlock>
+                            <gml:rangeParameters/>
+                            <gml:doubleOrNilReasonTupleList>
+                                15.5 3.2 5.1 180.0 0.0
+                                16.0 4.0 6.5 190.0 0.5
+                            </gml:doubleOrNilReasonTupleList>
+                        </gml:DataBlock>
+                    </gml:rangeSet>
+                </gmlcov:MultiPointCoverage>
+            </om:result>
+        </omso:GridSeriesObservation>
+    </wfs:member>
+</wfs:FeatureCollection>

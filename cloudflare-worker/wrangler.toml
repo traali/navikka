@@ -1,0 +1,6 @@
+name = "sakkoja-cors-proxy"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Optional: Add custom route when you have a domain
+# routes = [{ pattern = "proxy.sakkoja.fi/*", zone_name = "sakkoja.fi" }]

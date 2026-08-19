@@ -1,0 +1,9 @@
+<svg width="60" height="100" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Topmark: Base to Base (Diamond) -->
+    <path d="M30 5 L22 15 L38 15 Z" fill="black"/>
+    <path d="M22 28 L38 28 L30 18 Z" fill="black"/>
+    <!-- Body: B-Y-B -->
+    <rect x="25" y="30" width="10" height="16" fill="black" stroke="black" stroke-width="1"/>
+    <rect x="25" y="46" width="10" height="18" fill="#FFD700" stroke="black" stroke-width="1"/>
+    <rect x="25" y="64" width="10" height="16" fill="black" stroke="black" stroke-width="1"/>
+</svg>

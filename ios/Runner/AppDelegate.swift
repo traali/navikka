@@ -1,0 +1,16 @@
+import Flutter
+import UIKit
+
+@main
+@objc class AppDelegate: FlutterAppDelegate {
+  lazy var flutterEngine = FlutterEngine(name: "sakkoja_engine")
+
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    flutterEngine.run()
+    GeneratedPluginRegistrant.register(with: self.flutterEngine)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}

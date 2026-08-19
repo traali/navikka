@@ -1,0 +1,144 @@
+name: CI (Code Integrity)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Future-proof for June 2026
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Verify Generated Code Freshness
+        run: git diff --exit-code -- lib/ test/
+
+      - name: Check Formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Generate Env
+        run: |
+          echo "OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}" > .env
+          echo "APP_ENV=production" >> .env
+
+      - name: Static Analysis
+        run: |
+          # Temporary workaround: pre-existing codebase has 600+ info issues
+          # Only fail on actual errors, not infos
+          flutter analyze 2>&1 | tee /tmp/analyze.txt
+          grep -q "^   error" /tmp/analyze.txt && exit 1 || exit 0
+
+      - name: Run Architecture Checks
+        run: dart run scripts/architecture_check.dart
+
+      - name: Enforce Linter Ignore Budget
+        run: |
+          # Track hand-written "// ignore:" and "// ignore_for_file:" directives
+          # to prevent rule-bypassing. Generated files (.g.dart, .freezed.dart)
+          # and l10n/ are excluded — their ignores are added by tooling.
+          # Baseline: 5 (3 line-level ignores + 2 file-level ignores).
+          IGNORES=$(grep -rn "// ignore[(:]" lib/ --include="*.dart" \
+            | grep -v "\.g\.dart" \
+            | grep -v "\.freezed\.dart" \
+            | grep -v "l10n/" \
+            | wc -l)
+          echo "Hand-written linter ignores: $IGNORES (budget: 5)"
+          if [ "$IGNORES" -gt 5 ]; then
+            echo "ERROR: Linter ignore budget exceeded!"
+            echo "Found $IGNORES hand-written '// ignore' directives (max 5 allowed)."
+            echo "Excluded: .g.dart, .freezed.dart, l10n/ (auto-generated)."
+            echo "Remaining ignores:"
+            grep -rn "// ignore" lib/ --include="*.dart" \
+              | grep -v "\.g\.dart" \
+              | grep -v "\.freezed\.dart" \
+              | grep -v "l10n/"
+            exit 1
+          fi
+
+      - name: Run Logic Tests with Coverage
+        run: flutter test --exclude-tags=golden --coverage
+
+      - name: Enforce Coverage Threshold (>= 25%)
+        run: |
+          read -r TOTAL_LINES HIT_LINES < <(awk -F',' '/^DA:/{total++; if($2+0>0) hit++} END{print total+0, hit+0}' coverage/lcov.info)
+          if [ "${TOTAL_LINES}" -eq 0 ]; then
+            echo "coverage/lcov.info has no executable line data (DA records)."
+            exit 1
+          fi
+          COVERAGE=$(awk -v h="$HIT_LINES" -v t="$TOTAL_LINES" 'BEGIN { printf "%.2f", (h/t)*100 }')
+          echo "Line coverage: ${COVERAGE}%"
+          if awk -v c="$COVERAGE" 'BEGIN { exit (c >= 25 ? 0 : 1) }'; then
+            echo "Coverage gate passed (>= 25%)."
+          else
+            echo "Coverage gate failed: ${COVERAGE}% is below required 25%."
+            exit 1
+          fi
+
+      - name: Run Golden Tests
+        run: flutter test --tags=golden
+        continue-on-error: true  # Golden tests may fail on Linux fonts
+
+      - name: Upload Coverage to CodeCov
+        uses: codecov/codecov-action@v6
+        with:
+          files: coverage/lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Extract Metadata
+        run: |
+          VERSION=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2)
+          BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "APP_BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
+
+      - name: Build Web (Verification)
+        run: |
+          echo "APP_VERSION=$VERSION"
+          echo "APP_BUILD_TIME=$APP_BUILD_TIME"
+          flutter build web \
+            --release \
+            --base-href "/" \
+            --source-maps \
+            --dart-define="APP_VERSION=${APP_VERSION}" \
+            --dart-define="APP_VERSION_HASH=${GITHUB_SHA}" \
+            --dart-define="APP_VERSION_BRANCH=main" \
+            --dart-define="APP_VERSION_BUILD_TIME=${APP_BUILD_TIME}" \
+            --dart-define="APP_ENV=ci"
+
+      - name: Report Bundle Size
+        run: |
+          echo "### 📦 Web Bundle Size" >> $GITHUB_STEP_SUMMARY
+          du -sh build/web >> $GITHUB_STEP_SUMMARY
+          echo "#### Top 5 Largest Files:" >> $GITHUB_STEP_SUMMARY
+          find build/web -type f -exec du -h {} + | sort -rh | head -5 >> $GITHUB_STEP_SUMMARY
+
+  deploy_pages:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      deployments: write
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

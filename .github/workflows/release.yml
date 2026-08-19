@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Compile Drift Worker
+        run: dart compile js -O4 web/drift_worker.dart -o web/drift_worker.js
+
+      - name: Extract Metadata
+        run: |
+          VERSION=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2)
+          BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "APP_BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
+
+      - name: Build Web (Skwasm)
+        run: |
+          echo "APP_VERSION=$APP_VERSION"
+          echo "APP_BUILD_TIME=$APP_BUILD_TIME"
+          flutter build web \
+            --wasm \
+            --release \
+            --base-href "/" \
+            --dart-define="APP_VERSION=${APP_VERSION}" \
+            --dart-define="APP_VERSION_HASH=${GITHUB_SHA}" \
+            --dart-define="APP_VERSION_BRANCH=main" \
+            --dart-define="APP_VERSION_BUILD_TIME=${APP_BUILD_TIME}" \
+            --dart-define="APP_ENV=production"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          files: |
+            build/web/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

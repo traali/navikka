@@ -1,0 +1,15 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official Finnish Waterway Sign: Mandatory (Square, Blue Background) -->
+  <rect x="0" y="0" width="200" height="200" fill="#0057B8" />
+  <rect x="5" y="5" width="190" height="190" stroke="white" stroke-width="5" fill="none" /> 
+  
+  <!-- Content: Radio Handset (Simplified & Bolder) -->
+  <!-- Main Body -->
+  <rect x="75" y="60" width="50" height="80" rx="5" fill="white" />
+  <!-- Antenna -->
+  <line x1="110" y1="60" x2="110" y2="40" stroke="white" stroke-width="8" stroke-linecap="round" />
+  <!-- Screen/Speaker details -->
+  <circle cx="100" cy="85" r="15" fill="#0057B8" />
+  <rect x="85" y="110" width="30" height="5" fill="#0057B8" />
+  <rect x="85" y="120" width="30" height="5" fill="#0057B8" />
+</svg>

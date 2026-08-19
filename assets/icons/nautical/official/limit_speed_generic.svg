@@ -1,0 +1,9 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official Finnish Waterway Sign: Restriction (Square, Red Border) -->
+  <rect x="0" y="0" width="200" height="200" fill="white" />
+  <rect x="10" y="10" width="180" height="180" stroke="#E30613" stroke-width="20" fill="none" />
+  
+  <!-- Content: Number (Example: 40) -->
+  <!-- Removed "km/h" for clarity in app context per user request -->
+  <text x="100" y="145" font-family="Arial, sans-serif" font-weight="bold" font-size="120" text-anchor="middle" fill="black">40</text>
+</svg>

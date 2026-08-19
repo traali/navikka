@@ -1,0 +1,11 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official Finnish Waterway Sign: Sound Signal (Square, Blue Background) -->
+  <rect x="0" y="0" width="200" height="200" fill="#0057B8" />
+  <rect x="5" y="5" width="190" height="190" stroke="white" stroke-width="5" fill="none" /> 
+  
+  <!-- Content: Horn/Trumpet -->
+  <path d="M50,80 L80,80 L120,50 L120,150 L80,120 L50,120 Z" fill="white" />
+  <!-- Sound waves -->
+  <path d="M140,70 Q160,100 140,130" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" />
+  <path d="M160,50 Q190,100 160,150" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" />
+</svg>

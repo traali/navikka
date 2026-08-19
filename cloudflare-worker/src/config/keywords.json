@@ -1,0 +1,65 @@
+{
+    "version": 1,
+    "categories": [
+        {
+            "id": "verkkorajoitukset",
+            "label": "Verkkorajoitukset",
+            "keywords": [
+                "verkkojen solmuväli",
+                "verkoissa sallittu"
+            ],
+            "color": "#EF4444",
+            "icon": "grid_on"
+        },
+        {
+            "id": "verkkokalastus",
+            "label": "Verkkokalastus",
+            "keywords": [
+                "verkko",
+                "net"
+            ],
+            "color": "#EF4444",
+            "icon": "grid_on"
+        },
+        {
+            "id": "pyydyskalastus",
+            "label": "Pyydyskalastus",
+            "keywords": [
+                "rysä",
+                "trap",
+                "katiska"
+            ],
+            "color": "#F59E0B",
+            "icon": "inventory_2"
+        },
+        {
+            "id": "kalastuskielto",
+            "label": "Kalastuskielto",
+            "keywords": [
+                "kutualue",
+                "spawn",
+                "kalastusrajoitus",
+                "kalastus kielletty"
+            ],
+            "color": "#10B981",
+            "icon": "water_drop"
+        },
+        {
+            "id": "veneilyrajoitus",
+            "label": "Veneilyrajoitus",
+            "keywords": [
+                "moottori",
+                "motor",
+                "nopeus"
+            ],
+            "color": "#3B82F6",
+            "icon": "anchor"
+        }
+    ],
+    "defaultCategory": {
+        "id": "muu",
+        "label": "Muu",
+        "color": "#06B6D4",
+        "icon": "warning_amber_rounded"
+    }
+}

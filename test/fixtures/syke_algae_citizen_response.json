@@ -1,0 +1,41 @@
+[
+    {
+        "service_request_id": "algae-2024-001",
+        "status": "open",
+        "service_name": "Levähavainto",
+        "service_code": "hisp_algaebloom_service_code_202201051826208",
+        "requested_datetime": "2024-07-15T10:00:00+03:00",
+        "lat": 60.1985,
+        "long": 24.9978,
+        "address_string": "Helsinki",
+        "extended_attributes": {
+            "levähavaintotyyppi": "Runsaasti levää"
+        }
+    },
+    {
+        "service_request_id": "algae-2024-002",
+        "status": "open",
+        "service_name": "Levähavainto",
+        "service_code": "hisp_algaebloom_service_code_202201051826208",
+        "requested_datetime": "2024-07-15T11:30:00+03:00",
+        "lat": 60.4518,
+        "long": 22.2728,
+        "address_string": "Turku",
+        "extended_attributes": {
+            "levähavaintotyyppi": "Vähän levää"
+        }
+    },
+    {
+        "service_request_id": "algae-2024-003",
+        "status": "open",
+        "service_name": "Levähavainto",
+        "service_code": "hisp_algaebloom_service_code_202201051826208",
+        "requested_datetime": "2024-07-15T09:00:00+03:00",
+        "lat": 65.0124,
+        "long": 25.4682,
+        "address_string": "Oulu",
+        "extended_attributes": {
+            "levähavaintotyyppi": "Ei levää"
+        }
+    }
+]

@@ -1,0 +1,39 @@
+# Navikka (Marine Safety Navigator)
+> Intelligent, real-time marine safety navigation application for Finland (and surrounding Baltic waters), built with Flutter, Riverpod, Drift (SQLite), and flutter_map.
+
+## Problem Statement
+Boaters and mariners navigating Finnish waters face fragmented data across multiple official systems (FMI weather & sea warnings, SYKE algae & water quality, Väylävirasto fairway & navigation aids, Traficom speed limits, MET Norway forecasts). Existing apps lack unified offline caching, real-time safety warnings, and responsive spatial data layers tailored for night and marine glove usage.
+
+## Solution Architecture
+Navikka unifies these disparate marine APIs into a single, high-performance offline-capable navigation app.
+- **Frontend / UI**: Flutter 3.44+ with custom OLED dark-mode palette ("Night Captain" aesthetic), responsive typography (`clamp()`), and high-contrast tactile map controls.
+- **State Management**: `flutter_riverpod` (v3.3+) using pure code-generated `@riverpod` Notifiers and `AsyncNotifier` streams.
+- **Map & Spatial Layer**: `flutter_map` (v8.3+) with native tile caching, custom `RepaintBoundary` rendering layers, and EPSG:3067 (ETRS89 / TM35FIN) <-> EPSG:4326 (WGS84) coordinate transformations via `proj4dart` and `mgrs_dart`.
+- **Local Persistence & Caching**: Drift (SQLite v18) with strict repository abstraction and `fpdart` `Either<Failure, T>` return signatures.
+- **Earth Observation**: ESA Copernicus Sentinel-2 10m optical imagery and FMI / EUMETSAT 15-min weather satellite loops.
+- **Sensors & On-Device AI**: `sensors_plus` IMU sensor fusion (accelerometer/gyroscope) for wave slamming & roughness estimation, Web Speech API for voice copilot, and Chrome Built-in AI / local marine reasoners.
+- **Remote Integration**: `dio` + `json_serializable` for API fetchers (FMI WFS/OData, SYKE OData, OpenWeather, MET Norway), routed through a Cloudflare Worker CORS proxy for web deployment.
+
+## Core Directory Map
+- `lib/core/`: Shared utilities, themes, dependency injection, and spatial projection helpers.
+- `lib/features/`: Feature-First modules (`ai`, `ais`, `contribution`, `fishing`, `harbors`, `map`, `menu`, `navigation`, `navigation_aids`, `satellite`, `speed_limits`, `tracking`, `vessel`, `weather`).
+- `lib/main.dart`: App entry point and global Riverpod container initialization.
+- `docs/`: User guide (`user_guide.md`), developer guide (`developer_guide.md`), deployment guide (`deployment_guide.md`), feature catalog (`features.md`), architecture (`architecture.md`), external APIs (`external_apis.md`), and ADR decisions (`decisions/`).
+- `cloudflare-worker/`: Serverless CORS proxy for external API request proxying and server-side key management.
+- `e2e/`: Playwright end-to-end web test suite.
+- `.agent/`: Agent workflows, skills, rules, and prompt engineering instructions.
+
+## Key Rules & Guidelines for AI Agents
+1. **Feature-First Clean Architecture**: Each feature MUST reside in `lib/features/<name>/{data, domain, presentation}`.
+2. **DTO Layer Isolation**: DTO models in `data/models/` MUST NOT import domain entities from `domain/entities/`.
+3. **State Management**: Pure `@riverpod` annotations only. No legacy `StateProvider` or `ChangeNotifier`.
+4. **Error Handling**: Data layers MUST return `Future<Either<Failure, T>>` using `fpdart`. Never leak raw exceptions to presentation.
+5. **Static Analysis & Testing**: Code must pass `dart analyze lib/ test/` with 0 errors/warnings and pass `flutter test`.
+
+## Command Quickstart
+- Run App: `flutter run`
+- Code Generation: `dart run build_runner build --delete-conflicting-outputs`
+- Run Tests: `flutter test`
+- Run Static Analysis: `dart analyze lib/ test/`
+- Run Architecture Checks: `dart run scripts/architecture_check.dart`
+- Format Code: `dart format .`
