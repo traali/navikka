@@ -27,6 +27,10 @@ const ALLOWED_TARGET_HOSTS = [
   'geoserver2.ymparisto.fi', // SYKE Geoserver
   'meri.digitraffic.fi', // Digitraffic Marine AIS API
   'api.lipas.fi', // Lipas Finnish sports/harbor places API
+  // Map tile providers — required for browser CORS
+  'tile.openstreetmap.org', // OSM basemap
+  'tiles.maps.eox.at', // EOX Sentinel-2 cloudless tiles
+  'server.arcgisonline.com', // ESRI HD satellite basemap
 ];
 
 const ALLOWED_ORIGINS = [
