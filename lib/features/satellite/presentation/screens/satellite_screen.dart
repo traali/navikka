@@ -69,31 +69,52 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
               if (satelliteState.mode == SatelliteMode.sentinel2)
                 TileLayer(
                   urlTemplate:
-                      'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg',
-                  tileProvider: SafeTileProvider(
-                    dio: ref.read(tileDioProvider),
-                    userAgent: kIsWeb ? null : 'Navikka/1.0',
-                  ),
+                      'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/GoogleMapsCompatible/{z}/{x}/{y}.jpg',
+                  tileProvider: kIsWeb
+                      ? NetworkTileProvider(
+                          headers: const {
+                            'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
+                            'Referer': 'https://navikka.pages.dev',
+                          },
+                        )
+                      : SafeTileProvider(
+                          dio: ref.read(tileDioProvider),
+                          userAgent: 'Navikka/1.0',
+                        ),
                   maxNativeZoom: 15,
                 )
               else if (satelliteState.mode == SatelliteMode.highResBasemap)
                 TileLayer(
                   urlTemplate:
                       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                  tileProvider: SafeTileProvider(
-                    dio: ref.read(tileDioProvider),
-                    userAgent: kIsWeb ? null : 'Navikka/1.0',
-                  ),
+                  tileProvider: kIsWeb
+                      ? NetworkTileProvider(
+                          headers: const {
+                            'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
+                            'Referer': 'https://navikka.pages.dev',
+                          },
+                        )
+                      : SafeTileProvider(
+                          dio: ref.read(tileDioProvider),
+                          userAgent: 'Navikka/1.0',
+                        ),
                 )
               else if (satelliteState.mode == SatelliteMode.eumetsat) ...[
                 // High-resolution Earth Observation basemap for authentic space view
                 TileLayer(
                   urlTemplate:
                       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                  tileProvider: SafeTileProvider(
-                    dio: ref.read(tileDioProvider),
-                    userAgent: kIsWeb ? null : 'Navikka/1.0',
-                  ),
+                  tileProvider: kIsWeb
+                      ? NetworkTileProvider(
+                          headers: const {
+                            'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
+                            'Referer': 'https://navikka.pages.dev',
+                          },
+                        )
+                      : SafeTileProvider(
+                          dio: ref.read(tileDioProvider),
+                          userAgent: 'Navikka/1.0',
+                        ),
                 ),
                 // FMI Live Weather Satellite / Radar Cloud Layer
                 TileLayer(
@@ -131,10 +152,17 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                   opacity: satelliteState.nauticalOverlayOpacity,
                   child: TileLayer(
                     urlTemplate: MapUrls.traficomWmts,
-                    tileProvider: SafeTileProvider(
-                      dio: ref.read(tileDioProvider),
-                      userAgent: kIsWeb ? null : 'Navikka/1.0',
-                    ),
+                    tileProvider: kIsWeb
+                        ? NetworkTileProvider(
+                            headers: const {
+                              'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
+                              'Referer': 'https://navikka.pages.dev',
+                            },
+                          )
+                        : SafeTileProvider(
+                            dio: ref.read(tileDioProvider),
+                            userAgent: 'Navikka/1.0',
+                          ),
                     maxNativeZoom: 16,
                   ),
                 ),

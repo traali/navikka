@@ -157,8 +157,45 @@ class WeatherScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // 3. Location Header
-              if (weather != null) ...[
+              // 3. Location Header & Loading Placeholder
+              if (weather == null && forecast.isEmpty) ...[
+                NovaGlassCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.cloud_sync_outlined,
+                        size: 44,
+                        color: colors.primaryAction,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Päivitetään merisäähavaintoja...',
+                        style: AppTextStyles.nvLg,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Haetaan lähimmät Ilmatieteen laitoksen (FMI) rannikko- ja aaltopoijuasemat.',
+                        style: AppTextStyles.nvSm.copyWith(
+                          color: AppPalette.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      const LinearProgressIndicator(),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => ref
+                            .read(pointWeatherControllerProvider.notifier)
+                            .syncAll(),
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: const Text('Päivitä nyt'),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (weather != null) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
