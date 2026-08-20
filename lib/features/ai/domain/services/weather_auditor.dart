@@ -76,6 +76,40 @@ class WeatherAuditor {
           'ALARM: Pressure is dropping faster than forecasted. Deteriorating weather likely.';
     }
 
+    // 4. Fog & Reduced Visibility Escalation (COLREG Rule 19 & 35)
+    final obsVisibility = observation.visibility;
+    if (obsVisibility != null) {
+      if (obsVisibility <= 500) {
+        status = SafetyStatus.red;
+        message =
+            'SUMUHÄLYTYS: Sankka sumu (näkyvyys vain ${obsVisibility.round()} m). Sytytä kulkuvalot, anna sumumerkit (COLREG sääntö 35) ja alenna nopeutta.';
+      } else if (obsVisibility <= 1000 &&
+          status.index < SafetyStatus.orange.index) {
+        status = SafetyStatus.orange;
+        message =
+            'SUMUVAROITUS: Näkyvyys heikentynyt alle 1 km (${obsVisibility.round()} m). Tehosta tähystystä ja seuraa tutkaa/AIS:ää.';
+      } else if (obsVisibility <= 2500 &&
+          status.index < SafetyStatus.yellow.index) {
+        status = SafetyStatus.yellow;
+        message =
+            'HUOMIO: Utua ja rajoittunutta näkyvyyttä merellä (${(obsVisibility / 1000).toStringAsFixed(1)} km).';
+      }
+    }
+
+    // 5. Rapid Dew Point / Sea Fog Condensation Risk
+    final temp = observation.temperature;
+    final dew = observation.dewPoint;
+    final humidity = observation.humidity ?? 0.0;
+    if (temp != null &&
+        dew != null &&
+        (temp - dew).abs() <= 1.2 &&
+        humidity >= 90.0 &&
+        status.index < SafetyStatus.orange.index) {
+      status = SafetyStatus.orange;
+      message =
+          'SUMUN TIIVISTYMISRISKI: Lämpötila ja kastepiste ovat lähes samat (${temp.toStringAsFixed(1)}°C / ${dew.toStringAsFixed(1)}°C, kosteus ${humidity.round()}%). Äkillinen merisumu tai matalapilvi todennäköinen.';
+    }
+
     return WeatherDiscrepancy(
       status: status,
       message: message,

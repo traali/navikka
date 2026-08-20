@@ -102,5 +102,75 @@ void main() {
         expect(result.pressureDeltaHpa, -5.0);
       },
     );
+
+    test('should return RED on dense fog when visibility <= 500m', () {
+      final weather = WeatherData(
+        timestamp: now,
+        location: loc,
+        windGust: 3,
+        visibility: 350,
+        stationName: 'Harmaja',
+      );
+      final forecast = WeatherForecast(timestamp: now, windGust: 3);
+
+      final result = auditor.audit(
+        observation: weather,
+        forecast: forecast,
+        wave: null,
+        thresholds: thresholds,
+      );
+
+      expect(result.status, SafetyStatus.red);
+      expect(result.message, contains('SUMUHÄLYTYS'));
+      expect(result.message, contains('350 m'));
+    });
+
+    test('should return ORANGE on fog when visibility is 500-1000m', () {
+      final weather = WeatherData(
+        timestamp: now,
+        location: loc,
+        windGust: 3,
+        visibility: 850,
+        stationName: 'Harmaja',
+      );
+      final forecast = WeatherForecast(timestamp: now, windGust: 3);
+
+      final result = auditor.audit(
+        observation: weather,
+        forecast: forecast,
+        wave: null,
+        thresholds: thresholds,
+      );
+
+      expect(result.status, SafetyStatus.orange);
+      expect(result.message, contains('SUMUVAROITUS'));
+      expect(result.message, contains('850 m'));
+    });
+
+    test(
+      'should return ORANGE on sea fog condensation risk when temp matches dewPoint and humidity >= 90%',
+      () {
+        final weather = WeatherData(
+          timestamp: now,
+          location: loc,
+          windGust: 2,
+          temperature: 14.2,
+          dewPoint: 13.8,
+          humidity: 96,
+          stationName: 'Suomenlinna',
+        );
+        final forecast = WeatherForecast(timestamp: now, windGust: 2);
+
+        final result = auditor.audit(
+          observation: weather,
+          forecast: forecast,
+          wave: null,
+          thresholds: thresholds,
+        );
+
+        expect(result.status, SafetyStatus.orange);
+        expect(result.message, contains('SUMUN TIIVISTYMISRISKI'));
+      },
+    );
   });
 }

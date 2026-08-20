@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,16 +61,28 @@ class _MapContentState extends ConsumerState<MapContent> {
   }
 
   /// Stable TileProvider — created once, reused across rebuilds.
-  /// Uses `ref.read` (not `ref.watch`) because [appDatabaseProvider] and
-  /// [tileDioProvider] are both `keepAlive` singletons so reactive watching
-  /// is unnecessary overhead.
+  ///
+  /// On **web**: uses flutter_map's [NetworkTileProvider] which delegates to
+  /// the browser's fetch API. The browser handles CORS natively — OSM, EOX,
+  /// and Traficom already serve `Access-Control-Allow-Origin: *` so no proxy
+  /// is needed for tile hosts. This also avoids violating OSM / ESRI ToS by
+  /// routing tiles through a shared proxy.
+  ///
+  /// On **native**: uses [DriftTileProvider] for offline SQLite tile caching.
   late final TileProvider _tileProvider =
       widget.tileProvider ??
-      DriftTileProvider(
-        tileDao: ref.read(appDatabaseProvider).tileDao,
-        dio: ref.read(tileDioProvider),
-        userAgent: 'com.marinesafety.sakkoja',
-      );
+      (kIsWeb
+          ? NetworkTileProvider(
+              headers: {
+                'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
+                'Referer': 'https://navikka.pages.dev',
+              },
+            )
+          : DriftTileProvider(
+              tileDao: ref.read(appDatabaseProvider).tileDao,
+              dio: ref.read(tileDioProvider),
+              userAgent: 'Navikka/1.0',
+            ));
 
   /// Calculates camera target based on navigation mode (North-Up vs Boating Heading-Up)
   LatLng _calculateTargetCenter({

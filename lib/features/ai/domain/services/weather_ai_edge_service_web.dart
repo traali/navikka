@@ -205,7 +205,48 @@ class LocalMarineReasoner {
       return 'Puuskainen merisää: Tuuli ${windSpeed.toStringAsFixed(1)} m/s, mutta puuskat yltävät ${windGust.toStringAsFixed(1)} m/s (puuskakerroin ${gustFactor.toStringAsFixed(1)}x). Varo äkillisiä tuulenpuuskia saarten kapeikoissa ja selkäalueiden reunoilla.';
     }
 
-    // 4. Harbor / Berthing Context
+    // 4. Fog / Low Cloud / Visibility Alarm (COLREG Rules 19 & 35)
+    final visibility = weather?.visibility;
+    if (visibility != null && visibility <= 1000) {
+      return 'Sumuhälytys: Näkyvyys on erittäin heikko (${visibility.round()} m). Sytytä kulkuvalot, noudata COLREG-säännön 19 määräyksiä sumussa kulkemisesta, anna äänimerkit (Sääntö 35) ja tarkkaile tutkaa/AIS:ää.';
+    }
+
+    final temp = weather?.temperature;
+    final dew = weather?.dewPoint;
+    final humidity = weather?.humidity ?? 0.0;
+    if (temp != null &&
+        dew != null &&
+        (temp - dew).abs() <= 1.2 &&
+        humidity >= 90.0) {
+      return 'Sumun muodostumishälytys: Lämpötila ja kastepiste ovat lähes samat (${temp.toStringAsFixed(1)}°C / ${dew.toStringAsFixed(1)}°C, kosteus ${humidity.round()}%). Äkillinen merisumu tai matalapilvi todennäköinen.';
+    }
+
+    // Check incoming low clouds / fog in upcoming forecast hours
+    for (final f in forecasts.take(6)) {
+      final fTemp = f.temperature;
+      final fDew = f.dewPoint;
+      final fHumidity = f.humidity ?? 0.0;
+      final fCloud = f.cloudCover ?? 0.0;
+      final fDesc = f.weatherDescription?.toLowerCase() ?? '';
+
+      final isFogForecast =
+          fDesc.contains('sumu') ||
+          fDesc.contains('fog') ||
+          fDesc.contains('matalapilvi');
+      final isCondensationRisk =
+          fTemp != null &&
+          fDew != null &&
+          (fTemp - fDew).abs() <= 1.2 &&
+          fHumidity >= 92.0;
+
+      if (isFogForecast ||
+          isCondensationRisk ||
+          (fCloud >= 95.0 && fHumidity >= 95.0)) {
+        return 'Tuleva sumu- / matalapilvihälytys: Lähitunneille ennustettu matalapilveä tai merisumua (pilvisyys ${fCloud.round()}%, kosteus ${fHumidity.round()}%). Varaudu näkyvyyden äkilliseen heikkenemiseen reitillä.';
+      }
+    }
+
+    // 5. Harbor / Berthing Context
     if (isCoastOrHarbor) {
       if (windSpeed >= 6.0) {
         return 'Satamalähestyminen / Kiinnitys: Tuuli ${windSpeed.toStringAsFixed(1)} m/s vaikuttaa aluksen sivuttaisdriftiin rantautuessa. Valmistele lepuuttajat ja keula/peräköydet ajoissa tuulen puolelle.';
