@@ -44,3 +44,23 @@
 - **Core AI is 100% On-Device / Offline**: Voice Copilot, Wave Impact IMU, Marine Weather Reasoner, Engine Copilot, and Voyage Logbook emit zero telemetry to external servers.
 - **Opt-in Cloud**: Only `HybridInsightEngine` calls OpenRouter when a user explicitly configures a personal BYOK API key and accepts the consent dialog.
 - **Reference**: Full specification table documented in [`README.md`](file:///c:/dev2/gtp/sakkoja/README.md) and [`docs/architecture.md`](file:///c:/dev2/gtp/sakkoja/docs/architecture.md).
+
+---
+
+## 6. Satellite & Earth Observation Standards
+- **Explicit Acquisition Metadata**: All satellite screens and badges must explicitly display the capture date, time, and spatial resolution (e.g. `10m/px` for Sentinel-2 optical RGB) to avoid confusion between spatial resolution and temporal recency.
+- **Authentic Satellite Basemap**: In meteorological satellite / weather observation views (e.g. EUMETSAT cloud loops), always use high-resolution optical satellite imagery (ESRI World Imagery) as the underlying basemap instead of street/road maps so clouds and rain bands overlay onto genuine Earth textures.
+- **Web vs. Native Tile Providers**: On Web/PWA, use `NetworkTileProvider` with proper `User-Agent` and `Referer` headers to leverage the browser's native fetch and CORS caching. On Native, use `DriftTileProvider` for offline SQLite tile caching.
+
+---
+
+## 7. AI Weather & Fog Safety Auditing
+- **Deterministic Visibility Thresholds (COLREG Rules 19 & 35)**:
+  - $\le 500\text{ m}$: `SafetyStatus.red` (Dense fog — sound fog signals, illuminate navigation lights, reduce speed).
+  - $\le 1000\text{ m}$: `SafetyStatus.orange` (Fog warning — post lookouts, monitor Radar/AIS).
+  - $\le 2500\text{ m}$: `SafetyStatus.yellow` (Mist/haze).
+- **Thermodynamic Sea Fog Condensation Risk**:
+  - Flag condensation risk when $|T_{\text{air}} - T_{\text{dew}}| \le 1.2^\circ\text{C}$ and relative humidity $\ge 90\%$.
+- **Forecast Low Cloud & Fog Auditing**:
+  - Scan next $1\text{--}6\text{ h}$ forecast for incoming cloud cover $\ge 95\%$, high humidity, or fog weather codes to alert the skipper before visibility collapses.
+

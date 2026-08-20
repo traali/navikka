@@ -64,3 +64,29 @@ Common FMI GML structure involves:
 -   **Axis Order:** FMI positions are usually `lat lon epoch`.
 -   **Epoch parsing:** Timestamps are Unix epoch seconds.
 -   **Namespace handling:** Rely on local names in `xml_events` (e.g., just `positions`, ignoring `gmlcov` prefix if possible, or strictly matching if using standard parsers). Sakkoja's `XmlStreamParser` checks for `gmlcov:positions` explicitly.
+
+## 5. WMS Weather & Satellite Layering
+
+### 5.1 Active FMI WMS Layers
+- **Base URL**: `https://openwms.fmi.fi/geoserver/wms?`
+- **Radar Reflectivity / Clouds (Day RGB)**: `Radar:suomi_dbz_eureffin`
+- **Precipitation & Storm Intensity (HRV)**: `Radar:suomi_rr_eureffin`
+- **1-Hour Rain Accumulation (Low Cloud / Stratus)**: `Radar:suomi_rr1h_eureffin`
+- **Important**: Avoid legacy layer names (e.g. `fmi:msg_eumetsat_rgb`) which return blank tiles on openwms.
+
+### 5.2 WMS Timestamp Formatting
+- FMI WMS requires exact ISO 8601 UTC timestamps without milliseconds:
+  `${time.toUtc().toIso8601String().split('.')[0]}Z` (e.g. `2026-08-20T08:00:00Z`).
+- Safety buffer: Latest complete scan timestamp is $T_{\text{now}} - 15\text{ min}$, floored to the nearest 15-minute interval.
+
+## 6. Marine Fog & Visibility Heuristics
+
+### 6.1 Condensation Risk (Sea Fog & Advection Fog)
+Sea fog forms rapidly when warm moist air moves over cooler sea water or during radiational cooling over coastal bays:
+- **Dew Point Depression**: $\Delta T = |T_{\text{air}} - T_{\text{dew}}|$.
+- **Trigger**: When $\Delta T \le 1.2^\circ\text{C}$ and $\text{RH} \ge 90\%$, sea fog and low stratus formation is imminent even if current measured visibility is still high.
+
+### 6.2 COLREG Compliance
+- **Rule 19 (Conduct of Vessels in Restricted Visibility)**: Proceed at safe speed, engines ready for immediate maneuver.
+- **Rule 35 (Sound Signals in Restricted Visibility)**: Power-driven vessel underway making way shall sound at intervals of not more than 2 minutes one prolonged blast.
+
