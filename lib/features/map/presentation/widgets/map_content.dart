@@ -162,9 +162,8 @@ class _MapContentState extends ConsumerState<MapContent> {
 
   void _onAutoFollowChange(bool? previous, bool next) {
     if (!next || previous == true) return;
-    final hasLocation = ref.read(mapProvider.select((s) => s.hasLocation));
-    if (!hasLocation) return;
     final mapState = ref.read(mapProvider);
+    if (!mapState.hasLocation) return;
     final mode = ref.read(mapNavigationModeProvider);
     final is3dTilt = ref.read(map3dTiltProvider);
     final targetRotation = mode == MapNavigationMode.boatingHeadingUp
@@ -188,9 +187,8 @@ class _MapContentState extends ConsumerState<MapContent> {
     MapNavigationMode next,
   ) {
     if (previous == next) return;
-    final hasLocation = ref.read(mapProvider.select((s) => s.hasLocation));
-    if (!hasLocation) return;
     final mapState = ref.read(mapProvider);
+    if (!mapState.hasLocation) return;
     final is3dTilt = ref.read(map3dTiltProvider);
     final targetRotation = next == MapNavigationMode.boatingHeadingUp
         ? -mapState.heading
@@ -210,9 +208,8 @@ class _MapContentState extends ConsumerState<MapContent> {
 
   void _on3dTiltChange(bool? previous, bool next) {
     if (previous == next) return;
-    final hasLocation = ref.read(mapProvider.select((s) => s.hasLocation));
-    if (!hasLocation) return;
     final mapState = ref.read(mapProvider);
+    if (!mapState.hasLocation) return;
     final mode = ref.read(mapNavigationModeProvider);
     final targetRotation = mode == MapNavigationMode.boatingHeadingUp
         ? -mapState.heading
@@ -243,7 +240,7 @@ class _MapContentState extends ConsumerState<MapContent> {
     _autoReturnTimer?.cancel();
     _autoReturnTimer = Timer(const Duration(seconds: 10), () {
       if (!mounted) return;
-      final speedKmh = ref.read(mapProvider.select((s) => s.currentSpeedKmh));
+      final speedKmh = ref.read(mapProvider).currentSpeedKmh;
       if (!ref.read(mapAutoFollowProvider) && speedKmh > 2.0) {
         ref.read(mapAutoFollowProvider.notifier).enable();
       }

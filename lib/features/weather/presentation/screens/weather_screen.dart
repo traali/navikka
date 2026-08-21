@@ -72,12 +72,12 @@ class WeatherScreen extends ConsumerWidget {
       pointWeatherControllerProvider.select((s) => s.algae),
     );
     // Child widgets that need derived alarm data read their own slice.
-    final lightningState = ref.watch(
+    final lightningLevel = ref.watch(
+      pointWeatherControllerProvider.select((s) => s.lightningAlarmLevel),
+    );
+    final lightningDistanceMeters = ref.watch(
       pointWeatherControllerProvider.select(
-        (s) => (
-          level: s.lightningAlarmLevel,
-          distanceMeters: s.nearestLightningDistanceMeters,
-        ),
+        (s) => s.nearestLightningDistanceMeters,
       ),
     );
     final insightAsync = ref.watch(skipperInsightProvider);
@@ -142,8 +142,8 @@ class WeatherScreen extends ConsumerWidget {
             children: [
               // 1. Lightning Alarm (Proximity Warning)
               _LightningAlarm(
-                level: lightningState.level,
-                distanceMeters: lightningState.distanceMeters,
+                level: lightningLevel,
+                distanceMeters: lightningDistanceMeters,
               ),
 
               const SizedBox(height: 12),
