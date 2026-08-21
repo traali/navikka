@@ -149,15 +149,20 @@ class SatelliteTopCapsule extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      _getMetadataText(satelliteState),
-                      style: TextStyle(
-                        color: colors.primaryAction.withValues(alpha: 0.9),
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
+                    Expanded(
+                      child: Text(
+                        _getMetadataText(satelliteState),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          color: colors.primaryAction.withValues(alpha: 0.9),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       _getSourceLabel(satelliteState.mode),
                       style: TextStyle(

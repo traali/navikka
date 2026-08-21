@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:sakkoja/core/providers/logging_provider.dart';
 import 'package:sakkoja/core/settings/presentation/providers/ai_settings_provider.dart';
+import 'package:sakkoja/core/settings/presentation/providers/ui_element_preferences_provider.dart';
 import 'package:sakkoja/core/theme/app_palette.dart';
 import 'package:sakkoja/core/utils/build_info.dart';
 import 'package:sakkoja/core/utils/logger.dart';
@@ -41,10 +42,12 @@ class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({
     super.key,
     this.tileProvider,
-    this.showDebugOverlay = kDebugMode,
+    this.showDebugOverlay = false,
+    this.useMockLocation = false,
   });
   final TileProvider? tileProvider;
   final bool showDebugOverlay;
+  final bool useMockLocation;
 
   @override
   ConsumerState<MapScreen> createState() => _MapScreenState();
@@ -52,7 +55,7 @@ class MapScreen extends ConsumerStatefulWidget {
 
 class _MapScreenState extends ConsumerState<MapScreen>
     with TickerProviderStateMixin {
-  final MapController _mapController = MapController();
+  late final MapController _mapController;
 
   // Animation controllers for entrance effects
   late AnimationController _entranceController;
@@ -66,14 +69,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
   @override
   void initState() {
     super.initState();
+    _mapController = MapController();
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 600),
     )..forward();
 
     _entranceAnimation = CurvedAnimation(
       parent: _entranceController,
-      curve: Curves.easeOutBack,
+      curve: Curves.easeOutCubic,
     );
 
     if (WebHelper.isLocal() || kDebugMode) {
@@ -83,7 +87,6 @@ class _MapScreenState extends ConsumerState<MapScreen>
     BuildInfo.printToConsole();
 
     // Pre-warm fishing data after first frame is rendered
-    // (much faster than arbitrary 2-second delay)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         try {
@@ -135,30 +138,6 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final isSelectingArea = ref.watch(offlineSelectionModeProvider);
     final selectionBounds = ref.watch(selectionBoundsProvider);
 
-    // Onboarding for Ghost Layout & Console Logging for Ulkoasu Changes
-    ref.listen(uiLayoutControllerProvider, (previous, next) {
-      Log.i('[Ulkoasu] Map UI layout changed: $previous -> $next');
-      if (next == UiLayout.ghost && previous != UiLayout.ghost) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Ghost HUD aktivoitu. Voit muuttaa ulkoasua valikosta.',
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.primary.withValues(alpha: 0.9),
-
-            action: SnackBarAction(
-              label: 'VALIKKO',
-              textColor: AppPalette.textPrimary,
-              onPressed: () => context.go('/menu'),
-            ),
-          ),
-        );
-      }
-    });
-
     return Scaffold(
       body: Stack(
         children: [
@@ -193,7 +172,12 @@ class _MapScreenState extends ConsumerState<MapScreen>
           Consumer(
             builder: (context, ref, _) {
               final layout = ref.watch(uiLayoutControllerProvider);
-              if (layout == UiLayout.ghost || layout == UiLayout.commandBar) {
+              final showTopCapsule = ref.watch(
+                uiElementPreferencesProvider.select((s) => s.showTopCapsule),
+              );
+              if (!showTopCapsule ||
+                  layout == UiLayout.ghost ||
+                  layout == UiLayout.commandBar) {
                 return const SizedBox.shrink();
               }
               return Positioned(
@@ -231,9 +215,12 @@ class _MapScreenState extends ConsumerState<MapScreen>
               final isVoiceEnabled = ref.watch(
                 aiSettingsProvider.select((s) => s.voiceCopilotEnabled),
               );
-              if (!isVoiceEnabled) return const SizedBox.shrink();
+              final showVoice = ref.watch(
+                uiElementPreferencesProvider.select((s) => s.showVoiceButton),
+              );
+              if (!isVoiceEnabled || !showVoice) return const SizedBox.shrink();
               return const Positioned(
-                bottom: 140,
+                bottom: 165,
                 right: 14,
                 child: VoiceCopilotMicButton(),
               );
@@ -246,9 +233,14 @@ class _MapScreenState extends ConsumerState<MapScreen>
               final isWaveImpactEnabled = ref.watch(
                 aiSettingsProvider.select((s) => s.waveImpactAiEnabled),
               );
-              if (!isWaveImpactEnabled) return const SizedBox.shrink();
+              final showWaveImpact = ref.watch(
+                uiElementPreferencesProvider.select((s) => s.showWaveImpactHud),
+              );
+              if (!isWaveImpactEnabled || !showWaveImpact) {
+                return const SizedBox.shrink();
+              }
               return const Positioned(
-                bottom: 140,
+                bottom: 165,
                 left: 14,
                 child: WaveImpactHudWidget(),
               );

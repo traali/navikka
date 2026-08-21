@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sakkoja/core/settings/presentation/providers/ui_element_preferences_provider.dart';
 import 'package:sakkoja/core/theme/theme_provider.dart';
 import 'package:sakkoja/features/ais/presentation/providers/ais_targets_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/cockpit_mode_provider.dart';
@@ -17,6 +18,11 @@ class BottomTelemetryDock extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final uiPrefs = ref.watch(uiElementPreferencesProvider);
+    if (!uiPrefs.showSpeedHud && !uiPrefs.showCompassHud) {
+      return const SizedBox.shrink();
+    }
+
     final mapState = ref.watch(mapProvider);
     final aisTargets = ref.watch(aisTargetsProvider).value ?? [];
     final cockpitState = ref.watch(cockpitModeProvider);
@@ -56,45 +62,51 @@ class BottomTelemetryDock extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // 1. Radial Knotmeter Gauge
-                  RadialKnotmeterGauge(
-                    speedKmh: speedKmh,
-                    speedLimitKmh: currentLimit,
-                    size: 68,
-                  ),
-
-                  // 2. Speed Limit Sign (if inside limit zone)
-                  if (currentLimit > 0)
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSpeeding
-                              ? colors.danger
-                              : Colors.red.shade700,
-                          width: 2.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        '$currentLimit',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
+                  if (uiPrefs.showSpeedHud) ...[
+                    RadialKnotmeterGauge(
+                      speedKmh: speedKmh,
+                      speedLimitKmh: currentLimit,
+                      size: 68,
                     ),
 
+                    // 2. Speed Limit Sign (if inside limit zone)
+                    if (currentLimit > 0)
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSpeeding
+                                ? colors.danger
+                                : Colors.red.shade700,
+                            width: 2.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '$currentLimit',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                  ] else
+                    const SizedBox.shrink(),
+
                   // 3. Precision Marine Compass
-                  const PrecisionMarineCompass(),
+                  if (uiPrefs.showCompassHud)
+                    const PrecisionMarineCompass()
+                  else
+                    const SizedBox.shrink(),
                 ],
               ),
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sakkoja/core/settings/presentation/providers/ai_settings_provider.dart';
+import 'package:sakkoja/core/settings/presentation/providers/ui_element_preferences_provider.dart';
 import 'package:sakkoja/core/settings/presentation/providers/unit_preferences_provider.dart';
 import 'package:sakkoja/core/theme/app_palette.dart';
 import 'package:sakkoja/core/theme/app_text_styles.dart';
@@ -40,6 +41,10 @@ class MenuScreen extends ConsumerWidget {
           activeThumbColor: themeColors.primaryAction,
           includeMaritimeRestrictions: true,
         ),
+        const SizedBox(height: 24),
+
+        const _SectionHeader('Käyttöliittymän elementit'),
+        const _UiElementsSelection(),
         const SizedBox(height: 24),
 
         const _SectionHeader('Kalastus'),
@@ -1122,6 +1127,213 @@ class _UnitSelection extends ConsumerWidget {
                 }
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UiElementsSelection extends ConsumerWidget {
+  const _UiElementsSelection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeColors = context.colors;
+    final uiPrefs = ref.watch(uiElementPreferencesProvider);
+    final notifier = ref.read(uiElementPreferencesProvider.notifier);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: themeColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: themeColors.glassBorder),
+      ),
+      child: Column(
+        children: [
+          SwitchListTile(
+            secondary: Icon(Icons.speed, color: themeColors.primaryAction),
+            title: Text(
+              'Nopeusmittari & rajoitus',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Näyttää aluksen nopeuden ja alueen nopeusrajoitusmerkin',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showSpeedHud,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleSpeedHud(val);
+            },
+          ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
+            secondary: Icon(Icons.waves, color: themeColors.primaryAction),
+            title: Text(
+              'Aalto- ja runkoiskusensori (1.0g)',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Näyttää g-voimat ja aaltoiskujen määrän minuutissa',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showWaveImpactHud,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleWaveImpactHud(val);
+            },
+          ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
+            secondary: Icon(
+              Icons.explore_outlined,
+              color: themeColors.primaryAction,
+            ),
+            title: Text(
+              'Kompassi & keulasuunta',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Tarkka merikompassi ja numeerinen suuntalukema',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showCompassHud,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleCompassHud(val);
+            },
+          ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
+            secondary: Icon(Icons.straighten, color: themeColors.primaryAction),
+            title: Text(
+              'Mittakaavapalkki',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Merikartan etäisyysmittakaava vasemmassa alalaidassa',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showScaleBar,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleScaleBar(val);
+            },
+          ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
+            secondary: Icon(
+              Icons.touch_app_outlined,
+              color: themeColors.primaryAction,
+            ),
+            title: Text(
+              'Oikean laidan työkalupalkki',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Pikatoiminnot (reitit, säätutka, aluskeskitys)',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showToolDock,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleToolDock(val);
+            },
+          ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
+            secondary: Icon(Icons.zoom_in, color: themeColors.primaryAction),
+            title: Text(
+              'Zoomauspainikkeet (+ / -)',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Erilliset painikkeet kartan mittakaavan vaihtamiseen',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showZoomButtons,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleZoomButtons(val);
+            },
+          ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
+            secondary: Icon(
+              Icons.mic_none_rounded,
+              color: themeColors.primaryAction,
+            ),
+            title: Text(
+              'Ääniohjauspainike (Mikrofoni)',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Pikamikrofonipainike "Hei Kippari" -äänikomennoille',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showVoiceButton,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleVoiceButton(val);
+            },
+          ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
+            secondary: Icon(Icons.search, color: themeColors.primaryAction),
+            title: Text(
+              'Yläosan haku- ja tilapalkki',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Paikka- ja kohdehaku sekä nopeat sää- ja satamatilat',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showTopCapsule,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleTopCapsule(val);
+            },
           ),
         ],
       ),
