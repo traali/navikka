@@ -16,6 +16,7 @@ void main() {
       expect(prefs.showVoiceButton, isTrue);
       expect(prefs.showTopCapsule, isTrue);
       expect(prefs.showVoyageRecordButton, isTrue);
+      expect(prefs.keepScreenAwake, isTrue);
     });
 
     test('copyWith updates specific preferences', () {

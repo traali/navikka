@@ -12,6 +12,7 @@ class UiElementPreferencesNotifier extends Notifier<UiElementPreferences> {
   static const _keyVoiceButton = 'ui_elem_voice_button';
   static const _keyTopCapsule = 'ui_elem_top_capsule';
   static const _keyVoyageRecordButton = 'ui_elem_voyage_record_button';
+  static const _keyKeepScreenAwake = 'ui_elem_keep_screen_awake';
 
   @override
   UiElementPreferences build() {
@@ -32,6 +33,7 @@ class UiElementPreferencesNotifier extends Notifier<UiElementPreferences> {
         showVoiceButton: prefs.getBool(_keyVoiceButton) ?? true,
         showTopCapsule: prefs.getBool(_keyTopCapsule) ?? true,
         showVoyageRecordButton: prefs.getBool(_keyVoyageRecordButton) ?? true,
+        keepScreenAwake: prefs.getBool(_keyKeepScreenAwake) ?? true,
       );
     } catch (_) {
       // Default fallback
@@ -81,6 +83,11 @@ class UiElementPreferencesNotifier extends Notifier<UiElementPreferences> {
   Future<void> toggleVoyageRecordButton(bool enabled) async {
     state = state.copyWith(showVoyageRecordButton: enabled);
     await _persistBool(_keyVoyageRecordButton, enabled);
+  }
+
+  Future<void> toggleKeepScreenAwake(bool enabled) async {
+    state = state.copyWith(keepScreenAwake: enabled);
+    await _persistBool(_keyKeepScreenAwake, enabled);
   }
 
   Future<void> _persistBool(String key, bool value) async {

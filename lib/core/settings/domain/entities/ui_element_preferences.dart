@@ -11,6 +11,7 @@ class UiElementPreferences {
     this.showVoiceButton = true,
     this.showTopCapsule = true,
     this.showVoyageRecordButton = true,
+    this.keepScreenAwake = true,
   });
 
   /// Speedometer & speed limit sign (Bottom Left)
@@ -40,6 +41,9 @@ class UiElementPreferences {
   /// 'Aloita veneily' / Voyage track recording button
   final bool showVoyageRecordButton;
 
+  /// Whether to prevent the screen from sleeping during active navigation
+  final bool keepScreenAwake;
+
   UiElementPreferences copyWith({
     bool? showSpeedHud,
     bool? showWaveImpactHud,
@@ -50,6 +54,7 @@ class UiElementPreferences {
     bool? showVoiceButton,
     bool? showTopCapsule,
     bool? showVoyageRecordButton,
+    bool? keepScreenAwake,
   }) {
     return UiElementPreferences(
       showSpeedHud: showSpeedHud ?? this.showSpeedHud,
@@ -62,6 +67,7 @@ class UiElementPreferences {
       showTopCapsule: showTopCapsule ?? this.showTopCapsule,
       showVoyageRecordButton:
           showVoyageRecordButton ?? this.showVoyageRecordButton,
+      keepScreenAwake: keepScreenAwake ?? this.keepScreenAwake,
     );
   }
 }

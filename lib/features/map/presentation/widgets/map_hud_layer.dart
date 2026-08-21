@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sakkoja/core/settings/presentation/providers/ui_element_preferences_provider.dart';
+import 'package:sakkoja/features/ai/presentation/providers/wave_impact_provider.dart';
 import 'package:sakkoja/features/fishing/presentation/providers/fishing_mode_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/hud_layout_manager_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/map_provider.dart';
@@ -43,6 +44,7 @@ class MapHudLayer extends ConsumerWidget {
 
     void requestGps() {
       ref.read(mapProvider.notifier).requestLocation();
+      ref.read(waveImpactAiServiceProvider).requestPermissionAndStart();
     }
 
     Widget hudContent;

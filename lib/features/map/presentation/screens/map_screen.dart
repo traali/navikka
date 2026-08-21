@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:sakkoja/core/providers/logging_provider.dart';
+import 'package:sakkoja/core/services/wakelock_service.dart';
 import 'package:sakkoja/core/settings/presentation/providers/ai_settings_provider.dart';
 import 'package:sakkoja/core/settings/presentation/providers/ui_element_preferences_provider.dart';
 import 'package:sakkoja/core/utils/build_info.dart';
@@ -17,6 +18,7 @@ import 'package:sakkoja/features/fishing/presentation/widgets/fishing_hud.dart';
 import 'package:sakkoja/features/map/presentation/controllers/offline_download_controller.dart';
 import 'package:sakkoja/features/map/presentation/providers/feature_flag_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/layer_filter_provider.dart';
+import 'package:sakkoja/features/map/presentation/providers/map_auto_follow_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/map_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/offline_selection_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/ui_layout_provider.dart';
@@ -30,6 +32,7 @@ import 'package:sakkoja/features/map/presentation/widgets/map_controls.dart';
 import 'package:sakkoja/features/map/presentation/widgets/map_hud_layer.dart';
 import 'package:sakkoja/features/map/presentation/widgets/map_version_overlay.dart';
 import 'package:sakkoja/features/map/presentation/widgets/unified_top_capsule.dart';
+import 'package:sakkoja/features/tracking/presentation/providers/active_track_provider.dart';
 import 'package:sakkoja/features/tracking/presentation/widgets/voyage_recorder_hud.dart';
 import 'package:sakkoja/features/weather/presentation/widgets/weather_legend.dart';
 import 'package:sakkoja/features/weather/presentation/widgets/weather_time_slider.dart';
@@ -88,6 +91,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
     // Pre-warm fishing data after first frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        _syncWakelock();
         try {
           ref.read(hybridFishingRestrictionsProvider);
           Log.d('Pre-warming fishing restrictions data...');
@@ -98,8 +102,21 @@ class _MapScreenState extends ConsumerState<MapScreen>
     });
   }
 
+  void _syncWakelock() {
+    final keepAwakePref =
+        ref.read(uiElementPreferencesProvider).keepScreenAwake;
+    final isFollow = ref.read(mapAutoFollowProvider);
+    final isRecording = ref.read(activeTrackProvider).isRecording;
+    final mode = ref.read(mapNavigationModeProvider);
+    final shouldKeepAwake =
+        keepAwakePref &&
+        (isFollow || isRecording || mode == MapNavigationMode.boatingHeadingUp);
+    WakelockService.setEnabled(shouldKeepAwake);
+  }
+
   @override
   void dispose() {
+    WakelockService.disable();
     _mapController.dispose();
     _entranceController.dispose();
     super.dispose();
@@ -134,6 +151,18 @@ class _MapScreenState extends ConsumerState<MapScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Synchronize Screen Wake Lock on navigation state changes
+    ref.listen(
+      uiElementPreferencesProvider.select((s) => s.keepScreenAwake),
+      (_, _) => _syncWakelock(),
+    );
+    ref.listen(mapAutoFollowProvider, (_, _) => _syncWakelock());
+    ref.listen(
+      activeTrackProvider.select((s) => s.isRecording),
+      (_, _) => _syncWakelock(),
+    );
+    ref.listen(mapNavigationModeProvider, (_, _) => _syncWakelock());
+
     final isSelectingArea = ref.watch(offlineSelectionModeProvider);
     final selectionBounds = ref.watch(selectionBoundsProvider);
 

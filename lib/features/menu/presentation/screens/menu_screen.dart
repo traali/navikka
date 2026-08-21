@@ -1360,6 +1360,31 @@ class _UiElementsSelection extends ConsumerWidget {
               notifier.toggleTopCapsule(val);
             },
           ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
+            secondary: Icon(
+              Icons.screen_lock_portrait_rounded,
+              color: themeColors.primaryAction,
+            ),
+            title: Text(
+              'Pidä näyttö päällä navigoidessa',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Estää puhelimen ruudun sammumisen veneilyn ja navigoinnin aikana',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.keepScreenAwake,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleKeepScreenAwake(val);
+            },
+          ),
         ],
       ),
     );

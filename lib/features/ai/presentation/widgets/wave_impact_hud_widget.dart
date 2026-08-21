@@ -58,7 +58,7 @@ class WaveImpactHudWidget extends ConsumerWidget {
                       style: AppTextStyles.h4.copyWith(
                         color: colors.primaryAction,
                         fontSize: 14,
-                        letterSpacing: 1.0,
+                        letterSpacing: 1,
                       ),
                     ),
                   ),
@@ -216,6 +216,50 @@ class WaveImpactHudWidget extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
+
+              // iOS Sensor Activation Button
+              Consumer(
+                builder: (context, ref, _) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.sensors, size: 16),
+                      label: const Text('Aktivoi aallokkomittari (iOS)'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.primaryAction,
+                        side: BorderSide(
+                          color: colors.primaryAction.withValues(alpha: 0.5),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final granted = await ref
+                            .read(waveImpactAiServiceProvider)
+                            .requestPermissionAndStart();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                granted
+                                    ? 'Liiketunnistimet aktivoitu onnistuneesti!'
+                                    : 'Lupaa liiketunnistimiin ei myönnetty.',
+                              ),
+                              backgroundColor: granted
+                                  ? colors.success
+                                  : colors.danger,
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         );
@@ -233,7 +277,10 @@ class WaveImpactHudWidget extends ConsumerWidget {
     final color = _getSeverityColor(state.severity, colors);
 
     return GestureDetector(
-      onTap: () => _showAdvisorySheet(context, state),
+      onTap: () {
+        ref.read(waveImpactAiServiceProvider).requestPermissionAndStart();
+        _showAdvisorySheet(context, state);
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(

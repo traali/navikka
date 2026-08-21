@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:sakkoja/core/utils/logger.dart';
+import 'package:sakkoja/core/utils/motion_permission_helper.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 enum SlamSeverity {
@@ -94,6 +95,16 @@ class WaveImpactAiService {
 
   bool _isListening = false;
   bool get isListening => _isListening;
+
+  /// Requests iOS WebKit motion sensor permission (DeviceMotionEvent) and starts listening.
+  Future<bool> requestPermissionAndStart() async {
+    final granted = await MotionPermissionHelper.requestPermission();
+    if (granted) {
+      stop();
+      start();
+    }
+    return granted;
+  }
 
   void start() {
     if (_isListening) return;
