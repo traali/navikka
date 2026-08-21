@@ -410,7 +410,7 @@ class _ClassicSpeedHud extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
+                          letterSpacing: 1,
                           color: colors.textSecondary,
                         ),
                       ),
