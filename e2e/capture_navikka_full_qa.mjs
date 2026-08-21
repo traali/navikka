@@ -38,7 +38,7 @@ async function runQA() {
     // 1. Main Navigation Map
     console.log('🌐 Navigating to Main Navigation Map...');
     await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle', timeout: 35000 });
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000);
     await snap('navikka_01_main_map', 'Main Marine Navigation Map with Nautical Tiles and Telemetry');
 
     // 2. Weather & AI Safety Screen
