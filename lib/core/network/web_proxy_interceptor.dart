@@ -63,9 +63,9 @@ class WebProxyInterceptor extends Interceptor {
     'meri.digitraffic.fi',
     'api.lipas.fi',
     // Map tile hosts — must be proxied on web for CORS
-    'tile.openstreetmap.org',      // OSM basemap tiles
-    'tiles.maps.eox.at',           // EOX Sentinel-2 cloudless tiles
-    'server.arcgisonline.com',     // ESRI HD satellite basemap tiles
+    'tile.openstreetmap.org', // OSM basemap tiles
+    'tiles.maps.eox.at', // EOX Sentinel-2 cloudless tiles
+    'server.arcgisonline.com', // ESRI HD satellite basemap tiles
   };
 
   @override

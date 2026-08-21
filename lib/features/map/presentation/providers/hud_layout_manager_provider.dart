@@ -32,8 +32,9 @@ class HudLayoutMetrics {
 final hudLayoutMetricsProvider = Provider<HudLayoutMetrics>((ref) {
   final isFishingMode =
       ref.watch(fishingModeControllerProvider).value?.isEnabled ?? false;
-  final lightningLevel =
-      ref.watch(pointWeatherControllerProvider).lightningAlarmLevel;
+  final lightningLevel = ref
+      .watch(pointWeatherControllerProvider)
+      .lightningAlarmLevel;
 
   final hasLightning = lightningLevel.index > 0;
   final hasActiveBanner = isFishingMode || hasLightning;

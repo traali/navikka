@@ -16,8 +16,11 @@ class OfflineBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!isOffline && message == null) return const SizedBox.shrink();
 
-    final rawMsg = message ?? (isOffline ? 'Ei verkkoyhteyttä (Offline)' : 'Päivitysvirhe');
-    final displayMsg = (rawMsg.contains('DioException') ||
+    final rawMsg =
+        message ??
+        (isOffline ? 'Ei verkkoyhteyttä (Offline)' : 'Päivitysvirhe');
+    final displayMsg =
+        (rawMsg.contains('DioException') ||
             rawMsg.contains('XMLHttpRequest') ||
             rawMsg.contains('SocketException') ||
             rawMsg.contains('connection error') ||

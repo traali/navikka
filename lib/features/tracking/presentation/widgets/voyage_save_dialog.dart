@@ -320,7 +320,9 @@ class _VoyageSaveDialogState extends ConsumerState<VoyageSaveDialog> {
                       )
                     : const Icon(Icons.bookmark_add_rounded, size: 20),
                 label: Text(
-                  _isSaving ? 'Tallennetaan...' : 'Tallenna reitteihin & lokiin',
+                  _isSaving
+                      ? 'Tallennetaan...'
+                      : 'Tallenna reitteihin & lokiin',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),

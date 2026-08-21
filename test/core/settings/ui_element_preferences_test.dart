@@ -41,13 +41,22 @@ void main() {
       expect(container.read(uiElementPreferencesProvider).showSpeedHud, isTrue);
 
       await notifier.toggleSpeedHud(false);
-      expect(container.read(uiElementPreferencesProvider).showSpeedHud, isFalse);
+      expect(
+        container.read(uiElementPreferencesProvider).showSpeedHud,
+        isFalse,
+      );
 
       await notifier.toggleVoyageRecordButton(false);
-      expect(container.read(uiElementPreferencesProvider).showVoyageRecordButton, isFalse);
+      expect(
+        container.read(uiElementPreferencesProvider).showVoyageRecordButton,
+        isFalse,
+      );
 
       await notifier.toggleToolDock(false);
-      expect(container.read(uiElementPreferencesProvider).showToolDock, isFalse);
+      expect(
+        container.read(uiElementPreferencesProvider).showToolDock,
+        isFalse,
+      );
 
       await notifier.toggleSpeedHud(true);
       expect(container.read(uiElementPreferencesProvider).showSpeedHud, isTrue);

@@ -100,5 +100,5 @@ class UiElementPreferencesNotifier extends Notifier<UiElementPreferences> {
 
 final uiElementPreferencesProvider =
     NotifierProvider<UiElementPreferencesNotifier, UiElementPreferences>(
-  UiElementPreferencesNotifier.new,
-);
+      UiElementPreferencesNotifier.new,
+    );

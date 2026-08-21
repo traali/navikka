@@ -258,16 +258,18 @@ class _MapContentState extends ConsumerState<MapContent> {
     // Watch map settings and camera state
     // PERFORMANCE: Use select() to only rebuild when specific values change
     // Note: contributions are watched inside _ContributionMarkerLayer, not here.
-    final lightningStrikes =
-        ref.watch(pointWeatherControllerProvider).lightningStrikes;
+    final lightningStrikes = ref
+        .watch(pointWeatherControllerProvider)
+        .lightningStrikes;
     final isFishingMode =
         ref.watch(fishingModeControllerProvider).value?.isEnabled ?? false;
     final layerFilterAsync = ref.watch(layerFilterProvider);
     final layerFilter = layerFilterAsync.value ?? LayerFilterState.initial();
 
     // Watch Route Planner State
-    final plannerWaypoints =
-        ref.watch(routePlannerControllerProvider).waypoints;
+    final plannerWaypoints = ref
+        .watch(routePlannerControllerProvider)
+        .waypoints;
     final routePolylines = ref.watch(memoizedRoutePolylinesProvider);
     ref.watch(speedAlertProvider);
 
@@ -505,8 +507,7 @@ class _ContributionMarkerLayer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final contributions =
-        ref.watch(contributionProvider).value ?? const [];
+    final contributions = ref.watch(contributionProvider).value ?? const [];
 
     if (contributions.isEmpty) return const SizedBox.shrink();
 

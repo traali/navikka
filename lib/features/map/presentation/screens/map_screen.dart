@@ -103,8 +103,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 
   void _syncWakelock() {
-    final keepAwakePref =
-        ref.read(uiElementPreferencesProvider).keepScreenAwake;
+    final keepAwakePref = ref
+        .read(uiElementPreferencesProvider)
+        .keepScreenAwake;
     final isFollow = ref.read(mapAutoFollowProvider);
     final isRecording = ref.read(activeTrackProvider).isRecording;
     final mode = ref.read(mapNavigationModeProvider);
@@ -197,8 +198,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
           Consumer(
             builder: (context, ref, _) {
               final layout = ref.watch(uiLayoutControllerProvider);
-              final showTopCapsule =
-                  ref.watch(uiElementPreferencesProvider).showTopCapsule;
+              final showTopCapsule = ref
+                  .watch(uiElementPreferencesProvider)
+                  .showTopCapsule;
               if (!showTopCapsule ||
                   layout == UiLayout.ghost ||
                   layout == UiLayout.commandBar) {
@@ -236,10 +238,12 @@ class _MapScreenState extends ConsumerState<MapScreen>
           // 4c-2. Voice Marine Copilot ("Hei Kippari") FAB
           Consumer(
             builder: (context, ref, _) {
-              final isVoiceEnabled =
-                  ref.watch(aiSettingsProvider).voiceCopilotEnabled;
-              final showVoice =
-                  ref.watch(uiElementPreferencesProvider).showVoiceButton;
+              final isVoiceEnabled = ref
+                  .watch(aiSettingsProvider)
+                  .voiceCopilotEnabled;
+              final showVoice = ref
+                  .watch(uiElementPreferencesProvider)
+                  .showVoiceButton;
               if (!isVoiceEnabled || !showVoice) return const SizedBox.shrink();
               return const Positioned(
                 bottom: 185,
@@ -252,10 +256,12 @@ class _MapScreenState extends ConsumerState<MapScreen>
           // 4c-3. Wave Roughness & Hull Slamming AI HUD Pill
           Consumer(
             builder: (context, ref, _) {
-              final isWaveImpactEnabled =
-                  ref.watch(aiSettingsProvider).waveImpactAiEnabled;
-              final showWaveImpact =
-                  ref.watch(uiElementPreferencesProvider).showWaveImpactHud;
+              final isWaveImpactEnabled = ref
+                  .watch(aiSettingsProvider)
+                  .waveImpactAiEnabled;
+              final showWaveImpact = ref
+                  .watch(uiElementPreferencesProvider)
+                  .showWaveImpactHud;
               if (!isWaveImpactEnabled || !showWaveImpact) {
                 return const SizedBox.shrink();
               }

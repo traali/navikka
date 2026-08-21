@@ -63,7 +63,11 @@ class WaveImpactHudWidget extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: colors.textSecondary, size: 20),
+                    icon: Icon(
+                      Icons.close,
+                      color: colors.textSecondary,
+                      size: 20,
+                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () => Navigator.of(ctx).pop(),

@@ -384,7 +384,9 @@ class _ClassicSpeedHud extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: isSpeeding ? colors.danger : colors.textSecondary,
+                        color: isSpeeding
+                            ? colors.danger
+                            : colors.textSecondary,
                       ),
                     ),
                   ],
@@ -418,7 +420,9 @@ class _ClassicSpeedHud extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: isSpeeding ? colors.danger : colors.textPrimary,
+                          color: isSpeeding
+                              ? colors.danger
+                              : colors.textPrimary,
                         ),
                       ),
                     ],
