@@ -1315,6 +1315,31 @@ class _UiElementsSelection extends ConsumerWidget {
           ),
           Divider(color: themeColors.glassBorder, height: 1),
           SwitchListTile(
+            secondary: Icon(
+              Icons.fiber_manual_record_rounded,
+              color: themeColors.primaryAction,
+            ),
+            title: Text(
+              'Veneilyn tallennuspainike',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: themeColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              '"Aloita veneily" -reittitallennuspainike kartalla',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: themeColors.textSecondary,
+              ),
+            ),
+            activeThumbColor: themeColors.primaryAction,
+            value: uiPrefs.showVoyageRecordButton,
+            onChanged: (val) {
+              SafeHaptics.light();
+              notifier.toggleVoyageRecordButton(val);
+            },
+          ),
+          Divider(color: themeColors.glassBorder, height: 1),
+          SwitchListTile(
             secondary: Icon(Icons.search, color: themeColors.primaryAction),
             title: Text(
               'Yläosan haku- ja tilapalkki',

@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TrackState {
 
- int? get activeTrackId; bool get isRecording; List<TrackPointEntity> get points; double get totalDistance;
+ int? get activeTrackId; String? get trackName; bool get isRecording; List<TrackPointEntity> get points; double get totalDistance; DateTime? get startTime; double get maxSpeedKmh;
 /// Create a copy of TrackState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $TrackStateCopyWith<TrackState> get copyWith => _$TrackStateCopyWithImpl<TrackSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TrackState&&(identical(other.activeTrackId, activeTrackId) || other.activeTrackId == activeTrackId)&&(identical(other.isRecording, isRecording) || other.isRecording == isRecording)&&const DeepCollectionEquality().equals(other.points, points)&&(identical(other.totalDistance, totalDistance) || other.totalDistance == totalDistance));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TrackState&&(identical(other.activeTrackId, activeTrackId) || other.activeTrackId == activeTrackId)&&(identical(other.trackName, trackName) || other.trackName == trackName)&&(identical(other.isRecording, isRecording) || other.isRecording == isRecording)&&const DeepCollectionEquality().equals(other.points, points)&&(identical(other.totalDistance, totalDistance) || other.totalDistance == totalDistance)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.maxSpeedKmh, maxSpeedKmh) || other.maxSpeedKmh == maxSpeedKmh));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,activeTrackId,isRecording,const DeepCollectionEquality().hash(points),totalDistance);
+int get hashCode => Object.hash(runtimeType,activeTrackId,trackName,isRecording,const DeepCollectionEquality().hash(points),totalDistance,startTime,maxSpeedKmh);
 
 @override
 String toString() {
-  return 'TrackState(activeTrackId: $activeTrackId, isRecording: $isRecording, points: $points, totalDistance: $totalDistance)';
+  return 'TrackState(activeTrackId: $activeTrackId, trackName: $trackName, isRecording: $isRecording, points: $points, totalDistance: $totalDistance, startTime: $startTime, maxSpeedKmh: $maxSpeedKmh)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $TrackStateCopyWith<$Res>  {
   factory $TrackStateCopyWith(TrackState value, $Res Function(TrackState) _then) = _$TrackStateCopyWithImpl;
 @useResult
 $Res call({
- int? activeTrackId, bool isRecording, List<TrackPointEntity> points, double totalDistance
+ int? activeTrackId, String? trackName, bool isRecording, List<TrackPointEntity> points, double totalDistance, DateTime? startTime, double maxSpeedKmh
 });
 
 
@@ -62,12 +62,15 @@ class _$TrackStateCopyWithImpl<$Res>
 
 /// Create a copy of TrackState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? activeTrackId = freezed,Object? isRecording = null,Object? points = null,Object? totalDistance = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? activeTrackId = freezed,Object? trackName = freezed,Object? isRecording = null,Object? points = null,Object? totalDistance = null,Object? startTime = freezed,Object? maxSpeedKmh = null,}) {
   return _then(_self.copyWith(
 activeTrackId: freezed == activeTrackId ? _self.activeTrackId : activeTrackId // ignore: cast_nullable_to_non_nullable
-as int?,isRecording: null == isRecording ? _self.isRecording : isRecording // ignore: cast_nullable_to_non_nullable
+as int?,trackName: freezed == trackName ? _self.trackName : trackName // ignore: cast_nullable_to_non_nullable
+as String?,isRecording: null == isRecording ? _self.isRecording : isRecording // ignore: cast_nullable_to_non_nullable
 as bool,points: null == points ? _self.points : points // ignore: cast_nullable_to_non_nullable
 as List<TrackPointEntity>,totalDistance: null == totalDistance ? _self.totalDistance : totalDistance // ignore: cast_nullable_to_non_nullable
+as double,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
+as DateTime?,maxSpeedKmh: null == maxSpeedKmh ? _self.maxSpeedKmh : maxSpeedKmh // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }
@@ -153,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? activeTrackId,  bool isRecording,  List<TrackPointEntity> points,  double totalDistance)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? activeTrackId,  String? trackName,  bool isRecording,  List<TrackPointEntity> points,  double totalDistance,  DateTime? startTime,  double maxSpeedKmh)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TrackState() when $default != null:
-return $default(_that.activeTrackId,_that.isRecording,_that.points,_that.totalDistance);case _:
+return $default(_that.activeTrackId,_that.trackName,_that.isRecording,_that.points,_that.totalDistance,_that.startTime,_that.maxSpeedKmh);case _:
   return orElse();
 
 }
@@ -174,10 +177,10 @@ return $default(_that.activeTrackId,_that.isRecording,_that.points,_that.totalDi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? activeTrackId,  bool isRecording,  List<TrackPointEntity> points,  double totalDistance)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? activeTrackId,  String? trackName,  bool isRecording,  List<TrackPointEntity> points,  double totalDistance,  DateTime? startTime,  double maxSpeedKmh)  $default,) {final _that = this;
 switch (_that) {
 case _TrackState():
-return $default(_that.activeTrackId,_that.isRecording,_that.points,_that.totalDistance);case _:
+return $default(_that.activeTrackId,_that.trackName,_that.isRecording,_that.points,_that.totalDistance,_that.startTime,_that.maxSpeedKmh);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +197,10 @@ return $default(_that.activeTrackId,_that.isRecording,_that.points,_that.totalDi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? activeTrackId,  bool isRecording,  List<TrackPointEntity> points,  double totalDistance)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? activeTrackId,  String? trackName,  bool isRecording,  List<TrackPointEntity> points,  double totalDistance,  DateTime? startTime,  double maxSpeedKmh)?  $default,) {final _that = this;
 switch (_that) {
 case _TrackState() when $default != null:
-return $default(_that.activeTrackId,_that.isRecording,_that.points,_that.totalDistance);case _:
+return $default(_that.activeTrackId,_that.trackName,_that.isRecording,_that.points,_that.totalDistance,_that.startTime,_that.maxSpeedKmh);case _:
   return null;
 
 }
@@ -209,10 +212,11 @@ return $default(_that.activeTrackId,_that.isRecording,_that.points,_that.totalDi
 
 
 class _TrackState implements TrackState {
-  const _TrackState({this.activeTrackId, this.isRecording = false, final  List<TrackPointEntity> points = const [], this.totalDistance = 0.0}): _points = points;
+  const _TrackState({this.activeTrackId, this.trackName, this.isRecording = false, final  List<TrackPointEntity> points = const [], this.totalDistance = 0.0, this.startTime, this.maxSpeedKmh = 0.0}): _points = points;
   
 
 @override final  int? activeTrackId;
+@override final  String? trackName;
 @override@JsonKey() final  bool isRecording;
  final  List<TrackPointEntity> _points;
 @override@JsonKey() List<TrackPointEntity> get points {
@@ -222,6 +226,8 @@ class _TrackState implements TrackState {
 }
 
 @override@JsonKey() final  double totalDistance;
+@override final  DateTime? startTime;
+@override@JsonKey() final  double maxSpeedKmh;
 
 /// Create a copy of TrackState
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +239,16 @@ _$TrackStateCopyWith<_TrackState> get copyWith => __$TrackStateCopyWithImpl<_Tra
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TrackState&&(identical(other.activeTrackId, activeTrackId) || other.activeTrackId == activeTrackId)&&(identical(other.isRecording, isRecording) || other.isRecording == isRecording)&&const DeepCollectionEquality().equals(other._points, _points)&&(identical(other.totalDistance, totalDistance) || other.totalDistance == totalDistance));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TrackState&&(identical(other.activeTrackId, activeTrackId) || other.activeTrackId == activeTrackId)&&(identical(other.trackName, trackName) || other.trackName == trackName)&&(identical(other.isRecording, isRecording) || other.isRecording == isRecording)&&const DeepCollectionEquality().equals(other._points, _points)&&(identical(other.totalDistance, totalDistance) || other.totalDistance == totalDistance)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.maxSpeedKmh, maxSpeedKmh) || other.maxSpeedKmh == maxSpeedKmh));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,activeTrackId,isRecording,const DeepCollectionEquality().hash(_points),totalDistance);
+int get hashCode => Object.hash(runtimeType,activeTrackId,trackName,isRecording,const DeepCollectionEquality().hash(_points),totalDistance,startTime,maxSpeedKmh);
 
 @override
 String toString() {
-  return 'TrackState(activeTrackId: $activeTrackId, isRecording: $isRecording, points: $points, totalDistance: $totalDistance)';
+  return 'TrackState(activeTrackId: $activeTrackId, trackName: $trackName, isRecording: $isRecording, points: $points, totalDistance: $totalDistance, startTime: $startTime, maxSpeedKmh: $maxSpeedKmh)';
 }
 
 
@@ -253,7 +259,7 @@ abstract mixin class _$TrackStateCopyWith<$Res> implements $TrackStateCopyWith<$
   factory _$TrackStateCopyWith(_TrackState value, $Res Function(_TrackState) _then) = __$TrackStateCopyWithImpl;
 @override @useResult
 $Res call({
- int? activeTrackId, bool isRecording, List<TrackPointEntity> points, double totalDistance
+ int? activeTrackId, String? trackName, bool isRecording, List<TrackPointEntity> points, double totalDistance, DateTime? startTime, double maxSpeedKmh
 });
 
 
@@ -270,12 +276,15 @@ class __$TrackStateCopyWithImpl<$Res>
 
 /// Create a copy of TrackState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? activeTrackId = freezed,Object? isRecording = null,Object? points = null,Object? totalDistance = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? activeTrackId = freezed,Object? trackName = freezed,Object? isRecording = null,Object? points = null,Object? totalDistance = null,Object? startTime = freezed,Object? maxSpeedKmh = null,}) {
   return _then(_TrackState(
 activeTrackId: freezed == activeTrackId ? _self.activeTrackId : activeTrackId // ignore: cast_nullable_to_non_nullable
-as int?,isRecording: null == isRecording ? _self.isRecording : isRecording // ignore: cast_nullable_to_non_nullable
+as int?,trackName: freezed == trackName ? _self.trackName : trackName // ignore: cast_nullable_to_non_nullable
+as String?,isRecording: null == isRecording ? _self.isRecording : isRecording // ignore: cast_nullable_to_non_nullable
 as bool,points: null == points ? _self._points : points // ignore: cast_nullable_to_non_nullable
 as List<TrackPointEntity>,totalDistance: null == totalDistance ? _self.totalDistance : totalDistance // ignore: cast_nullable_to_non_nullable
+as double,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
+as DateTime?,maxSpeedKmh: null == maxSpeedKmh ? _self.maxSpeedKmh : maxSpeedKmh // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }

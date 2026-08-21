@@ -344,7 +344,7 @@ final class FairwayAreaPolygonsProvider
 }
 
 String _$fairwayAreaPolygonsHash() =>
-    r'081fc285b719e22852746b84631ca65b1360937c';
+    r'0ed8f5991c013b8b90034553143fc96b8bba4800';
 
 @ProviderFor(displayedSafetyEquipment)
 final displayedSafetyEquipmentProvider = DisplayedSafetyEquipmentProvider._();

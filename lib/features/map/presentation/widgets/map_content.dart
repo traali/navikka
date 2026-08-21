@@ -439,6 +439,9 @@ class _MapContentState extends ConsumerState<MapContent> {
             ),
           ),
 
+        // Active GPS Track Recording Layer (Breadcrumb Trail)
+        const RepaintBoundary(child: TrackLayer()),
+
         // Harbor & Berthing Tactical 10m Maneuvering Grid Layer
         const RepaintBoundary(child: BerthingTacticalGridLayer()),
 

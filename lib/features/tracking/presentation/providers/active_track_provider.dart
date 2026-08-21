@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:latlong2/latlong.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sakkoja/core/utils/logger.dart';
 import 'package:sakkoja/features/fishing/presentation/providers/fishing_mode_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/map_provider.dart';
+import 'package:sakkoja/features/navigation/domain/entities/waypoint_entity.dart';
+import 'package:sakkoja/features/navigation/presentation/providers/navigation_providers.dart';
 import 'package:sakkoja/features/tracking/data/repositories/track_repository.dart';
 import 'package:sakkoja/features/tracking/domain/entities/track_point_entity.dart';
 import 'package:sakkoja/features/tracking/domain/entities/track_state.dart';
@@ -50,30 +53,92 @@ class ActiveTrackNotifier extends _$ActiveTrackNotifier {
       (trackId) {
         state = state.copyWith(
           activeTrackId: trackId,
+          trackName: name,
           isRecording: true,
           points: [],
           totalDistance: 0,
+          startTime: DateTime.now(),
+          maxSpeedKmh: 0,
         );
       },
     );
   }
 
   Future<void> stopRecording() async {
-    if (state.activeTrackId == null) return;
+    if (state.activeTrackId == null && !state.isRecording) return;
+    final trackId = state.activeTrackId;
+    final totalDist = state.totalDistance;
     state = state.copyWith(isRecording: false);
     await _drainFuture;
-    final result = await ref
-        .read(trackRepositoryProvider)
-        .endTrack(state.activeTrackId!, state.totalDistance);
-    result.fold(
-      (failure) {
-        state = state.copyWith(isRecording: true);
-        Log.e('ActiveTrack: Failed to end track', failure);
-      },
-      (_) {
-        state = state.copyWith(isRecording: false, activeTrackId: null);
-      },
-    );
+    if (trackId != null) {
+      final result = await ref
+          .read(trackRepositoryProvider)
+          .endTrack(trackId, totalDist);
+      result.fold(
+        (failure) {
+          Log.e('ActiveTrack: Failed to end track', failure);
+        },
+        (_) {
+          state = state.copyWith(activeTrackId: null);
+        },
+      );
+    }
+  }
+
+  /// Converts the recorded GPS track into a permanent navigation route and saves it.
+  Future<int?> saveAsRoute({required String name}) async {
+    if (state.points.isEmpty) return null;
+
+    final waypoints = <WaypointEntity>[];
+    // Keep reasonable waypoint density (downsample if over 100 points)
+    final allPoints = state.points;
+    final step = (allPoints.length / 100).ceil().clamp(1, 100);
+
+    for (var i = 0; i < allPoints.length; i += step) {
+      final pt = allPoints[i];
+      waypoints.add(
+        WaypointEntity(
+          id: 0,
+          routeId: 0,
+          lat: pt.latitude,
+          lon: pt.longitude,
+          orderIndex: waypoints.length,
+          label: i == 0
+              ? 'Lähtö'
+              : (i + step >= allPoints.length ? 'Määränpää' : null),
+        ),
+      );
+    }
+
+    // Always include last point if not already added
+    if (allPoints.isNotEmpty &&
+        (waypoints.isEmpty ||
+            waypoints.last.lat != allPoints.last.latitude ||
+            waypoints.last.lon != allPoints.last.longitude)) {
+      waypoints.add(
+        WaypointEntity(
+          id: 0,
+          routeId: 0,
+          lat: allPoints.last.latitude,
+          lon: allPoints.last.longitude,
+          orderIndex: waypoints.length,
+          label: 'Määränpää',
+        ),
+      );
+    }
+
+    try {
+      final routeId = await ref
+          .read(navigationRepositoryProvider)
+          .createRoute(name, waypoints);
+
+      ref.invalidate(routesListProvider);
+      await stopRecording();
+      return routeId;
+    } catch (e, st) {
+      Log.e('ActiveTrack: Failed to save track as route', e, st);
+      return null;
+    }
   }
 
   void _queuePoint(_PendingTrackPoint point) {
@@ -157,7 +222,11 @@ class ActiveTrackNotifier extends _$ActiveTrackNotifier {
         ...state.points,
       newPoint,
     ];
-    state = state.copyWith(points: newPoints, totalDistance: newDistance);
+    state = state.copyWith(
+      points: newPoints,
+      totalDistance: newDistance,
+      maxSpeedKmh: math.max(state.maxSpeedKmh, sample.speedKmh),
+    );
   }
 }
 

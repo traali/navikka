@@ -16,6 +16,15 @@ class OfflineBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!isOffline && message == null) return const SizedBox.shrink();
 
+    final rawMsg = message ?? (isOffline ? 'Ei verkkoyhteyttä (Offline)' : 'Päivitysvirhe');
+    final displayMsg = (rawMsg.contains('DioException') ||
+            rawMsg.contains('XMLHttpRequest') ||
+            rawMsg.contains('SocketException') ||
+            rawMsg.contains('connection error') ||
+            rawMsg.contains('Failed host lookup'))
+        ? 'Säähavaintojen päivitys epäonnistui (yhteyskatkos). Näytetään viimeisin tallennettu havainto.'
+        : rawMsg;
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
@@ -35,7 +44,7 @@ class OfflineBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              message ?? (isOffline ? 'Offline Mode' : 'Sync Error'),
+              displayMsg,
               style: const TextStyle(
                 color: AppPalette.warning,
                 fontSize: 12,

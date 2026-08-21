@@ -42,7 +42,7 @@ final class ActiveTrackNotifierProvider
 }
 
 String _$activeTrackNotifierHash() =>
-    r'43a097725346d490897a44c94986c840f69010d7';
+    r'affb48339d70fcb0e10737a627e4798236cad10f';
 
 abstract class _$ActiveTrackNotifier extends $Notifier<TrackState> {
   TrackState build();

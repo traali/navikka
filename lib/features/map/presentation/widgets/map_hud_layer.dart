@@ -254,10 +254,10 @@ class _CommandBarHudAssembly extends StatelessWidget {
             opacity: entranceController,
             child: Container(
               padding: EdgeInsets.fromLTRB(
-                16,
-                MediaQuery.paddingOf(context).top + 12,
-                16,
                 12,
+                MediaQuery.paddingOf(context).top + 8,
+                68,
+                8,
               ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(

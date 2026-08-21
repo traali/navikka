@@ -372,7 +372,7 @@ class _ClassicSpeedHud extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      currentSpeed.toStringAsFixed(1),
+                      (currentSpeed * 0.539957).toStringAsFixed(1),
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w900,
@@ -381,76 +381,48 @@ class _ClassicSpeedHud extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'km/h',
+                      'kn',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: colors.textSecondary,
+                        color: isSpeeding ? colors.danger : colors.textSecondary,
                       ),
                     ),
                   ],
                 ),
-                if (speedLimit > 0) ...[
-                  const SizedBox(height: 8),
-                  Container(height: 1, color: colors.glassBorder),
-                  const SizedBox(height: 8),
-                  Text(
-                    'RAJOITUS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                      color: colors.textSecondary,
-                    ),
+                Text(
+                  '${currentSpeed.toStringAsFixed(1)} km/h',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary.withValues(alpha: 0.8),
                   ),
+                ),
+                if (speedLimit > 0) ...[
+                  const SizedBox(height: 6),
+                  Container(height: 1, color: colors.glassBorder),
+                  const SizedBox(height: 4),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '$speedLimit',
+                        'RAJOITUS: ',
                         style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'km/h',
-                        style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
                           color: colors.textSecondary,
                         ),
                       ),
+                      Text(
+                        '$speedLimit km/h',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: isSpeeding ? colors.danger : colors.textPrimary,
+                        ),
+                      ),
                     ],
-                  ),
-                ] else ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 1,
-                    color: colors.glassBorder,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'RAJOITUS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                      color: colors.textSecondary,
-                    ),
-                  ),
-                  Text(
-                    'EI RAJOITUSTA',
-                    style: TextStyle(
-                      color: colors.textPrimary.withValues(alpha: 0.7),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      fontStyle: FontStyle.italic,
-                    ),
                   ),
                 ],
               ],

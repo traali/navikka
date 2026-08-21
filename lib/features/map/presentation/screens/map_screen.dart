@@ -32,6 +32,7 @@ import 'package:sakkoja/features/map/presentation/widgets/map_controls.dart';
 import 'package:sakkoja/features/map/presentation/widgets/map_hud_layer.dart';
 import 'package:sakkoja/features/map/presentation/widgets/map_version_overlay.dart';
 import 'package:sakkoja/features/map/presentation/widgets/unified_top_capsule.dart';
+import 'package:sakkoja/features/tracking/presentation/widgets/voyage_recorder_hud.dart';
 import 'package:sakkoja/features/weather/presentation/widgets/weather_legend.dart';
 import 'package:sakkoja/features/weather/presentation/widgets/weather_time_slider.dart';
 import 'package:sakkoja/l10n/app_localizations.dart';
@@ -155,6 +156,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
 
           // 2b. Boating Navigation HUD
           const BoatingHudWidget(),
+
+          // 2c. Active Voyage Track Recording HUD (REC Pill & Live Odometer)
+          const VoyageRecorderHud(),
 
           // 3. HUD Layer
           MapHudLayer(

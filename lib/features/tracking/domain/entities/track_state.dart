@@ -7,8 +7,11 @@ part 'track_state.freezed.dart';
 abstract class TrackState with _$TrackState {
   const factory TrackState({
     int? activeTrackId,
+    String? trackName,
     @Default(false) bool isRecording,
     @Default([]) List<TrackPointEntity> points,
     @Default(0.0) double totalDistance,
+    DateTime? startTime,
+    @Default(0.0) double maxSpeedKmh,
   }) = _TrackState;
 }

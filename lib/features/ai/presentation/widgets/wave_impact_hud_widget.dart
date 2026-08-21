@@ -32,21 +32,41 @@ class WaveImpactHudWidget extends ConsumerWidget {
       builder: (ctx) {
         final color = _getSeverityColor(state.severity, colors);
         return Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: colors.glassBorder,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               Row(
                 children: [
-                  Icon(Icons.waves, color: color, size: 24),
+                  Icon(Icons.waves, color: color, size: 22),
                   const SizedBox(width: 8),
-                  Text(
-                    'AALLOKON ISKUT & MERENKÄYNTI AI',
-                    style: AppTextStyles.h4.copyWith(
-                      color: colors.primaryAction,
-                      letterSpacing: 1.1,
+                  Expanded(
+                    child: Text(
+                      'AALLOKON ISKUT & MERENKÄYNTI AI',
+                      style: AppTextStyles.h4.copyWith(
+                        color: colors.primaryAction,
+                        fontSize: 14,
+                        letterSpacing: 1.0,
+                      ),
                     ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close, color: colors.textSecondary, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => Navigator.of(ctx).pop(),
                   ),
                 ],
               ),

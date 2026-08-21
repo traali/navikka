@@ -17,6 +17,8 @@ import 'package:sakkoja/features/map/presentation/providers/ui_layout_provider.d
 import 'package:sakkoja/features/map/presentation/widgets/glass_icon_button.dart';
 import 'package:sakkoja/features/map/presentation/widgets/layers_fab.dart';
 import 'package:sakkoja/features/map/presentation/widgets/zoom_controls.dart';
+import 'package:sakkoja/features/tracking/presentation/providers/active_track_provider.dart';
+import 'package:sakkoja/features/tracking/presentation/widgets/voyage_save_dialog.dart';
 import 'package:sakkoja/features/weather/presentation/controllers/point_weather_controller.dart';
 import 'package:sakkoja/features/weather/presentation/providers/wave_layer_provider.dart';
 import 'package:sakkoja/l10n/app_localizations.dart';
@@ -218,6 +220,44 @@ class _GhostMapControls extends ConsumerWidget {
                     : context.colors.textPrimary.withValues(alpha: 0.7),
                 onPressed: () =>
                     ref.read(fishingModeControllerProvider.notifier).toggle(),
+              ),
+              const SizedBox(height: 16),
+              Consumer(
+                builder: (context, ref, _) {
+                  final trackState = ref.watch(activeTrackProvider);
+                  final isRecording = trackState.isRecording;
+                  return _GhostIconButton(
+                    tooltip: isRecording
+                        ? 'Päätä veneily & tallenna'
+                        : 'Aloita veneily (Tallenna reitti)',
+                    icon: isRecording
+                        ? Icons.stop_circle_rounded
+                        : Icons.fiber_manual_record_rounded,
+                    color: isRecording
+                        ? AppPalette.danger
+                        : context.colors.textPrimary.withValues(alpha: 0.8),
+                    onPressed: () {
+                      SafeHaptics.medium();
+                      if (isRecording) {
+                        showDialog<void>(
+                          context: context,
+                          builder: (_) =>
+                              VoyageSaveDialog(trackState: trackState),
+                        );
+                      } else {
+                        ref.read(activeTrackProvider.notifier).startRecording();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              '🔴 Veneilyn reittitallennus aloitettu!',
+                            ),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 16),
               _GhostIconButton(
@@ -489,6 +529,49 @@ class _ClassicMapControls extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: 8),
+                    if (uiPrefs.showVoyageRecordButton) ...[
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final trackState = ref.watch(activeTrackProvider);
+                          final isRecording = trackState.isRecording;
+                          return GlassIconButton(
+                            icon: isRecording
+                                ? Icons.stop_circle_rounded
+                                : Icons.fiber_manual_record_rounded,
+                            tooltip: isRecording
+                                ? 'Päätä veneily & tallenna'
+                                : 'Aloita veneily (Tallenna reitti)',
+                            iconColor: isRecording
+                                ? AppPalette.danger
+                                : context.colors.textPrimary,
+                            activeColor: isRecording ? AppPalette.danger : null,
+                            onPressed: () {
+                              SafeHaptics.medium();
+                              if (isRecording) {
+                                showDialog<void>(
+                                  context: context,
+                                  builder: (_) =>
+                                      VoyageSaveDialog(trackState: trackState),
+                                );
+                              } else {
+                                ref
+                                    .read(activeTrackProvider.notifier)
+                                    .startRecording();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      '🔴 Veneilyn reittitallennus aloitettu!',
+                                    ),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     GlassIconButton(
                       icon: Icons.route_rounded,
                       tooltip: AppLocalizations.of(context)!.routePlanner,

@@ -11,6 +11,7 @@ class UiElementPreferencesNotifier extends Notifier<UiElementPreferences> {
   static const _keyZoomButtons = 'ui_elem_zoom_buttons';
   static const _keyVoiceButton = 'ui_elem_voice_button';
   static const _keyTopCapsule = 'ui_elem_top_capsule';
+  static const _keyVoyageRecordButton = 'ui_elem_voyage_record_button';
 
   @override
   UiElementPreferences build() {
@@ -30,6 +31,7 @@ class UiElementPreferencesNotifier extends Notifier<UiElementPreferences> {
         showZoomButtons: prefs.getBool(_keyZoomButtons) ?? true,
         showVoiceButton: prefs.getBool(_keyVoiceButton) ?? true,
         showTopCapsule: prefs.getBool(_keyTopCapsule) ?? true,
+        showVoyageRecordButton: prefs.getBool(_keyVoyageRecordButton) ?? true,
       );
     } catch (_) {
       // Default fallback
@@ -74,6 +76,11 @@ class UiElementPreferencesNotifier extends Notifier<UiElementPreferences> {
   Future<void> toggleTopCapsule(bool enabled) async {
     state = state.copyWith(showTopCapsule: enabled);
     await _persistBool(_keyTopCapsule, enabled);
+  }
+
+  Future<void> toggleVoyageRecordButton(bool enabled) async {
+    state = state.copyWith(showVoyageRecordButton: enabled);
+    await _persistBool(_keyVoyageRecordButton, enabled);
   }
 
   Future<void> _persistBool(String key, bool value) async {

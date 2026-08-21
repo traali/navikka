@@ -39,9 +39,9 @@ class _UnifiedTopCapsuleState extends ConsumerState<UnifiedTopCapsule> {
 
     return SafeArea(
       child: Align(
-        alignment: Alignment.topRight,
+        alignment: Alignment.topCenter,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.only(top: 8, left: 16, right: 68),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: ClipRRect(

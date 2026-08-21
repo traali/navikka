@@ -15,6 +15,7 @@ void main() {
       expect(prefs.showZoomButtons, isTrue);
       expect(prefs.showVoiceButton, isTrue);
       expect(prefs.showTopCapsule, isTrue);
+      expect(prefs.showVoyageRecordButton, isTrue);
     });
 
     test('copyWith updates specific preferences', () {
@@ -22,9 +23,11 @@ void main() {
       final updated = prefs.copyWith(
         showSpeedHud: false,
         showToolDock: false,
+        showVoyageRecordButton: false,
       );
       expect(updated.showSpeedHud, isFalse);
       expect(updated.showToolDock, isFalse);
+      expect(updated.showVoyageRecordButton, isFalse);
       expect(updated.showCompassHud, isTrue);
       expect(updated.showWaveImpactHud, isTrue);
     });
@@ -38,6 +41,9 @@ void main() {
 
       await notifier.toggleSpeedHud(false);
       expect(container.read(uiElementPreferencesProvider).showSpeedHud, isFalse);
+
+      await notifier.toggleVoyageRecordButton(false);
+      expect(container.read(uiElementPreferencesProvider).showVoyageRecordButton, isFalse);
 
       await notifier.toggleToolDock(false);
       expect(container.read(uiElementPreferencesProvider).showToolDock, isFalse);
