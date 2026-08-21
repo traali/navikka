@@ -152,15 +152,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
   @override
   Widget build(BuildContext context) {
     // Synchronize Screen Wake Lock on navigation state changes
-    ref.listen(
-      uiElementPreferencesProvider.select((s) => s.keepScreenAwake),
-      (_, _) => _syncWakelock(),
-    );
+    ref.listen(uiElementPreferencesProvider, (_, _) => _syncWakelock());
     ref.listen(mapAutoFollowProvider, (_, _) => _syncWakelock());
-    ref.listen(
-      activeTrackProvider.select((s) => s.isRecording),
-      (_, _) => _syncWakelock(),
-    );
+    ref.listen(activeTrackProvider, (_, _) => _syncWakelock());
     ref.listen(mapNavigationModeProvider, (_, _) => _syncWakelock());
 
     final isSelectingArea = ref.watch(offlineSelectionModeProvider);
