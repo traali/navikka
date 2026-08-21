@@ -197,9 +197,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
           Consumer(
             builder: (context, ref, _) {
               final layout = ref.watch(uiLayoutControllerProvider);
-              final showTopCapsule = ref.watch(
-                uiElementPreferencesProvider.select((s) => s.showTopCapsule),
-              );
+              final showTopCapsule =
+                  ref.watch(uiElementPreferencesProvider).showTopCapsule;
               if (!showTopCapsule ||
                   layout == UiLayout.ghost ||
                   layout == UiLayout.commandBar) {
@@ -237,12 +236,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
           // 4c-2. Voice Marine Copilot ("Hei Kippari") FAB
           Consumer(
             builder: (context, ref, _) {
-              final isVoiceEnabled = ref.watch(
-                aiSettingsProvider.select((s) => s.voiceCopilotEnabled),
-              );
-              final showVoice = ref.watch(
-                uiElementPreferencesProvider.select((s) => s.showVoiceButton),
-              );
+              final isVoiceEnabled =
+                  ref.watch(aiSettingsProvider).voiceCopilotEnabled;
+              final showVoice =
+                  ref.watch(uiElementPreferencesProvider).showVoiceButton;
               if (!isVoiceEnabled || !showVoice) return const SizedBox.shrink();
               return const Positioned(
                 bottom: 185,
@@ -255,12 +252,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
           // 4c-3. Wave Roughness & Hull Slamming AI HUD Pill
           Consumer(
             builder: (context, ref, _) {
-              final isWaveImpactEnabled = ref.watch(
-                aiSettingsProvider.select((s) => s.waveImpactAiEnabled),
-              );
-              final showWaveImpact = ref.watch(
-                uiElementPreferencesProvider.select((s) => s.showWaveImpactHud),
-              );
+              final isWaveImpactEnabled =
+                  ref.watch(aiSettingsProvider).waveImpactAiEnabled;
+              final showWaveImpact =
+                  ref.watch(uiElementPreferencesProvider).showWaveImpactHud;
               if (!isWaveImpactEnabled || !showWaveImpact) {
                 return const SizedBox.shrink();
               }
@@ -308,13 +303,12 @@ class _MapScreenState extends ConsumerState<MapScreen>
               right: 16,
               child: Consumer(
                 builder: (context, ref, _) {
-                  final loc = ref.watch(
-                    mapProvider.select((s) => s.userLocation),
+                  final mapState = ref.watch(mapProvider);
+                  return DebugBBoxWidget(
+                    userLocation: mapState.hasLocation
+                        ? mapState.userLocation
+                        : null,
                   );
-                  final hasLoc = ref.watch(
-                    mapProvider.select((s) => s.hasLocation),
-                  );
-                  return DebugBBoxWidget(userLocation: hasLoc ? loc : null);
                 },
               ),
             ),

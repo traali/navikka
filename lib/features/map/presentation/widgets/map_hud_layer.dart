@@ -29,16 +29,13 @@ class MapHudLayer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final layout = ref.watch(uiLayoutControllerProvider);
-    final hasLocation = ref.watch(mapProvider.select((s) => s.hasLocation));
-    final isLocationFresh = ref.watch(
-      mapProvider.select((s) => s.isLocationFresh),
-    );
+    final mapState = ref.watch(mapProvider);
+    final hasLocation = mapState.hasLocation;
+    final isLocationFresh = mapState.isLocationFresh;
     final hasLiveLocation = hasLocation && isLocationFresh;
-    final currentSpeed = ref.watch(
-      mapProvider.select((s) => s.currentSpeedKmh),
-    );
-    final currentZone = ref.watch(mapProvider.select((s) => s.currentZone));
-    final heading = ref.watch(mapProvider.select((s) => s.heading));
+    final currentSpeed = mapState.currentSpeedKmh;
+    final currentZone = mapState.currentZone;
+    final heading = mapState.heading;
     final isFishingMode =
         ref.watch(fishingModeControllerProvider).value?.isEnabled ?? false;
 
