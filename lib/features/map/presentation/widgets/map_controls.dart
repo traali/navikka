@@ -3,24 +3,17 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:sakkoja/core/settings/presentation/providers/ui_element_preferences_provider.dart';
 import 'package:sakkoja/core/theme/app_palette.dart';
-import 'package:sakkoja/core/theme/app_theme.dart';
 import 'package:sakkoja/core/theme/theme_provider.dart';
 import 'package:sakkoja/core/utils/safe_haptics.dart';
-import 'package:sakkoja/features/fishing/presentation/providers/fishing_mode_provider.dart';
-import 'package:sakkoja/features/fishing/presentation/widgets/catch_entry_sheet.dart';
 import 'package:sakkoja/features/map/presentation/providers/map_auto_follow_provider.dart';
-import 'package:sakkoja/features/map/presentation/providers/map_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/ui_layout_provider.dart';
 import 'package:sakkoja/features/map/presentation/widgets/glass_icon_button.dart';
 import 'package:sakkoja/features/map/presentation/widgets/layers_fab.dart';
 import 'package:sakkoja/features/map/presentation/widgets/zoom_controls.dart';
 import 'package:sakkoja/features/tracking/presentation/providers/active_track_provider.dart';
 import 'package:sakkoja/features/tracking/presentation/widgets/voyage_save_dialog.dart';
-import 'package:sakkoja/features/weather/presentation/controllers/point_weather_controller.dart';
-import 'package:sakkoja/features/weather/presentation/providers/wave_layer_provider.dart';
 import 'package:sakkoja/l10n/app_localizations.dart';
 
 class MapControls extends ConsumerWidget {
@@ -66,13 +59,6 @@ class _GhostMapControls extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mapAutoFollow = ref.watch(mapAutoFollowProvider);
-    final isRadarVisible = ref.watch(
-      pointWeatherControllerProvider.select((s) => s.isRadarVisible),
-    );
-    final isFishingMode = ref.watch(
-      fishingModeControllerProvider.select((s) => s.value?.isEnabled ?? false),
-    );
-
     final navMode = ref.watch(mapNavigationModeProvider);
 
     return Stack(
@@ -178,9 +164,9 @@ class _GhostMapControls extends ConsumerWidget {
                   );
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               const LayersFab(isFloating: false),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _GhostIconButton(
                 tooltip: navMode == MapNavigationMode.boatingHeadingUp
                     ? 'Veneilytila (Kulkusuunta)'
@@ -196,32 +182,7 @@ class _GhostMapControls extends ConsumerWidget {
                   ref.read(mapNavigationModeProvider.notifier).toggle();
                 },
               ),
-              const SizedBox(height: 16),
-              _GhostIconButton(
-                tooltip: 'Säätutka',
-                icon: isRadarVisible
-                    ? Icons.radar_rounded
-                    : Icons.radar_outlined,
-                color: isRadarVisible
-                    ? context.colors.primaryAction
-                    : context.colors.textPrimary.withValues(alpha: 0.7),
-                onPressed: () => ref
-                    .read(pointWeatherControllerProvider.notifier)
-                    .toggleRadar(),
-              ),
-              const SizedBox(height: 16),
-              _GhostIconButton(
-                tooltip: 'Kalastustila',
-                icon: isFishingMode
-                    ? Icons.phishing_rounded
-                    : Icons.phishing_outlined,
-                color: isFishingMode
-                    ? context.colors.warning
-                    : context.colors.textPrimary.withValues(alpha: 0.7),
-                onPressed: () =>
-                    ref.read(fishingModeControllerProvider.notifier).toggle(),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Consumer(
                 builder: (context, ref, _) {
                   final trackState = ref.watch(activeTrackProvider);
@@ -257,16 +218,6 @@ class _GhostMapControls extends ConsumerWidget {
                       }
                     },
                   );
-                },
-              ),
-              const SizedBox(height: 16),
-              _GhostIconButton(
-                tooltip: 'Valikko',
-                icon: Icons.menu_rounded,
-                color: context.colors.primaryAction,
-                onPressed: () {
-                  SafeHaptics.medium();
-                  context.go('/menu');
                 },
               ),
             ],
@@ -353,22 +304,7 @@ class _ClassicMapControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isRadarVisible = ref.watch(
-      pointWeatherControllerProvider.select((s) => s.isRadarVisible),
-    );
-    final isAnimating = ref.watch(
-      pointWeatherControllerProvider.select((s) => s.isAnimating),
-    );
-    final radarTimestamps = ref.watch(
-      pointWeatherControllerProvider.select((s) => s.radarTimestamps),
-    );
-    final currentIndex = ref.watch(
-      pointWeatherControllerProvider.select((s) => s.currentTimestampIndex),
-    );
     final mapAutoFollow = ref.watch(mapAutoFollowProvider);
-    final isFishingMode = ref.watch(
-      fishingModeControllerProvider.select((s) => s.value?.isEnabled ?? false),
-    );
     final uiPrefs = ref.watch(uiElementPreferencesProvider);
 
     return Stack(
@@ -432,103 +368,6 @@ class _ClassicMapControls extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: 8),
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final isWaveActive = ref.watch(waveLayerProvider);
-                        return GlassIconButton(
-                          icon: Icons.waves,
-                          tooltip: 'Aallokkokartta',
-                          activeColor: isWaveActive
-                              ? context.colors.primaryAction
-                              : null,
-                          onPressed: () {
-                            SafeHaptics.selection();
-                            ref.read(waveLayerProvider.notifier).toggle();
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    if (!isFishingMode &&
-                        isRadarVisible &&
-                        radarTimestamps.isNotEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.colors.surface.withValues(
-                            alpha: 0.7,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: context.colors.glassBorder,
-                          ),
-                        ),
-                        child: Text(
-                          () {
-                            final time = radarTimestamps[currentIndex];
-                            final localTime = time.toLocal();
-                            return "${localTime.hour}:${localTime.minute.toString().padLeft(2, '0')}";
-                          }(),
-                          style: AppTheme.kData.copyWith(
-                            color: context.colors.textPrimary,
-                            fontSize: 12,
-                            fontFeatures: const [
-                              FontFeature.tabularFigures(),
-                            ],
-                          ),
-                        ),
-                      ).animate().fadeIn(duration: 200.ms).slideX(begin: 0.2, end: 0),
-                      const SizedBox(height: 6),
-                      GlassIconButton(
-                        icon: isAnimating
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        tooltip: isAnimating
-                            ? AppLocalizations.of(context)!.pause
-                            : AppLocalizations.of(context)!.play,
-                        onPressed: () => ref
-                            .read(pointWeatherControllerProvider.notifier)
-                            .toggleAnimation(),
-                      ),
-                      const SizedBox(height: 6),
-                    ],
-                    if (isFishingMode) ...[
-                      GlassIconButton(
-                        icon: Icons.add_circle_rounded,
-                        tooltip: 'Lisää saalis',
-                        iconColor: context.colors.textPrimary,
-                        activeColor: context.colors.warning,
-                        onPressed: () {
-                          SafeHaptics.medium();
-                          final location = ref.read(mapProvider).userLocation;
-                          showModalBottomSheet<void>(
-                            context: context,
-                            backgroundColor: Colors.transparent,
-                            isScrollControlled: true,
-                            builder: (context) =>
-                                CatchEntrySheet(location: location),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                    GlassIconButton(
-                      icon: Icons.phishing_rounded,
-                      tooltip: AppLocalizations.of(context)!.fishingMode,
-                      activeColor: isFishingMode
-                          ? context.colors.primaryAction
-                          : null,
-                      onPressed: () {
-                        SafeHaptics.medium();
-                        ref
-                            .read(fishingModeControllerProvider.notifier)
-                            .toggle();
-                      },
-                    ),
-                    const SizedBox(height: 8),
                     if (uiPrefs.showVoyageRecordButton) ...[
                       Consumer(
                         builder: (context, ref, _) {
@@ -572,26 +411,6 @@ class _ClassicMapControls extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                     ],
-                    GlassIconButton(
-                      icon: Icons.route_rounded,
-                      tooltip: AppLocalizations.of(context)!.routePlanner,
-                      onPressed: () {
-                        SafeHaptics.medium();
-                        context.push('/route-planner');
-                      },
-                    ),
-                    const SizedBox(height: 6),
-                    GlassIconButton(
-                      icon: Icons.radar_rounded,
-                      tooltip: AppLocalizations.of(context)!.radar,
-                      activeColor: isRadarVisible
-                          ? context.colors.primaryAction
-                          : null,
-                      onPressed: () => ref
-                          .read(pointWeatherControllerProvider.notifier)
-                          .toggleRadar(),
-                    ),
-                    const SizedBox(height: 6),
                     const LayersFab(isFloating: false),
                   ],
                 ),
