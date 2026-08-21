@@ -220,7 +220,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
               );
               if (!isVoiceEnabled || !showVoice) return const SizedBox.shrink();
               return const Positioned(
-                bottom: 165,
+                bottom: 185,
                 right: 14,
                 child: VoiceCopilotMicButton(),
               );
@@ -240,7 +240,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
                 return const SizedBox.shrink();
               }
               return const Positioned(
-                bottom: 165,
+                bottom: 185,
                 left: 14,
                 child: WaveImpactHudWidget(),
               );

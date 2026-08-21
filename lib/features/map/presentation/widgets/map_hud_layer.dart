@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sakkoja/core/settings/presentation/providers/ui_element_preferences_provider.dart';
 import 'package:sakkoja/features/fishing/presentation/providers/fishing_mode_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/hud_layout_manager_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/map_provider.dart';
@@ -161,57 +162,63 @@ class _GhostHudAssembly extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: MediaQuery.paddingOf(context).top + 8,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: FadeTransition(
-              opacity: entranceController,
-              child: const WeatherHudV2(),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 116,
-          left: 12,
-          child: FadeTransition(
-            opacity: entranceController,
-            child: SpeedHudWidget(
-              hasLocation: hasLocation,
-              currentSpeedKmh: currentSpeed,
-              speedLimitKmh: currentZone?.speedLimitKmh ?? 0,
-              onRequestGps: onRequestGps,
-            ),
-          ),
-        ),
-        if (hasLocation)
-          Positioned(
-            bottom: 116,
-            right: 12,
-            child: FadeTransition(
-              opacity: entranceController,
-              child: CourseHudWidget(heading: heading),
-            ),
-          ),
-        Consumer(
-          builder: (context, ref, _) {
-            final hudMetrics = ref.watch(hudLayoutMetricsProvider);
-            return Positioned(
-              top: hudMetrics.badgeTopPadding,
-              left: 12,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.sizeOf(context).width - 96,
+    return Consumer(
+      builder: (context, ref, _) {
+        final uiPrefs = ref.watch(uiElementPreferencesProvider);
+        return Stack(
+          children: [
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 8,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: FadeTransition(
+                  opacity: entranceController,
+                  child: const WeatherHudV2(),
                 ),
-                child: const WeatherAlertBadge(),
               ),
-            );
-          },
-        ),
-      ],
+            ),
+            if (uiPrefs.showSpeedHud)
+              Positioned(
+                bottom: 116,
+                left: 12,
+                child: FadeTransition(
+                  opacity: entranceController,
+                  child: SpeedHudWidget(
+                    hasLocation: hasLocation,
+                    currentSpeedKmh: currentSpeed,
+                    speedLimitKmh: currentZone?.speedLimitKmh ?? 0,
+                    onRequestGps: onRequestGps,
+                  ),
+                ),
+              ),
+            if (hasLocation && uiPrefs.showCompassHud)
+              Positioned(
+                bottom: 116,
+                right: 12,
+                child: FadeTransition(
+                  opacity: entranceController,
+                  child: CourseHudWidget(heading: heading),
+                ),
+              ),
+            Consumer(
+              builder: (context, ref, _) {
+                final hudMetrics = ref.watch(hudLayoutMetricsProvider);
+                return Positioned(
+                  top: hudMetrics.badgeTopPadding,
+                  left: 12,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.sizeOf(context).width - 96,
+                    ),
+                    child: const WeatherAlertBadge(),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
