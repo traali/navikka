@@ -258,19 +258,16 @@ class _MapContentState extends ConsumerState<MapContent> {
     // Watch map settings and camera state
     // PERFORMANCE: Use select() to only rebuild when specific values change
     // Note: contributions are watched inside _ContributionMarkerLayer, not here.
-    final lightningStrikes = ref.watch(
-      pointWeatherControllerProvider.select((state) => state.lightningStrikes),
-    );
-    final isFishingMode = ref.watch(
-      fishingModeControllerProvider.select((s) => s.value?.isEnabled ?? false),
-    );
+    final lightningStrikes =
+        ref.watch(pointWeatherControllerProvider).lightningStrikes;
+    final isFishingMode =
+        ref.watch(fishingModeControllerProvider).value?.isEnabled ?? false;
     final layerFilterAsync = ref.watch(layerFilterProvider);
     final layerFilter = layerFilterAsync.value ?? LayerFilterState.initial();
 
     // Watch Route Planner State
-    final plannerWaypoints = ref.watch(
-      routePlannerControllerProvider.select((s) => s.waypoints),
-    );
+    final plannerWaypoints =
+        ref.watch(routePlannerControllerProvider).waypoints;
     final routePolylines = ref.watch(memoizedRoutePolylinesProvider);
     ref.watch(speedAlertProvider);
 
@@ -476,28 +473,19 @@ class _BoatLocationLayer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final position = ref.watch(
-      mapProvider.select(
-        (state) => (
-          location: state.userLocation,
-          hasLocation: state.hasLocation,
-          isFresh: state.isLocationFresh,
-          heading: state.heading,
-        ),
-      ),
-    );
-    if (!position.hasLocation) return const SizedBox.shrink();
+    final mapState = ref.watch(mapProvider);
+    if (!mapState.hasLocation) return const SizedBox.shrink();
 
     return MarkerLayer(
       markers: [
         Marker(
-          point: position.location,
+          point: mapState.userLocation,
           width: 24,
           height: 38,
           child: Transform.rotate(
-            angle: position.heading * (math.pi / 180),
+            angle: mapState.heading * (math.pi / 180),
             child: BoatMarker(
-              accentColor: position.isFresh
+              accentColor: mapState.isLocationFresh
                   ? const Color(0xFF14B8A6)
                   : Colors.red,
             ),
@@ -517,9 +505,8 @@ class _ContributionMarkerLayer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final contributions = ref.watch(
-      contributionProvider.select((s) => s.value ?? []),
-    );
+    final contributions =
+        ref.watch(contributionProvider).value ?? const [];
 
     if (contributions.isEmpty) return const SizedBox.shrink();
 

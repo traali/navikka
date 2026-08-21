@@ -20,9 +20,8 @@ class CourseHudWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final layout = ref.watch(uiLayoutControllerProvider);
-    final isFishingMode = ref.watch(
-      fishingModeControllerProvider.select((s) => s.value?.isEnabled ?? false),
-    );
+    final isFishingMode =
+        ref.watch(fishingModeControllerProvider).value?.isEnabled ?? false;
 
     Widget content;
     switch (layout) {

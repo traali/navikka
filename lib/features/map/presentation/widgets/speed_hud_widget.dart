@@ -90,9 +90,8 @@ class _SpeedHudWidgetState extends ConsumerState<SpeedHudWidget>
         widget.speedLimitKmh > 0 &&
         widget.currentSpeedKmh > widget.speedLimitKmh;
 
-    final isFishingMode = ref.watch(
-      fishingModeControllerProvider.select((s) => s.value?.isEnabled ?? false),
-    );
+    final isFishingMode =
+        ref.watch(fishingModeControllerProvider).value?.isEnabled ?? false;
 
     Widget content;
     switch (layout) {

@@ -32,9 +32,8 @@ class _UnifiedTopCapsuleState extends ConsumerState<UnifiedTopCapsule> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final is3dTiltEnabled = ref.watch(map3dTiltProvider);
-    final lightningLevel = ref.watch(
-      pointWeatherControllerProvider.select((s) => s.lightningAlarmLevel),
-    );
+    final lightningLevel =
+        ref.watch(pointWeatherControllerProvider).lightningAlarmLevel;
     final hasLightning = lightningLevel.index > 0;
 
     return SafeArea(
