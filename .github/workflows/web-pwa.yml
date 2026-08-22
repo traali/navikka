@@ -1,0 +1,33 @@
+name: Web PWA companion
+
+on:
+  pull_request:
+    paths:
+      - "apps/web-pwa/**"
+      - ".github/workflows/web-pwa.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/web-pwa/**"
+      - ".github/workflows/web-pwa.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web-pwa
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install
+        run: npm install
+
+      - name: Unit tests
+        run: npm test

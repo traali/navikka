@@ -51,6 +51,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# React web-PWA companion
+apps/web-pwa/node_modules/
+apps/web-pwa/dist/
+apps/web-pwa/screenshots/
+
+
 
 
 

@@ -29,6 +29,7 @@ Built by **Traali** using clean, modern technologies:
 | **Earth Observation** | ESA Copernicus Sentinel-2 & EUMETSAT | Live $10\text{ m}$ optical coastal imagery and 15-minute weather satellite loops. |
 | **On-Device AI** | Pure Dart Heuristics & Sensor Fusion | Zero telemetry egress: Voice Copilot ("Hei Kippari"), Wave Slam AI, Engine Diagnostics. |
 | **Hosting & Proxy** | Cloudflare Pages & Cloudflare Workers | Global edge CDN delivery and serverless CORS API proxy. |
+| **Web companion** | React + Leaflet in [`apps/web-pwa`](apps/web-pwa) | Phone-browser cockpit; does not replace the Flutter PWA in `web/`. |
 
 ---
 
@@ -40,6 +41,7 @@ Built by **Traali** using clean, modern technologies:
 - 🧭 **[Complete Feature Catalog](docs/features.md)** – Comprehensive inventory of all 15 functional domains, sensor systems, and safety tools.
 - 🏛️ **[Architecture Reference](docs/architecture.md)** – Detailed layer specifications, data flow, and technology standards.
 - 📡 **[External API Registry](docs/external_apis.md)** – Official endpoint specifications and query protocols.
+- 📱 **[React web companion](apps/web-pwa/README.md)** – Leaflet cockpit + iPhone Chrome tests (does not replace Flutter `web/`).
 
 ---
 

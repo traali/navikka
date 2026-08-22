@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **React web-PWA companion (`apps/web-pwa`)**: Leaflet cockpit for Helsinki waters (SOG/COG/UKC HUD, harbors, fairways, speed-limit boxes, fishing rules, MET Norway weather, AIS, MAYDAY/112/MRCC, FI/EN, five bridge themes). Lives next to Flutter, does **not** replace `web/` or `flutter build web`.
+- **iPhone 11 / 12 Chrome (CriOS / WebKit) hardening**: `100dvh` + `-webkit-fill-available`, `viewport-fit=cover`, `env(safe-area-inset-*)`, 16px inputs (no iOS focus-zoom), 44px targets, 375px HUD media query, clipboard `execCommand` fallback, SOS Share Sheet, Wake Lock retry on `visibilitychange`, `crypto.randomUUID` polyfill.
+- **Tests (47 `node:test` cases)**: haversine/CPA/UKC, Kauppatori 5 km/h no-wake, kuha 42 cm / taimen 60 cm, COLREG 19/35 fog, MAYDAY text, store demo-vs-device GPS, iPhone 11 vs 12 viewport contracts. Path-filtered GitHub Action `.github/workflows/web-pwa.yml`.
+- **Friday 2026-08-21 field test**: iPhone 11 or 12 + Chrome loaded the companion. Playwright re-check on 375×812 @2x and 390×844 @3x with CriOS UA: no overflow, 16px inputs, map tiles, SOS 112.
+
+### Notes
+- Flutter PWA (`web/`, Cloudflare Pages) is unchanged.
+- Companion does not persist live GPS/weather; only theme, units, vessel, route, and catch log.
+
 ## [1.25.0] - 2026-08-17
 
 ### Modular On-Device Marine AI Suite & IMU Wave Slamming Estimator
