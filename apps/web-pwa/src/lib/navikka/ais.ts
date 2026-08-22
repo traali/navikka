@@ -1,4 +1,5 @@
-import { HELSINKI_SEA, type LatLng } from "./geo.ts";
+import { type LatLng } from "./geo.ts";
+import { AIS_BBOX_DEG } from "./fetch-policy.ts";
 import { kindFromName } from "./rules.ts";
 
 export type LiveAis = {
@@ -18,10 +19,11 @@ type Feature = {
   geometry?: { coordinates?: [number, number] };
 };
 
-/** Digitraffic AIS; CORS failure leaves the seeded Helsinki traffic in the store. */
-export async function fetchLiveAis(): Promise<LiveAis[]> {
+export async function fetchAisAround(pos: LatLng): Promise<LiveAis[]> {
   try {
-    const res = await fetch("https://meri.digitraffic.fi/api/ais/v1/locations");
+    const res = await fetch("https://meri.digitraffic.fi/api/ais/v1/locations", {
+      headers: { Accept: "application/json" },
+    });
     if (!res.ok) return [];
     const json = (await res.json()) as { features?: Feature[] };
     const near: LiveAis[] = [];
@@ -29,7 +31,7 @@ export async function fetchLiveAis(): Promise<LiveAis[]> {
       const coords = f.geometry?.coordinates;
       if (!coords) continue;
       const [lng, lat] = coords;
-      if (lat < 59.7 || lat > 60.6 || lng < 23.8 || lng > 26.2) continue;
+      if (Math.abs(lat - pos.lat) > AIS_BBOX_DEG || Math.abs(lng - pos.lng) > AIS_BBOX_DEG) continue;
       const mmsi = String(f.properties?.mmsi ?? f.mmsi ?? "");
       if (!mmsi) continue;
       near.push({
@@ -42,12 +44,16 @@ export async function fetchLiveAis(): Promise<LiveAis[]> {
       });
     }
     near.sort((a, b) => {
-      const da = (a.pos.lat - HELSINKI_SEA.lat) ** 2 + (a.pos.lng - HELSINKI_SEA.lng) ** 2;
-      const db = (b.pos.lat - HELSINKI_SEA.lat) ** 2 + (b.pos.lng - HELSINKI_SEA.lng) ** 2;
+      const da = (a.pos.lat - pos.lat) ** 2 + (a.pos.lng - pos.lng) ** 2;
+      const db = (b.pos.lat - pos.lat) ** 2 + (b.pos.lng - pos.lng) ** 2;
       return da - db;
     });
     return near.slice(0, 48);
   } catch {
     return [];
   }
+}
+
+export async function fetchLiveAis(pos: LatLng): Promise<LiveAis[]> {
+  return fetchAisAround(pos);
 }

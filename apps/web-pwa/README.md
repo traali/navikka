@@ -34,6 +34,10 @@ A skipper HUD you can open in a phone browser:
 4. **Safety logic should be unit-tested without a device.** Haversine, CPA,
    UKC, speed-limit polygons, statutory catch sizes, fog thresholds, MAYDAY
    text, and iOS clipboard/share all run under `node:test`.
+5. **Weather must not refetch on every GPS tick.** MET URLs are snapped to a
+   5.5 km cell with a 10 min TTL. AIS is 60 s underway / 180 s idle. Hidden
+   tabs pause. The HUD shows age ("juuri"), never a perpetual "Haetaan…".
+   Skill: `.agent/skills/navikka-underway`.
 
 ## What we did not do
 

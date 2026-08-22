@@ -90,7 +90,11 @@ type NavState = {
   catches: CatchEntry[];
   weather: WeatherSnap | null;
   weatherError: string | null;
+  weatherAt: number | null;
+  weatherPos: LatLng | null;
+  weatherFetching: boolean;
   ais: AisTarget[];
+  aisAt: number | null;
   selection: Selection | null;
   copied: boolean;
   setTab: (tab: Tab) => void;
@@ -151,7 +155,11 @@ export const useNav = create<NavState>()(
       catches: [],
       weather: null,
       weatherError: null,
+      weatherAt: null,
+      weatherPos: null,
+      weatherFetching: false,
       ais: AIS_SEED,
+      aisAt: null,
       selection: null,
       copied: false,
       setTab: (tab) => set({ tab, sheet: "none" }),
@@ -189,8 +197,24 @@ export const useNav = create<NavState>()(
             ...get().catches,
           ].slice(0, 40),
         }),
-      setWeather: (weather, weatherError = null) => set({ weather, weatherError }),
-      setAis: (ais) => set({ ais: ais.length ? ais : get().ais }),
+      setWeather: (weather, weatherError = null) => {
+        if (weather) {
+          set({
+            weather,
+            weatherError: null,
+            weatherAt: Date.now(),
+            weatherPos: get().pos,
+            weatherFetching: false,
+          });
+          return;
+        }
+        set({ weatherError: weatherError ?? get().weatherError, weatherFetching: false });
+      },
+      setAis: (ais) =>
+        set({
+          ais: ais.length ? ais : get().ais,
+          aisAt: ais.length ? Date.now() : get().aisAt,
+        }),
       select: (selection) => set({ selection, sheet: selection ? "detail" : "none" }),
       tickDemo: () => {
         const s = get();

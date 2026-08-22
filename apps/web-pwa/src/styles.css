@@ -706,6 +706,11 @@ html[data-theme="red"] {
   border-color: transparent;
 }
 
+.chip.warn {
+  color: var(--color-warn);
+  border-color: color-mix(in oklab, var(--color-warn) 55%, transparent);
+}
+
 .svc {
   display: flex;
   flex-wrap: wrap;

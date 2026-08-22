@@ -11,7 +11,18 @@ import {
   Sun,
   Waves,
 } from "lucide-react";
-import { fetchLiveAis } from "@/lib/navikka/ais";
+import { fetchAisAround } from "@/lib/navikka/ais";
+import {
+  DEMO_TICK_MS,
+  POLL_CHECK_MS,
+  decideAisFetch,
+  decideGpsAccept,
+  decideWeatherFetch,
+  formatWeatherAge,
+  isWeatherStale,
+  pollStats,
+  weatherAgeMs,
+} from "@/lib/navikka/fetch-policy";
 import { padCourse } from "@/lib/navikka/geo";
 import { MapView, type MapHandle } from "@/components/navikka/map-view";
 import {
@@ -36,6 +47,10 @@ import {
 } from "@/lib/navikka/store";
 import { fetchWeather } from "@/lib/navikka/weather";
 
+if (typeof window !== "undefined") {
+  (window as Window & { __navikkaPoll?: typeof pollStats }).__navikkaPoll = pollStats;
+}
+
 export function Cockpit() {
   const map = useRef<MapHandle | null>(null);
   const theme = useNav((s) => s.theme);
@@ -49,23 +64,27 @@ export function Cockpit() {
   }, [theme]);
 
   useEffect(() => {
-    const id = window.setInterval(() => useNav.getState().tickDemo(), 1000);
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      useNav.getState().tickDemo();
+    }, DEMO_TICK_MS);
     return () => window.clearInterval(id);
   }, []);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
+    let lastAt = 0;
+    let lastPos: { lat: number; lng: number } | null = null;
     const watch = navigator.geolocation.watchPosition(
       (p) => {
+        const pos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        const now = Date.now();
+        if (!decideGpsAccept({ now, pos, lastAt, lastPos })) return;
+        lastAt = now;
+        lastPos = pos;
         const sog = (p.coords.speed ?? 0) * 1.94384;
         const cog = p.coords.heading ?? useNav.getState().cog;
-        useNav.getState().setPos(
-          { lat: p.coords.latitude, lng: p.coords.longitude },
-          sog > 0.4 ? sog : useNav.getState().sogKn,
-          cog,
-          "device",
-          p.coords.accuracy,
-        );
+        useNav.getState().setPos(pos, sog > 0.4 ? sog : useNav.getState().sogKn, cog, "device", p.coords.accuracy);
       },
       () => {
         /* keep demo track if user denies */
@@ -101,25 +120,67 @@ export function Cockpit() {
 
   useEffect(() => {
     let alive = true;
-    const load = async () => {
-      try {
-        const w = await fetchWeather(useNav.getState().pos);
-        if (alive) useNav.getState().setWeather(w);
-      } catch {
-        if (alive) useNav.getState().setWeather(null, "Säätä ei saatu.");
+    let weatherInflight = false;
+    let aisInflight = false;
+
+    const tick = async () => {
+      const hidden = document.visibilityState !== "visible";
+      const s = useNav.getState();
+      const wx = decideWeatherFetch({
+        now: Date.now(),
+        pos: s.pos,
+        lastAt: s.weatherAt,
+        lastPos: s.weatherPos,
+        hidden,
+        inflight: weatherInflight,
+      });
+      if (!wx.fetch) pollStats.skippedWeather += 1;
+      if (wx.fetch && alive) {
+        weatherInflight = true;
+        pollStats.weather += 1;
+        useNav.setState({ weatherFetching: true });
+        try {
+          const w = await fetchWeather(wx.snapped);
+          if (alive) useNav.getState().setWeather(w);
+        } catch {
+          if (alive) useNav.getState().setWeather(null, "Säätä ei saatu.");
+        } finally {
+          weatherInflight = false;
+        }
       }
-      try {
-        const ais = await fetchLiveAis();
-        if (alive && ais.length) useNav.getState().setAis(ais);
-      } catch {
-        /* seeded AIS remains */
+      const ais = decideAisFetch({
+        now: Date.now(),
+        lastAt: s.aisAt,
+        hidden,
+        inflight: aisInflight,
+        active: s.follow || s.navigating,
+      });
+      if (!ais.fetch) pollStats.skippedAis += 1;
+      if (ais.fetch && alive) {
+        aisInflight = true;
+        pollStats.ais += 1;
+        try {
+          const targets = await fetchAisAround(s.pos);
+          if (alive && targets.length) useNav.getState().setAis(targets);
+          else if (alive) useNav.setState({ aisAt: Date.now() });
+        } catch {
+          if (alive) useNav.setState({ aisAt: Date.now() });
+        } finally {
+          aisInflight = false;
+        }
       }
     };
-    void load();
-    const t = window.setInterval(load, 120000);
+
+    void tick();
+    const id = window.setInterval(tick, POLL_CHECK_MS);
+    const onVis = () => {
+      if (document.visibilityState === "visible") void tick();
+    };
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       alive = false;
-      window.clearInterval(t);
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, []);
 
@@ -154,6 +215,7 @@ export function Cockpit() {
 
 function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean }) {
   const c = useCopy();
+  const lang = useNav((s) => s.lang);
   const sog = useNav((s) => s.sogKn);
   const cog = useNav((s) => s.cog);
   const pos = useNav((s) => s.pos);
@@ -168,6 +230,8 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
   const { fw, ukc } = ukcNow();
   const limit = overLimit(pos, sog);
   const ukcAlarm = ukc < 0.5;
+  const wxAge = weather ? weatherAgeMs(weather.updated) : Infinity;
+  const wxStale = isWeatherStale(wxAge);
 
   return (
     <div className="hud">
@@ -194,10 +258,12 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
           <strong>{fmtDepth(Math.max(ukc, 0), depthUnit)}</strong>
           <small>{fw.depthM.toFixed(1)} m</small>
         </div>
-        <div className="tel">
+        <div className={`tel ${wxStale ? "alarm" : ""}`}>
           <span>{c.wind}</span>
           <strong>{weather ? fmtWind(weather.windMs, windUnit) : "—"}</strong>
-          {weather && <small>{padCourse(weather.windDir)}</small>}
+          {weather && (
+            <small data-weather-age={Math.round(wxAge / 1000)}>{formatWeatherAge(wxAge, lang)}</small>
+          )}
         </div>
       </div>
       <div className="search-row">

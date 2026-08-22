@@ -7,6 +7,7 @@ import {
   SPEED_ZONES,
   type Harbor,
 } from "@/lib/navikka/catalog";
+import { decideFollowPan } from "@/lib/navikka/fetch-policy";
 import { HELSINKI_SEA, type LatLng } from "@/lib/navikka/geo";
 import { useNav, type AisTarget } from "@/lib/navikka/store";
 
@@ -34,8 +35,10 @@ export function MapView({ onReady }: Props) {
     const delayed: number[] = [];
     const resize = () => map?.invalidateSize({ animate: false });
 
+    let Lmod: typeof import("leaflet") | null = null;
     (async () => {
       const L = await import("leaflet");
+      Lmod = L;
       await import("leaflet/dist/leaflet.css");
       if (cancelled || !hostRef.current) return;
 
@@ -161,14 +164,22 @@ export function MapView({ onReady }: Props) {
     const unsub = useNav.subscribe((s, prev) => {
       const Lwait = layersRef.current;
       const m = mapRef.current;
-      if (!m || !Lwait.boat) return;
-      void import("leaflet").then((L) => {
-        const boat = Lwait.boat as import("leaflet").Marker;
+      const L = Lmod;
+      if (!m || !Lwait.boat || !L) return;
+      const boat = Lwait.boat as import("leaflet").Marker;
+      if (s.pos !== prev.pos || s.cog !== prev.cog) {
         boat.setLatLng([s.pos.lat, s.pos.lng]);
         boat.setIcon(boatIcon(L, s.cog));
-        if (s.follow && (s.pos !== prev.pos || s.follow !== prev.follow)) {
-          m.panTo([s.pos.lat, s.pos.lng], { animate: true, duration: 0.4 });
-        }
+        const pan = decideFollowPan({
+          follow: s.follow,
+          followJustOn: s.follow && !prev.follow,
+          from: prev.pos,
+          to: s.pos,
+          sogKn: s.sogKn,
+        });
+        if (pan.pan) m.panTo([s.pos.lat, s.pos.lng], { animate: pan.animate, duration: pan.animate ? 0.4 : 0 });
+      }
+      if (s.layers !== prev.layers || s.theme !== prev.theme) {
         const baseWanted = s.layers.satellite ? Lwait.sat : s.theme === "solar" ? Lwait.light : Lwait.dark;
         [Lwait.dark, Lwait.light, Lwait.sat].forEach((ly) => {
           if (ly === baseWanted) {
@@ -180,11 +191,11 @@ export function MapView({ onReady }: Props) {
         toggle(m, Lwait.ais, s.layers.ais);
         toggle(m, Lwait.speed, s.layers.speedLimits);
         toggle(m, Lwait.fish, s.layers.fishing);
-        if (s.ais !== prev.ais) syncAis(L, Lwait.ais as import("leaflet").LayerGroup, s.ais);
-        if (s.waypoints !== prev.waypoints) {
-          syncRoute(L, Lwait.route as import("leaflet").Polyline, Lwait.wps as import("leaflet").LayerGroup, s.waypoints);
-        }
-      });
+      }
+      if (s.ais !== prev.ais) syncAis(L, Lwait.ais as import("leaflet").LayerGroup, s.ais);
+      if (s.waypoints !== prev.waypoints) {
+        syncRoute(L, Lwait.route as import("leaflet").Polyline, Lwait.wps as import("leaflet").LayerGroup, s.waypoints);
+      }
     });
 
     return () => {

@@ -85,6 +85,11 @@ const FI = {
   skipper: "Hei kippari",
   voiceHint: "Kysy syvyyttä, satamaa, säätä",
   offline: "Verkko heikko — näytetään välimuisti",
+  fresh: "juuri",
+  ageMin: "min sitten",
+  staleWx: "Vanha sää",
+  fetchingWx: "Haetaan merisäätä…",
+  wxSource: "MET Norway · ruutu 5,5 km · enintään 10 min",
   disclaimer:
     "Ei virallinen merikartta. Varmista kulku Traficomin merikartasta.",
 };
@@ -174,6 +179,11 @@ const EN: typeof FI = {
   skipper: "Hey skipper",
   voiceHint: "Ask depth, harbor, weather",
   offline: "Weak link — showing cached data",
+  fresh: "just now",
+  ageMin: "min ago",
+  staleWx: "Stale weather",
+  fetchingWx: "Fetching marine weather…",
+  wxSource: "MET Norway · 5.5 km cell · at most 10 min",
   disclaimer: "Not an official chart. Confirm passage on Traficom charts.",
 };
 

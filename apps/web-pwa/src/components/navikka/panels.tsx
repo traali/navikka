@@ -13,6 +13,7 @@ import { FISH_ZONES, HARBORS, MIN_SIZES } from "@/lib/navikka/catalog";
 import { computeCpa, formatDdm, nmBetween, padCourse, parseLatLngQuery, routeStats } from "@/lib/navikka/geo";
 import { COPY } from "@/lib/navikka/i18n";
 import { catchLegal, fogStatus, maydayScript, shareText } from "@/lib/navikka/rules";
+import { formatWeatherAge, isWeatherStale, weatherAgeMs } from "@/lib/navikka/fetch-policy";
 import {
   fmtDepth,
   fmtSpeed,
@@ -28,6 +29,7 @@ export function WeatherPanel() {
   const c = useCopy();
   const w = useNav((s) => s.weather);
   const err = useNav((s) => s.weatherError);
+  const fetching = useNav((s) => s.weatherFetching);
   const lang = useNav((s) => s.lang);
   const windUnit = useNav((s) => s.windUnit);
   const depthUnit = useNav((s) => s.depthUnit);
@@ -37,17 +39,27 @@ export function WeatherPanel() {
         <header className="panel-head">
           <h2>{c.weather}</h2>
         </header>
-        <p className="muted">{err ?? (lang === "fi" ? "Haetaan merisäätä…" : "Fetching marine weather…")}</p>
+        <p className="muted">{err ?? c.fetchingWx}</p>
       </div>
     );
   }
   const fog = fogStatus(w);
+  const age = weatherAgeMs(w.updated);
+  const stale = isWeatherStale(age);
   return (
     <div className="panel">
       <header className="panel-head">
         <h2>{c.weather}</h2>
-        <span className="chip">{new Date(w.updated).toLocaleTimeString()}</span>
+        <span className={`chip ${stale ? "warn" : ""}`} data-weather-age={Math.round(age / 1000)}>
+          {formatWeatherAge(age, lang)}
+        </span>
       </header>
+      {stale && (
+        <div className="banner yellow">
+          <Waves size={16} />
+          <span>{c.staleWx}</span>
+        </div>
+      )}
       <div className={`banner ${fog.level}`}>
         <Waves size={16} />
         <span>{lang === "fi" ? fog.fi : fog.en}</span>
@@ -61,7 +73,8 @@ export function WeatherPanel() {
         <Stat label={c.vis} value={w.visM >= 10000 ? "10+ km" : `${(w.visM / 1000).toFixed(1)} km`} />
       </div>
       <p className="muted tiny">
-        FMI / Open-Meteo · {c.divergence}: MET Norway vertailu saatavilla täydessä Navikassa.
+        {c.wxSource}
+        {fetching ? ` · ${c.fetchingWx}` : err ? ` · ${err}` : ""}
       </p>
     </div>
   );
