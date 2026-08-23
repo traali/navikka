@@ -1,7 +1,7 @@
 # AGENTS.md
 
 > **Purpose**: Router and context-injection guide for AI coding assistants and contributors working on the Navikka codebase.
-> **Last Verified**: 2026-08-19 @ `fad64ef`
+> **Last Verified**: 2026-08-23 @ `feat/gauntlet-invariants`
 > **Canonical Docs**: [llms.txt](file:///c:/dev2/gtp/sakkoja/llms.txt) (LLM Context Map) · [docs/architecture.md](file:///c:/dev2/gtp/sakkoja/docs/architecture.md) (Architecture Specification) · [docs/developer_guide.md](file:///c:/dev2/gtp/sakkoja/docs/developer_guide.md) (Developer Guide)
 
 ---
@@ -10,6 +10,7 @@
 - **Name**: Navikka (Marine Safety Navigator for Finnish Waters)
 - **Primary Stack**: Flutter & Dart (versions pinned in [`pubspec.yaml`](file:///c:/dev2/gtp/sakkoja/pubspec.yaml) and `.fvmrc`), Riverpod 3.x, `flutter_map` 8.x, Drift SQLite (schema v18).
 - **Primary Deployment**: Web PWA (Cloudflare Pages + Worker CORS Proxy) and Mobile (Android/iOS).
+- **React companion**: `apps/web-pwa`, production URL **`/cockpit/`**. Source-isolated from `lib/`. Ways of working: §13.
 
 ---
 
@@ -63,4 +64,38 @@
   - Flag condensation risk when $|T_{\text{air}} - T_{\text{dew}}| \le 1.2^\circ\text{C}$ and relative humidity $\ge 90\%$.
 - **Forecast Low Cloud & Fog Auditing**:
   - Scan next $1\text{--}6\text{ h}$ forecast for incoming cloud cover $\ge 95\%$, high humidity, or fog weather codes to alert the skipper before visibility collapses.
+
+---
+
+## 13. React companion (`apps/web-pwa`) — ways of working
+
+Helsinki skipper cockpit, not a second Navikka. Flutter `lib/` remains the product. Companion is served at **`/cockpit/`** on the same Cloudflare Pages origin.
+
+**Do**
+
+- Put underway numbers only in `apps/web-pwa/src/lib/navikka/fetch-policy.ts` and lock them with `*.test.ts`.
+- After a marine-safety change: `cd apps/web-pwa && npm test && npm run typecheck`.
+- After a Pages/URL change: `flutter test test/core/web_companion_contract_test.dart` and `dart run scripts/architecture_check.dart`.
+- Keep `web/_redirects` `/cockpit` and `/pwa` **above** `/* /index.html 200`. Keep `/cockpit/*` splat 200.
+- Build with `--base=/cockpit/`. Never `--base=./`. Never a second copy under `/pwa`.
+- Fairway distance is a polyline **segment** (`distToSegmentM` / `distToPolylineM`), cap 1 km.
+- First LIVE GPS must not inherit demo SOG (`deviceFixKinematics`).
+- AIS query is `aisQuery` (`latitude/longitude/radius`). Seed AIS is not live (`aisSource: "seed"`).
+- Weather errors throw. Empty MET `timeseries` throws. Retry uses `lastAttemptAt` + `WEATHER_RETRY_MS` (60 s).
+
+**CI (every PR, both stacks)**
+
+- Flutter `verify` job runs `architecture_check.dart`, `flutter test` (includes `web_companion_contract_test.dart`), **and** `apps/web-pwa` `npm test` + `typecheck` + `--base=/cockpit/` build.
+- Path-filtered `.github/workflows/web-pwa.yml` is extra, not a substitute. Do not remove `npm test` from `ci.yml`.
+- Lefthook runs companion tests when `apps/web-pwa/**` is staged.
+
+**Do not**
+
+- Import Flutter `lib/` from the companion, or the reverse.
+- Set `User-Agent` on browser `fetch` (MET CORS).
+- CPA-alarm MEGASTAR seed traffic.
+- Tell the skipper "Avomeri" while they are on a drawn hel-9 segment.
+- Make companion tests path-filtered-only (a Dart-only PR must still fail if it unships `/cockpit`).
+
+Skill: `.agent/skills/navikka-underway/SKILL.md`.
 

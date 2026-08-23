@@ -31,7 +31,9 @@ export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
       timeseries?: Array<{ data?: { instant?: { details?: Record<string, number> } } }>;
     };
   };
-  const d0 = json.properties?.timeseries?.[0]?.data?.instant?.details ?? {};
+  const series0 = json.properties?.timeseries?.[0];
+  if (!series0) throw new Error("Weather fetch failed: empty");
+  const d0 = series0.data?.instant?.details ?? {};
   let waveM = 0.6;
   let waveDir = d0.wind_from_direction ?? 220;
   let wavePeriod = 4;

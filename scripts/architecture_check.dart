@@ -125,6 +125,8 @@ void main() async {
     }
   }
 
+  _checkCompanionContract(violations);
+
   // Report results
   if (violations.isEmpty) {
     print('✅ All architecture checks passed!\n');
@@ -132,6 +134,7 @@ void main() async {
     print('  • No forbidden imports (hive, provider, getx)');
     print('  • No print/debugPrint usage');
     print('  • Domain layer has no Flutter dependencies');
+    print('  • Companion /cockpit Pages contract');
     exit(success);
   } else {
     print('❌ Found ${violations.length} architecture violation(s):\n');
@@ -140,5 +143,109 @@ void main() async {
     }
     print('\n📚 Reference: See AGENTS.md for architecture rules');
     exit(failure);
+  }
+}
+
+void _checkCompanionContract(List<Violation> violations) {
+  const redirectsPath = 'web/_redirects';
+  final redirects = File(redirectsPath);
+  if (!redirects.existsSync()) {
+    violations.add(const Violation(redirectsPath, 1, 'web/_redirects missing'));
+    return;
+  }
+  final text = redirects.readAsStringSync().replaceAll(RegExp(r'\s+'), ' ');
+  final cockpit = text.indexOf('/cockpit /cockpit/');
+  final pwa = text.indexOf('/pwa /cockpit/');
+  final catchAll = text.indexOf('/* /index.html');
+  if (cockpit < 0) {
+    violations.add(
+      const Violation(
+        redirectsPath,
+        1,
+        'Must 301 /cockpit → /cockpit/ before the Flutter SPA catch-all',
+      ),
+    );
+  } else if (catchAll >= 0 && catchAll < cockpit) {
+    violations.add(
+      const Violation(
+        redirectsPath,
+        1,
+        'Flutter SPA catch-all /* must come AFTER /cockpit redirects',
+      ),
+    );
+  }
+  if (pwa < 0) {
+    violations.add(
+      const Violation(
+        redirectsPath,
+        1,
+        'Must 301 /pwa → /cockpit/ (do not ship a second copy)',
+      ),
+    );
+  } else if (catchAll >= 0 && catchAll < pwa) {
+    violations.add(
+      const Violation(
+        redirectsPath,
+        1,
+        'Flutter SPA catch-all /* must come AFTER /pwa redirects',
+      ),
+    );
+  }
+
+  for (final yml in ['.github/workflows/deploy.yml', '.github/workflows/ci.yml']) {
+    final f = File(yml);
+    if (!f.existsSync()) continue;
+    final body = f.readAsStringSync();
+    if (!body.contains('--base=/cockpit/')) {
+      violations.add(
+        Violation(yml, 1, 'Companion must build with --base=/cockpit/'),
+      );
+    }
+    if (body.contains('--base=./')) {
+      violations.add(
+        Violation(
+          yml,
+          1,
+          'Companion must build with --base=/cockpit/ (relative ./ breaks /cockpit without slash)',
+        ),
+      );
+    }
+    if (body.contains('build/web/pwa')) {
+      violations.add(
+        Violation(
+          yml,
+          1,
+          'Do not ship a second copy under /pwa; 301 /pwa → /cockpit/',
+        ),
+      );
+    }
+  }
+
+  final ci = File('.github/workflows/ci.yml');
+  if (ci.existsSync()) {
+    final body = ci.readAsStringSync();
+    if (!body.contains('npm test')) {
+      violations.add(
+        const Violation(
+          '.github/workflows/ci.yml',
+          1,
+          'CI verify must run companion npm test (not only build)',
+        ),
+      );
+    }
+  }
+
+  final ais = File('apps/web-pwa/src/lib/navikka/ais.ts');
+  if (ais.existsSync()) {
+    final body = ais.readAsStringSync();
+    if (!body.contains('aisQuery')) {
+      violations.add(
+        const Violation(
+          'apps/web-pwa/src/lib/navikka/ais.ts',
+          1,
+          'AIS fetch must pass Digitraffic latitude/longitude/radius (no national dump)',
+        ),
+      );
+    }
   }
 }

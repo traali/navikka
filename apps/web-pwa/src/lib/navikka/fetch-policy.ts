@@ -12,6 +12,9 @@ export const FOLLOW_PAN_MIN_M = 12;
 export const POLL_CHECK_MS = 15_000;
 export const DEMO_TICK_MS = 1000;
 export const AIS_BBOX_DEG = 0.4;
+/** Digitraffic `radius` is kilometres. 0.4° ≈ 44 km. */
+export const AIS_RADIUS_KM = 45;
+export const WEATHER_RETRY_MS = 60 * 1000;
 
 export const pollStats = {
   weather: 0,
@@ -40,7 +43,35 @@ export function weatherQuery(pos: LatLng) {
   return { lat: s.lat.toFixed(2), lon: s.lng.toFixed(2), snapped: s };
 }
 
-export const WEATHER_RETRY_MS = 60 * 1000;
+export function aisQuery(pos: LatLng) {
+  const latitude = pos.lat.toFixed(3);
+  const longitude = pos.lng.toFixed(3);
+  return {
+    latitude,
+    longitude,
+    radius: String(AIS_RADIUS_KM),
+    url: `https://meri.digitraffic.fi/api/ais/v1/locations?latitude=${latitude}&longitude=${longitude}&radius=${AIS_RADIUS_KM}`,
+  };
+}
+
+/** First LIVE GPS sample must not inherit demo 6.2 kn / 112°. CriOS speed is often null. */
+export function deviceFixKinematics(opts: {
+  wasDemo: boolean;
+  speedMs: number | null | undefined;
+  headingDeg: number | null | undefined;
+  prevSogKn: number;
+  prevCog: number;
+}): { sogKn: number; cog: number } {
+  const speedKnown = opts.speedMs != null && Number.isFinite(opts.speedMs);
+  const headingKnown = opts.headingDeg != null && Number.isFinite(opts.headingDeg);
+  const kn = speedKnown ? opts.speedMs! * 1.94384 : 0;
+  let sogKn: number;
+  if (opts.wasDemo) sogKn = kn > 0.4 ? kn : 0;
+  else if (!speedKnown) sogKn = opts.prevSogKn;
+  else sogKn = kn > 0.4 ? kn : 0;
+  const cog = headingKnown ? ((opts.headingDeg! + 360) % 360) : opts.wasDemo ? 0 : opts.prevCog;
+  return { sogKn, cog };
+}
 
 export type RefreshDecision =
   | { fetch: true; reason: "first" | "ttl" | "moved"; snapped: LatLng }

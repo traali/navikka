@@ -12,43 +12,52 @@ metadata:
 
 # Navikka underway (skipper, not a demo)
 
-A boat at 6 kn moves ~3 m/s. MET Norway's grid is kilometres. Digitraffix AIS
-is a national dump. iPhone Chrome is WebKit. Treat the phone as a 4-hour
-watch: battery, radio quota, and a skipper who glances — they do not stare.
+A boat at 6 kn moves ~3 m/s. MET Norway's grid is kilometres. Digitraffic AIS
+must be queried with `latitude/longitude/radius` — never the national dump.
+iPhone Chrome is WebKit. Treat the phone as a 4-hour watch.
 
 Read `references/fetch-policy.md` before touching poll/GPS/weather/AIS.
+
+The production URL is **`/cockpit/`** on the Flutter Cloudflare Pages origin.
+Do not copy a second tree to `/pwa`. Build with `--base=/cockpit/`. Keep
+`web/_redirects` `/cockpit` and `/pwa` **above** `/* /index.html 200`.
 
 ## Non-negotiables
 
 1. **Never put raw GPS into a weather URL.** Snap to `0.05°` (~5.5 km).
-   `toFixed(4)` (~11 m) busts HTTP cache every poll — that is the "weather
-   fetched all the time while boating" bug.
-2. **Weather TTL 10 min** (or a new snap cell). MET locationforecast does not
-   update faster in a way a skipper can use.
-3. **Keep last good weather on error.** Never blank the HUD with "Haetaan…"
-   after a successful fetch. **Never return FALLBACK with `updated: now`.**
-   Throw. Cockpit calls `setWeather(null, err)` which keeps the last snap
-   and `weatherAt` — age chip stays honest ("4 min sitten"), not "juuri".
-4. **Pause polls when `document.hidden`.** Background tabs do not need AIS.
-5. **Decouple weather and AIS.** Different TTL, different inflight guards.
-6. **GPS apply-throttle: 500 ms or 15 m.** Flutter cascade: 500 ms GPS, 20 m
-   move, 300 ms camera. Match the spirit.
+2. **Weather TTL 10 min** (or a new snap cell). On fetch **error**, retry after
+   `WEATHER_RETRY_MS` (60 s) via `lastAttemptAt`. Never leave the next poll as
+   `"first"` 1 s later (that is an 8 req/min MET storm).
+3. **Keep last good weather on error.** Throw on `!res.ok` **and** on empty
+   `timeseries`. Never return FALLBACK with `updated: now`. HUD age uses
+   `weather.updated`, not the retry clock.
+4. **Pause polls when `document.hidden`.**
+5. **Decouple weather and AIS.**
+6. **GPS apply-throttle: 500 ms or 15 m.** First LIVE fix must **not** inherit
+   demo 6.2 kn / 112°. Use `deviceFixKinematics`. CriOS `speed` is often null.
 7. **Map follow pan only after ~12 m**, `animate: false` when SOG > 2 kn.
-   Do not `import("leaflet")` on every store tick.
-8. **Show age, not a spinner.** "4 min sitten" / "vanha sää" (>15 min).
-9. **Fairway / UKC / MAYDAY only within 1 km of a published polyline.**
-   Beyond that: Avomeri. Never inject a Helsinki channel into a Porkkala
-   distress readout.
+8. **Show age, not a spinner.**
+9. **Fairway / UKC / MAYDAY within 1 km of a published polyline SEGMENT**
+   (`distToSegmentM` / `distToPolylineM`). Vertices 2 km apart must not punch
+   Avomeri holes in hel-9. Porkkala stays null.
+10. **AIS:** `aisQuery` with radius 45 km. Seed traffic is DEMO (`aisSource:
+    "seed"`). Do not CPA-alarm seed. Errors use `setAisError`, not wipe seed.
+11. **Do not set `User-Agent` from browser `fetch`** (CORS preflight on MET).
+12. **Fishing polygons** must `.addTo(fish)`.
 
 ## When editing
 
-- Put new thresholds in `src/lib/navikka/fetch-policy.ts` and lock them with
-  `fetch-policy.test.ts`.
-- Cockpit only *runs* the policy. It does not invent intervals.
-- iPhone Chrome: Wake Lock is flaky, Clipboard needs `execCommand` + Share.
+- Thresholds live in `apps/web-pwa/src/lib/navikka/fetch-policy.ts` and are
+  locked by `fetch-policy.test.ts`.
+- Flutter CI also reads these files (`test/core/web_companion_contract_test.dart`
+  + `scripts/architecture_check.dart`). A Dart-only PR that reverts `/cockpit`
+  redirects will fail `flutter test`.
+- `ci.yml` verify **always** runs `apps/web-pwa` `npm test` + `typecheck`. Do
+  not drop that step; `web-pwa.yml` is extra, path-filtered feedback.
+- Cockpit only *runs* the policy.
 
 ## Done when
 
-- 20 s of demo/GPS motion → **1** weather fetch, **1** AIS fetch.
-- Weather chip shows age, not perpetual "Haetaan merisäätä…".
-- Unit tests cover snap/TTL/hidden/GPS/pan.
+- 20 s of demo/GPS motion → **1** weather fetch, **1** AIS fetch (unless
+  radio loss, then weather retries at 60 s, not 15 s).
+- `npm test` in `apps/web-pwa` and `flutter test test/core/web_companion_contract_test.dart` are green.

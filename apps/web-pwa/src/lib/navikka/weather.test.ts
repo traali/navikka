@@ -49,4 +49,18 @@ describe("fetchWeather failure must not look live", () => {
       globalThis.fetch = orig;
     }
   });
+
+  it("throws on HTTP 200 with empty timeseries instead of stamping calm wind as now", async () => {
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      ({
+        ok: true,
+        json: async () => ({ properties: { timeseries: [] } }),
+      }) as Response) as typeof fetch;
+    try {
+      await assert.rejects(() => fetchWeather(HELSINKI_SEA), /empty|failed/i);
+    } finally {
+      globalThis.fetch = orig;
+    }
+  });
 });

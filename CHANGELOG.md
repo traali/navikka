@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CPA Opening**: when TCPA < 0 the sheet shows current range + "Avautuva", not a past closest-approach.
 - **MapView unmount**: re-check `cancelled` before window resize listeners; tear the map down if the import finished after unmount.
 - **Companion `tsc`**: `@types/node` + `npm run typecheck` in the web-pwa workflow.
+- **Gauntlet lock-in (both stacks)**: every PR runs companion `npm test` + `typecheck` inside `ci.yml` (not only the path-filtered `web-pwa.yml`). Flutter `web_companion_contract_test` + `architecture_check` fail if `/cockpit` redirects, `--base=/cockpit/`, AIS radius, segment UKC, or LIVE GPS kinematics are undone. Empty MET `timeseries` now throws. Fishing polygons `.addTo(fish)`. Seed AIS does not CPA-alarm. Lefthook + PR template + AGENTS.md §13 encode the ways of working.
+
 
 ### Notes
 - Flutter PWA (`web/`, Cloudflare Pages) is unchanged.

@@ -5,11 +5,26 @@ on:
     paths:
       - "apps/web-pwa/**"
       - ".github/workflows/web-pwa.yml"
+      - ".github/workflows/ci.yml"
+      - ".github/workflows/deploy.yml"
+      - "web/_redirects"
+      - "scripts/architecture_check.dart"
+      - "test/core/web_companion_contract_test.dart"
+      - "AGENTS.md"
+      - ".agent/skills/navikka-underway/**"
   push:
     branches: [main]
     paths:
       - "apps/web-pwa/**"
       - ".github/workflows/web-pwa.yml"
+      - ".github/workflows/ci.yml"
+      - ".github/workflows/deploy.yml"
+      - "web/_redirects"
+      - "scripts/architecture_check.dart"
+      - "test/core/web_companion_contract_test.dart"
+      - "AGENTS.md"
+      - ".agent/skills/navikka-underway/**"
+
 
 jobs:
   test:

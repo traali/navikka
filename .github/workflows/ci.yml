@@ -127,13 +127,21 @@ jobs:
             --dart-define="APP_VERSION_BUILD_TIME=${APP_BUILD_TIME}" \
             --dart-define="APP_ENV=ci"
 
-      - name: Build and Bundle Web PWA Companion (Verification)
+      - name: Setup Node for Web Companion
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Test and Bundle Web PWA Companion
         run: |
           cd apps/web-pwa
           npm ci
+          npm test
+          npm run typecheck
           npm run build -- --base=/cockpit/
           mkdir -p ../../build/web/cockpit
           cp -r dist/* ../../build/web/cockpit/
+
 
       - name: Report Bundle Size
         run: |

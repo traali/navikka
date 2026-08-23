@@ -1,5 +1,5 @@
 import { type LatLng } from "./geo.ts";
-import { AIS_BBOX_DEG } from "./fetch-policy.ts";
+import { AIS_BBOX_DEG, aisQuery } from "./fetch-policy.ts";
 import { kindFromName } from "./rules.ts";
 
 export type LiveAis = {
@@ -20,8 +20,8 @@ type Feature = {
 };
 
 export async function fetchAisAround(pos: LatLng): Promise<LiveAis[]> {
-  const url = `https://meri.digitraffic.fi/api/ais/v1/locations?latitude=${pos.lat.toFixed(3)}&longitude=${pos.lng.toFixed(3)}&radius=45`;
-  const res = await fetch(url, {
+  const q = aisQuery(pos);
+  const res = await fetch(q.url, {
     headers: { Accept: "application/json" },
   });
   if (!res.ok) throw new Error(`AIS fetch failed: ${res.status}`);

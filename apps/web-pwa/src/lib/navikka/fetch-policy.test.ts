@@ -2,15 +2,19 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { HELSINKI_SEA } from "./geo.ts";
 import {
+  AIS_RADIUS_KM,
   AIS_TTL_FOLLOW_MS,
+  aisQuery,
   decideAisFetch,
   decideFollowPan,
   decideGpsAccept,
   decideWeatherFetch,
+  deviceFixKinematics,
   formatWeatherAge,
   isWeatherStale,
   snapPos,
   weatherQuery,
+  WEATHER_RETRY_MS,
   WEATHER_SNAP_DEG,
   WEATHER_STALE_MS,
   WEATHER_TTL_MS,
@@ -221,5 +225,54 @@ describe("weather age copy", () => {
     assert.match(formatWeatherAge(4 * 60_000, "fi"), /4 min/);
     assert.equal(isWeatherStale(WEATHER_STALE_MS), true);
     assert.equal(isWeatherStale(60_000), false);
+  });
+});
+
+describe("AIS query is not a national dump", () => {
+  it("includes latitude, longitude and radius km", () => {
+    const q = aisQuery(HELSINKI_SEA);
+    assert.match(q.url, /latitude=60\.155/);
+    assert.match(q.url, /longitude=24\.890/);
+    assert.match(q.url, /radius=45/);
+    assert.equal(AIS_RADIUS_KM, 45);
+    assert.equal(WEATHER_RETRY_MS, 60_000);
+  });
+});
+
+describe("device GPS kinematics", () => {
+  it("does not inherit demo 6.2 kn when CriOS speed is null", () => {
+    const k = deviceFixKinematics({
+      wasDemo: true,
+      speedMs: null,
+      headingDeg: null,
+      prevSogKn: 6.2,
+      prevCog: 112,
+    });
+    assert.equal(k.sogKn, 0);
+    assert.equal(k.cog, 0);
+  });
+
+  it("zeros SOG when GPS reports 0 at the dock after going LIVE", () => {
+    const k = deviceFixKinematics({
+      wasDemo: false,
+      speedMs: 0,
+      headingDeg: 40,
+      prevSogKn: 6.2,
+      prevCog: 112,
+    });
+    assert.equal(k.sogKn, 0);
+    assert.equal(k.cog, 40);
+  });
+
+  it("keeps last GPS SOG when speed is null while already LIVE", () => {
+    const k = deviceFixKinematics({
+      wasDemo: false,
+      speedMs: null,
+      headingDeg: null,
+      prevSogKn: 5.1,
+      prevCog: 88,
+    });
+    assert.equal(k.sogKn, 5.1);
+    assert.equal(k.cog, 88);
   });
 });

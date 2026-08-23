@@ -1,4 +1,4 @@
-# Lefthook Git Hooks Configuration for Sakkoja
+# Lefthook Git Hooks Configuration for Navikka
 # https://github.com/evilmartians/lefthook
 
 pre-commit:
@@ -9,3 +9,6 @@ pre-commit:
       run: dart format --set-exit-if-changed {staged_files}
     analyze:
       run: dart analyze
+    companion-test:
+      glob: "apps/web-pwa/**"
+      run: cd apps/web-pwa && npm test && npm run typecheck

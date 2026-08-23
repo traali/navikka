@@ -18,6 +18,7 @@ import {
   decideAisFetch,
   decideGpsAccept,
   decideWeatherFetch,
+  deviceFixKinematics,
   formatWeatherAge,
   isWeatherStale,
   pollStats,
@@ -81,17 +82,16 @@ export function Cockpit() {
         const now = Date.now();
         if (!decideGpsAccept({ now, pos, lastAt, lastPos })) return;
         lastAt = now;
-        const rawSpeed = p.coords.speed;
-        const hasSpeed = rawSpeed !== null && Number.isFinite(rawSpeed);
-        const sog = hasSpeed ? Math.max(0, rawSpeed * 1.94384) : 0;
-        const rawCog = p.coords.heading;
-        const cog =
-          rawCog !== null && Number.isFinite(rawCog)
-            ? rawCog
-            : hasSpeed && sog > 0.5
-              ? useNav.getState().cog
-              : 0;
-        useNav.getState().setPos(pos, sog, cog, "device", p.coords.accuracy);
+        lastPos = pos;
+        const prev = useNav.getState();
+        const k = deviceFixKinematics({
+          wasDemo: prev.gpsSource === "demo",
+          speedMs: p.coords.speed,
+          headingDeg: p.coords.heading,
+          prevSogKn: prev.sogKn,
+          prevCog: prev.cog,
+        });
+        useNav.getState().setPos(pos, k.sogKn, k.cog, "device", p.coords.accuracy);
       },
       () => {
         /* keep demo track if user denies */
