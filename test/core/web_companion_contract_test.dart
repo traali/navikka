@@ -134,4 +134,15 @@ void main() {
     ).readAsStringSync();
     expect(cockpit, contains('lastAisAttemptAt'));
   });
+
+  test('skipperInsight select compiles with flutter_riverpod', () {
+    final body = File(
+      'lib/features/ai/presentation/providers/ai_providers.dart',
+    ).readAsStringSync();
+    expect(body, contains('.select('));
+    expect(
+      body,
+      contains("import 'package:flutter_riverpod/flutter_riverpod.dart'"),
+    );
+  });
 }

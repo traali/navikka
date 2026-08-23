@@ -298,7 +298,22 @@ void _checkCompanionContract(List<Violation> violations) {
     }
   }
 
-  final skipperBanner = File(
+  final aiProviders = File(
+    'lib/features/ai/presentation/providers/ai_providers.dart',
+  );
+  if (aiProviders.existsSync()) {
+    final body = aiProviders.readAsStringSync();
+    if (body.contains('.select(') &&
+        !body.contains("import 'package:flutter_riverpod/flutter_riverpod.dart'")) {
+      violations.add(
+        const Violation(
+          'lib/features/ai/presentation/providers/ai_providers.dart',
+          1,
+          'skipperInsight .select requires flutter_riverpod import',
+        ),
+      );
+    }
+  }
     'lib/features/ai/presentation/widgets/skipper_insight_banner.dart',
   );
   if (skipperBanner.existsSync()) {
