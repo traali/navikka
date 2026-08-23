@@ -27,6 +27,7 @@ class _SkipperInsightBannerState extends ConsumerState<SkipperInsightBanner> {
     ref.listen(skipperInsightProvider, _onInsightChange);
 
     return insightAsync.when(
+      skipLoadingOnReload: true,
       data: (insight) {
         return _buildBanner(context, ref, insight);
       },
@@ -245,9 +246,7 @@ class _SkipperInsightBannerState extends ConsumerState<SkipperInsightBanner> {
                               decoration: BoxDecoration(
                                 color: colors.surfaceHighlight,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: colors.glassBorder,
-                                ),
+                                border: Border.all(color: colors.glassBorder),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -315,9 +314,7 @@ class _SkipperInsightBannerState extends ConsumerState<SkipperInsightBanner> {
                         insight.insightId ??
                         'fallback_${insight.timestamp.millisecondsSinceEpoch}';
                     ref
-                        .read(
-                          skipperInsightAcknowledgmentProvider.notifier,
-                        )
+                        .read(skipperInsightAcknowledgmentProvider.notifier)
                         .acknowledge(id);
                   },
                   child: Icon(
@@ -344,15 +341,10 @@ class _SkipperInsightBannerState extends ConsumerState<SkipperInsightBanner> {
           const SizedBox(
             width: 14,
             height: 14,
-            child: CircularProgressIndicator.adaptive(
-              strokeWidth: 2,
-            ),
+            child: CircularProgressIndicator.adaptive(strokeWidth: 2),
           ),
           const SizedBox(width: 12),
-          Text(
-            'Kippari analysoi tilannetta...',
-            style: AppTextStyles.caption,
-          ),
+          Text('Kippari analysoi tilannetta...', style: AppTextStyles.caption),
         ],
       ),
     );
@@ -382,11 +374,7 @@ class _ErrorState extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.warning_amber_rounded,
-            color: colors.warning,
-            size: 20,
-          ),
+          Icon(Icons.warning_amber_rounded, color: colors.warning, size: 20),
           const SizedBox(width: 12),
           Flexible(
             child: Column(
@@ -481,9 +469,7 @@ class _StatusIconState extends State<_StatusIcon>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: widget.color.withValues(
-                  alpha: 0.2 * _controller.value,
-                ),
+                color: widget.color.withValues(alpha: 0.2 * _controller.value),
                 blurRadius: 10 * _controller.value,
                 spreadRadius: 2 * _controller.value,
               ),

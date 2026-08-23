@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sakkoja/core/constants/underway_fetch.dart';
 import 'package:sakkoja/core/constants/weather_sync_constants.dart';
 import 'package:sakkoja/core/network/network_monitor_provider.dart';
 import 'package:sakkoja/core/utils/logger.dart';
@@ -220,7 +221,7 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
     } catch (e, s) {
       Log.e('PointWeatherSync: Staggered startup failed', e, s);
       if (_isDisposed) return;
-      state = state.copyWith(isSyncing: false, error: e.toString());
+      state = state.copyWith(isSyncing: false, error: sanitizeNetworkError(e));
     }
   }
 
@@ -279,7 +280,7 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
     } catch (e, s) {
       Log.e('PointWeatherSync: Manual sync failed', e, s);
       if (_isDisposed) return;
-      state = state.copyWith(isSyncing: false, error: e.toString());
+      state = state.copyWith(isSyncing: false, error: sanitizeNetworkError(e));
     } finally {
       final pending = _pendingCenter;
       _pendingCenter = null;
@@ -451,7 +452,7 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
     } catch (e, s) {
       Log.e('Sync failed for ${source.name}', e, s);
       if (!_isDisposed) {
-        state = state.copyWith(error: e.toString());
+        state = state.copyWith(error: sanitizeNetworkError(e));
       }
     } finally {
       _inFlightSyncs--;
@@ -473,7 +474,7 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
     } catch (e, s) {
       Log.e('Pan sync failed for ${source.name}', e, s);
       if (!_isDisposed) {
-        state = state.copyWith(error: e.toString());
+        state = state.copyWith(error: sanitizeNetworkError(e));
       }
     } finally {
       _inFlightSyncs--;

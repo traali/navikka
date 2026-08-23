@@ -213,4 +213,90 @@ void main() {
       ),
     ).called(1);
   });
+
+  test(
+    'battery 0 (iOS Chrome / unsupported API) does not disable AI',
+    () async {
+      when(() => battery.batteryLevel).thenAnswer((_) async => 0);
+      final weather = WeatherData(
+        timestamp: DateTime.now(),
+        location: const LatLng(0, 0),
+        stationName: 'Test',
+      );
+      when(
+        () => heuristicEngine.analyze(
+          weather: any(named: 'weather'),
+          wave: any(named: 'wave'),
+          forecasts: any(named: 'forecasts'),
+          windowHours: any(named: 'windowHours'),
+          thresholds: any(named: 'thresholds'),
+        ),
+      ).thenReturn(
+        WeatherInsight(
+          status: SafetyStatus.green,
+          advice: 'Heuristic fine',
+          timestamp: DateTime.now(),
+        ),
+      );
+
+      final result = await hybridEngine.getInsight(
+        weather: weather,
+        wave: null,
+        forecasts: [],
+        navContext: NavigationContext.empty(),
+      );
+
+      expect(result.advice.contains('Low Battery'), isFalse);
+      verify(
+        () => aiService.getAdvice(
+          weather: weather,
+          wave: null,
+          forecasts: [],
+          status: SafetyStatus.green,
+          context: any(named: 'context'),
+        ),
+      ).called(1);
+    },
+  );
+
+  test('battery 12 percent disables cloud/edge AI', () async {
+    when(() => battery.batteryLevel).thenAnswer((_) async => 12);
+    when(
+      () => heuristicEngine.analyze(
+        weather: any(named: 'weather'),
+        wave: any(named: 'wave'),
+        forecasts: any(named: 'forecasts'),
+        windowHours: any(named: 'windowHours'),
+        thresholds: any(named: 'thresholds'),
+      ),
+    ).thenReturn(
+      WeatherInsight(
+        status: SafetyStatus.green,
+        advice: 'Heuristic fine',
+        timestamp: DateTime.now(),
+      ),
+    );
+
+    final result = await hybridEngine.getInsight(
+      weather: WeatherData(
+        timestamp: DateTime.now(),
+        location: const LatLng(0, 0),
+        stationName: 'Test',
+      ),
+      wave: null,
+      forecasts: [],
+      navContext: NavigationContext.empty(),
+    );
+
+    expect(result.advice, contains('Low Battery'));
+    verifyNever(
+      () => aiService.getAdvice(
+        weather: any(named: 'weather'),
+        wave: any(named: 'wave'),
+        forecasts: any(named: 'forecasts'),
+        status: any(named: 'status'),
+        context: any(named: 'context'),
+      ),
+    );
+  });
 }

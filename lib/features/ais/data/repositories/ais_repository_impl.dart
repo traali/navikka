@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sakkoja/core/constants/underway_fetch.dart';
 import 'package:sakkoja/core/errors/failure.dart';
 import 'package:sakkoja/core/utils/logger.dart';
 import 'package:sakkoja/features/ais/data/datasources/digitraffic_ais_remote_data_source.dart';
@@ -30,7 +31,15 @@ class AisRepositoryImpl implements AisRepository {
     required LatLng northEast,
   }) async {
     try {
-      final featureCollection = await _remoteDataSource.fetchAisLocations();
+      final center = LatLng(
+        (southWest.latitude + northEast.latitude) / 2,
+        (southWest.longitude + northEast.longitude) / 2,
+      );
+      final featureCollection = await _remoteDataSource.fetchAisLocations(
+        latitude: center.latitude,
+        longitude: center.longitude,
+        radiusKm: UnderwayFetch.aisRadiusKm,
+      );
 
       final targets = <AisTarget>[];
       final now = DateTime.now();

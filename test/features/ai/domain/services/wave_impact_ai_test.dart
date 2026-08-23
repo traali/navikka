@@ -97,4 +97,22 @@ void main() {
       },
     );
   });
+
+  group('WaveImpactAiService - sensor honesty', () {
+    test('initial state is not a fake 1.0g measurement', () {
+      final initial = WaveImpactState.initial();
+      expect(initial.hasSensorSamples, isFalse);
+    });
+
+    test('first processSensorReading marks live samples', () {
+      final service = WaveImpactAiService();
+      final state = service.processSensorReading(
+        gForce: 1.05,
+        pitchRates: const [],
+        rollRates: const [],
+        now: DateTime.now(),
+      );
+      expect(state.hasSensorSamples, isTrue);
+    });
+  });
 }

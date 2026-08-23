@@ -40,6 +40,7 @@ class WaveImpactState {
     required this.severity,
     required this.skipperAdvice,
     required this.timestamp,
+    this.hasSensorSamples = false,
   });
 
   final double currentGForce;
@@ -51,6 +52,7 @@ class WaveImpactState {
   final SlamSeverity severity;
   final String skipperAdvice;
   final DateTime timestamp;
+  final bool hasSensorSamples;
 
   factory WaveImpactState.initial() => WaveImpactState(
     currentGForce: 1,
@@ -60,8 +62,9 @@ class WaveImpactState {
     attackDirection: WaveAttackDirection.calm,
     isOutlierWave: false,
     severity: SlamSeverity.smooth,
-    skipperAdvice: 'Tasainen kulku, aallokon iskut minimissä.',
+    skipperAdvice: 'Ei anturidataa — odottaa liiketunnistimia.',
     timestamp: DateTime.now(),
+    hasSensorSamples: false,
   );
 }
 
@@ -249,6 +252,7 @@ class WaveImpactAiService {
       severity: severity,
       skipperAdvice: advice,
       timestamp: now,
+      hasSensorSamples: true,
     );
 
     _currentState = newState;

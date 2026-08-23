@@ -53,7 +53,8 @@ void main() {
     expect(body, contains('deviceFixKinematics'));
     expect(body, contains('wasDemo'));
     expect(body, contains('WEATHER_RETRY_MS'));
-    expect(body, contains('lastAttemptAt'));
+    expect(body, contains('lastAttemptAt: number | null'));
+    expect(body.contains('lastAttemptAt?:'), isFalse);
   });
 
   test('companion fairway lookup uses segments', () {
@@ -92,9 +93,61 @@ void main() {
 
   test('Pages deploy skips when Cloudflare secrets are unset', () {
     final body = File('.github/workflows/deploy.yml').readAsStringSync();
-    expect(body, contains('should_deploy'));
+    expect(body, contains("if: needs.gate.outputs.should_deploy == 'true'"));
+    expect(body, contains('required: false'));
     expect(body, contains('CLOUDFLARE_API_TOKEN'));
     expect(body, contains('CLOUDFLARE_ACCOUNT_ID'));
     expect(body, contains('Skipping Cloudflare Pages deploy'));
+  });
+
+  test('Flutter AIS is radius-bounded and TTL-gated like companion', () {
+    final ds = File(
+      'lib/features/ais/data/datasources/'
+      'digitraffic_ais_remote_data_source.dart',
+    ).readAsStringSync();
+    expect(ds, contains("'radius':"));
+    expect(ds, contains('latitude'));
+    final prov = File(
+      'lib/features/ais/presentation/providers/ais_targets_provider.dart',
+    ).readAsStringSync();
+    expect(prov, contains('shouldFetchAis'));
+    expect(prov, contains('UnderwayFetch.aisPollCheck'));
+    expect(
+      prov.contains('Timer.periodic(const Duration(seconds: 15)'),
+      isFalse,
+    );
+    expect(prov.contains('reasonMoved'), isFalse);
+  });
+
+  test('Skipper banner and AIS retry share underway honesty', () {
+    final banner = File(
+      'lib/features/ai/presentation/widgets/'
+      'skipper_insight_banner.dart',
+    ).readAsStringSync();
+    expect(banner, contains('skipLoadingOnReload: true'));
+    final screen = File(
+      'lib/features/weather/presentation/screens/weather_screen.dart',
+    ).readAsStringSync();
+    expect(screen, contains('skipLoadingOnReload: true'));
+    final policy = File(
+      'apps/web-pwa/src/lib/navikka/fetch-policy.ts',
+    ).readAsStringSync();
+    expect(policy, contains('AIS_RETRY_MS'));
+    expect(policy.contains('lastAttemptAt?:'), isFalse);
+    final cockpit = File(
+      'apps/web-pwa/src/components/navikka/cockpit.tsx',
+    ).readAsStringSync();
+    expect(cockpit, contains('lastAisAttemptAt'));
+  });
+
+  test('skipperInsight select compiles with flutter_riverpod', () {
+    final body = File(
+      'lib/features/ai/presentation/providers/ai_providers.dart',
+    ).readAsStringSync();
+    expect(body, contains('.select('));
+    expect(
+      body,
+      contains("import 'package:flutter_riverpod/flutter_riverpod.dart'"),
+    );
   });
 }

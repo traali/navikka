@@ -91,6 +91,9 @@ describe("nav store", () => {
     assert.ok(useNav.getState().ais.length >= 1);
     useNav.getState().setAis([{ mmsi: "1", name: "LIVE", sogKn: 8, cog: 90, pos: HELSINKI_SEA, kind: "ferry" }], "live");
     assert.equal(useNav.getState().aisSource, "live");
+    useNav.getState().setAis([], "live");
+    assert.equal(useNav.getState().aisSource, "live");
+    assert.equal(useNav.getState().ais.length, 0);
   });
 
   it("does not invent UKC at Porkkala", () => {

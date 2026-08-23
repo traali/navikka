@@ -60,7 +60,7 @@ class _VoyageRecorderHudState extends ConsumerState<VoyageRecorderHud> {
     return Positioned(
       top: MediaQuery.paddingOf(context).top + 54,
       left: 12,
-      right: 12,
+      right: 72, // zoom +/- is right:12 × 48px → occupies to 60; 12px gap
       child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 420),
@@ -170,7 +170,9 @@ class _VoyageRecorderHudState extends ConsumerState<VoyageRecorderHud> {
                 },
                 icon: const Icon(Icons.stop_rounded, size: 16),
                 label: const Text(
-                  'Lopeta & Tallenna',
+                  'Lopeta',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),

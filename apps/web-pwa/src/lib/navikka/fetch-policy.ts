@@ -15,6 +15,7 @@ export const AIS_BBOX_DEG = 0.4;
 /** Digitraffic `radius` is kilometres. 0.4° ≈ 44 km. */
 export const AIS_RADIUS_KM = 45;
 export const WEATHER_RETRY_MS = 60 * 1000;
+export const AIS_RETRY_MS = 60 * 1000;
 
 export const pollStats = {
   weather: 0,
@@ -82,40 +83,54 @@ export function decideWeatherFetch(opts: {
   pos: LatLng;
   lastAt: number | null;
   lastPos: LatLng | null;
-  lastAttemptAt?: number | null;
+  lastAttemptAt: number | null;
   hidden: boolean;
   inflight: boolean;
 }): RefreshDecision {
   const snapped = snapPos(opts.pos);
   if (opts.hidden) return { fetch: false, reason: "hidden", snapped };
   if (opts.inflight) return { fetch: false, reason: "inflight", snapped };
-  if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < WEATHER_RETRY_MS) {
-    return { fetch: false, reason: "backoff", snapped };
+  if (opts.lastAt == null) {
+    if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < WEATHER_RETRY_MS) {
+      return { fetch: false, reason: "backoff", snapped };
+    }
+    return { fetch: true, reason: "first", snapped };
   }
-  if (opts.lastAt == null) return { fetch: true, reason: "first", snapped };
   const sameCell =
     opts.lastPos != null &&
     snapPos(opts.lastPos).lat === snapped.lat &&
     snapPos(opts.lastPos).lng === snapped.lng;
-  const age = opts.now - opts.lastAt;
   if (!sameCell) return { fetch: true, reason: "moved", snapped };
-  if (age >= WEATHER_TTL_MS) return { fetch: true, reason: "ttl", snapped };
-  return { fetch: false, reason: "fresh", snapped };
+  const age = opts.now - opts.lastAt;
+  if (age < WEATHER_TTL_MS) return { fetch: false, reason: "fresh", snapped };
+  if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < WEATHER_RETRY_MS) {
+    return { fetch: false, reason: "backoff", snapped };
+  }
+  return { fetch: true, reason: "ttl", snapped };
 }
 
 export function decideAisFetch(opts: {
   now: number;
   lastAt: number | null;
+  lastAttemptAt: number | null;
   hidden: boolean;
   inflight: boolean;
   active: boolean;
-}): { fetch: boolean; reason: "first" | "ttl" | "hidden" | "fresh" | "inflight" } {
+}): { fetch: boolean; reason: "first" | "ttl" | "hidden" | "fresh" | "inflight" | "backoff" } {
   if (opts.hidden) return { fetch: false, reason: "hidden" };
   if (opts.inflight) return { fetch: false, reason: "inflight" };
-  if (opts.lastAt == null) return { fetch: true, reason: "first" };
+  if (opts.lastAt == null) {
+    if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < AIS_RETRY_MS) {
+      return { fetch: false, reason: "backoff" };
+    }
+    return { fetch: true, reason: "first" };
+  }
   const ttl = opts.active ? AIS_TTL_FOLLOW_MS : AIS_TTL_IDLE_MS;
-  if (opts.now - opts.lastAt >= ttl) return { fetch: true, reason: "ttl" };
-  return { fetch: false, reason: "fresh" };
+  if (opts.now - opts.lastAt < ttl) return { fetch: false, reason: "fresh" };
+  if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < AIS_RETRY_MS) {
+    return { fetch: false, reason: "backoff" };
+  }
+  return { fetch: true, reason: "ttl" };
 }
 
 export function decideGpsAccept(opts: {

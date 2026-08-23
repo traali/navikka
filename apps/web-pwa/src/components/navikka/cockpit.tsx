@@ -130,6 +130,7 @@ export function Cockpit() {
     let weatherInflight = false;
     let aisInflight = false;
     let lastWeatherAttemptAt: number | null = null;
+    let lastAisAttemptAt: number | null = null;
 
     const tick = async () => {
       const hidden = document.visibilityState !== "visible";
@@ -143,12 +144,30 @@ export function Cockpit() {
         hidden,
         inflight: weatherInflight,
       });
+      const ais = decideAisFetch({
+        now: Date.now(),
+        lastAt: s.aisAt,
+        lastAttemptAt: lastAisAttemptAt,
+        hidden,
+        inflight: aisInflight,
+        active: s.follow || s.navigating,
+      });
       if (!wx.fetch) pollStats.skippedWeather += 1;
+      if (!ais.fetch) pollStats.skippedAis += 1;
+      // Arm both inflight flags before any await so a visibility tick
+      // cannot start a second AIS request while weather is in flight.
       if (wx.fetch && alive) {
         weatherInflight = true;
         lastWeatherAttemptAt = Date.now();
         pollStats.weather += 1;
         useNav.setState({ weatherFetching: true });
+      }
+      if (ais.fetch && alive) {
+        aisInflight = true;
+        lastAisAttemptAt = Date.now();
+        pollStats.ais += 1;
+      }
+      if (wx.fetch && alive) {
         try {
           const w = await fetchWeather(wx.snapped);
           if (alive) useNav.getState().setWeather(w);
@@ -158,17 +177,7 @@ export function Cockpit() {
           weatherInflight = false;
         }
       }
-      const ais = decideAisFetch({
-        now: Date.now(),
-        lastAt: s.aisAt,
-        hidden,
-        inflight: aisInflight,
-        active: s.follow || s.navigating,
-      });
-      if (!ais.fetch) pollStats.skippedAis += 1;
       if (ais.fetch && alive) {
-        aisInflight = true;
-        pollStats.ais += 1;
         try {
           const targets = await fetchAisAround(s.pos);
           if (alive) useNav.getState().setAis(targets, "live");

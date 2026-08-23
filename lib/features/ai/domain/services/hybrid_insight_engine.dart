@@ -1,4 +1,5 @@
 import 'package:battery_plus/battery_plus.dart';
+import 'package:sakkoja/core/constants/underway_fetch.dart';
 import 'package:sakkoja/core/utils/logger.dart';
 import 'package:sakkoja/features/ai/domain/entities/navigation_context.dart';
 import 'package:sakkoja/features/ai/domain/entities/weather_insight.dart';
@@ -76,7 +77,7 @@ class HybridInsightEngine {
       } catch (e) {
         Log.w('[HybridEngine] Battery check unavailable on platform: $e');
       }
-      if (batteryLevel < 20) {
+      if (isBatteryTooLowForAi(batteryLevel)) {
         return heuristicInsight.copyWith(
           advice: '${heuristicInsight.advice} (AI Disabled - Low Battery)',
         );

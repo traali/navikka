@@ -1,7 +1,7 @@
 # AGENTS.md
 
 > **Purpose**: Router and context-injection guide for AI coding assistants and contributors working on the Navikka codebase.
-> **Last Verified**: 2026-08-23 @ `ci/pages-skip-missing-secrets`
+> **Last Verified**: 2026-08-23 @ `fix/friday-field-test-underway`
 > **Canonical Docs**: [llms.txt](file:///c:/dev2/gtp/sakkoja/llms.txt) (LLM Context Map) · [docs/architecture.md](file:///c:/dev2/gtp/sakkoja/docs/architecture.md) (Architecture Specification) · [docs/developer_guide.md](file:///c:/dev2/gtp/sakkoja/docs/developer_guide.md) (Developer Guide)
 
 ---
@@ -81,7 +81,7 @@ Helsinki skipper cockpit, not a second Navikka. Flutter `lib/` remains the produ
 - Fairway distance is a polyline **segment** (`distToSegmentM` / `distToPolylineM`), cap 1 km.
 - First LIVE GPS must not inherit demo SOG (`deviceFixKinematics`).
 - AIS query is `aisQuery` (`latitude/longitude/radius`). Seed AIS is not live (`aisSource: "seed"`).
-- Weather errors throw. Empty MET `timeseries` throws. Retry uses `lastAttemptAt` + `WEATHER_RETRY_MS` (60 s).
+- Weather errors throw. Empty MET `timeseries` throws. Retry uses `lastAttemptAt` + `WEATHER_RETRY_MS` (60 s). **Moved snap cell beats backoff.** `lastAttemptAt` is required.
 
 **CI (every PR, both stacks)**
 

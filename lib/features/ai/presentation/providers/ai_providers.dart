@@ -1,5 +1,6 @@
 import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 // Import implementation to access the repository provider
@@ -51,21 +52,20 @@ Stream<SkipperSettings> skipperSettings(Ref ref) {
 
 @riverpod
 Future<WeatherInsight> skipperInsight(Ref ref) async {
-  // 1. Watch the map's weather state
-  final weatherState = ref.watch(pointWeatherControllerProvider);
+  // Watch weather *values*, not isSyncing — otherwise every GPS/sync tick
+  // rebuilds Skipper AI (Friday field test: progress bar + card flicker).
+  final weather = ref.watch(
+    pointWeatherControllerProvider.select((s) => s.weather),
+  );
+  final wave = ref.watch(pointWeatherControllerProvider.select((s) => s.wave));
+  final forecasts = ref.watch(
+    pointWeatherControllerProvider.select((s) => s.forecast),
+  );
 
-  // 2. Watch Navigation Context (Vessel + Route)
   final vesselProfile = ref.watch(vesselSettingsControllerProvider).value;
   final activeRoute = ref.watch(activeRouteProvider).value;
   final plannedRoute = ref.watch(routePlannerControllerProvider);
-
-  // 3. Obtain the hybrid engine
   final engine = ref.watch(hybridInsightEngineProvider);
-
-  // OPTIMIZATION: Throttle AI inference.
-  // We only re-run if weather changed significantly or 5 mins passed.
-  // For now, we perform a simple delay to prevent blast-updates.
-  await Future<void>.delayed(const Duration(seconds: 2));
 
   final navContext = NavigationContext(
     vesselType: vesselProfile?.type ?? VesselType.openBoat,
@@ -83,9 +83,9 @@ Future<WeatherInsight> skipperInsight(Ref ref) async {
   // 4. Generate insight based on current weather/waves + context
   final locale = WidgetsBinding.instance.platformDispatcher.locale;
   return engine.getInsight(
-    weather: weatherState.weather,
-    wave: weatherState.wave,
-    forecasts: weatherState.forecast,
+    weather: weather,
+    wave: wave,
+    forecasts: forecasts,
     navContext: navContext,
     language: locale.languageCode,
   );

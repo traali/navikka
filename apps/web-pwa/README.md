@@ -41,8 +41,8 @@ A skipper HUD you can open in a phone browser:
 
 ## What we did not do
 
-- Did not rewrite Flutter.
-- Did not touch `web/`, `lib/`, or `pubspec.yaml`.
+- Did not rewrite Flutter as a second product. Flutter `lib/` remains the
+  marine navigator; this companion is the Helsinki `/cockpit/` demo.
 - Did not claim this is an official Traficom chart. The in-app disclaimer stays.
 - Did not persist live GPS/weather to `localStorage` (only theme, units, vessel,
   route, catches).
