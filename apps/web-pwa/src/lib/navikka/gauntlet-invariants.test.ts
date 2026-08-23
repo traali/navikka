@@ -113,4 +113,11 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.equal(aisMarkersForMap([], "live").length, 0);
     assert.equal(aisMarkersForMap([], "seed").length, AIS_SEED.length);
   });
+
+  it("companion basemap is not Esri Ocean (Helsinki z13 watermark)", () => {
+    const src = readFileSync(resolve(import.meta.dirname, "../../components/navikka/map-view.tsx"), "utf8");
+    assert.equal(src.includes("World_Ocean_Base"), false);
+    assert.match(src, /basemaps\.cartocdn\.com/);
+    assert.match(src, /julkinen\.traficom\.fi/);
+  });
 });

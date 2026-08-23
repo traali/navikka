@@ -150,4 +150,32 @@ void main() {
       contains("import 'package:flutter_riverpod/flutter_riverpod.dart'"),
     );
   });
+
+  test('web map tiles do not set User-Agent (Traficom CORS)', () {
+    for (final path in [
+      'lib/features/map/presentation/widgets/map_content.dart',
+      'lib/features/satellite/presentation/screens/satellite_screen.dart',
+    ]) {
+      expect(
+        File(path).readAsStringSync().contains("'User-Agent':"),
+        isFalse,
+        reason: path,
+      );
+    }
+    expect(
+      File(
+        'lib/features/map/presentation/widgets/map_content.dart',
+      ).readAsStringSync(),
+      contains('fallbackUrl:'),
+    );
+  });
+
+  test('companion map is not Esri Ocean', () {
+    final src = File(
+      'apps/web-pwa/src/components/navikka/map-view.tsx',
+    ).readAsStringSync();
+    expect(src.contains('World_Ocean_Base'), isFalse);
+    expect(src, contains('basemaps.cartocdn.com'));
+    expect(src, contains('julkinen.traficom.fi'));
+  });
 }

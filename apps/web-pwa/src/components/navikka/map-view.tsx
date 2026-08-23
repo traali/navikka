@@ -53,17 +53,29 @@ export function MapView({ onReady }: Props) {
         bounceAtZoomLimits: false,
       }).setView([start.lat, start.lng], 13.5);
 
-      const dark = L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-        { attribution: "Tiles &copy; Esri", maxZoom: 16 },
+      const land = L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        {
+          attribution: "&copy; OpenStreetMap &copy; CARTO",
+          subdomains: "abcd",
+          maxZoom: 20,
+        },
       );
       const light = L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-        { attribution: "Tiles &copy; Esri", maxZoom: 19 },
+        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        {
+          attribution: "&copy; OpenStreetMap &copy; CARTO",
+          subdomains: "abcd",
+          maxZoom: 20,
+        },
       );
       const sat = L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         { attribution: "Tiles &copy; Esri", maxZoom: 19 },
+      );
+      const nautical = L.tileLayer(
+        "https://julkinen.traficom.fi/rasteripalvelu/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=Traficom%3AMerikarttasarjat+public&style=default&format=image%2Fpng&TileMatrixSet=WGS84_Pseudo-Mercator&TileMatrix=WGS84_Pseudo-Mercator:{z}&TileRow={y}&TileCol={x}",
+        { attribution: "Traficom merikartta", maxNativeZoom: 15, maxZoom: 18, opacity: 0.88 },
       );
       const seamark = L.tileLayer("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenSeaMap",
@@ -73,8 +85,9 @@ export function MapView({ onReady }: Props) {
 
       const theme = useNav.getState().theme;
       const satellite = useNav.getState().layers.satellite;
-      const base = satellite ? sat : theme === "solar" ? light : dark;
+      const base = satellite ? sat : theme === "solar" ? light : land;
       base.addTo(map);
+      if (!satellite) nautical.addTo(map);
       if (useNav.getState().layers.seamarks) seamark.addTo(map);
 
       const fairways = L.layerGroup();
@@ -128,7 +141,7 @@ export function MapView({ onReady }: Props) {
       route.addTo(map);
       wps.addTo(map);
 
-      layersRef.current = { dark, light, sat, seamark, fairways, speed, fish, harbors, ais, boat, route, wps };
+      layersRef.current = { land, light, sat, nautical, seamark, fairways, speed, fish, harbors, ais, boat, route, wps };
       if (useNav.getState().layers.harbors) harbors.addTo(map);
       if (useNav.getState().layers.ais) ais.addTo(map);
       if (useNav.getState().layers.speedLimits) speed.addTo(map);
@@ -186,12 +199,13 @@ export function MapView({ onReady }: Props) {
         if (pan.pan) m.panTo([s.pos.lat, s.pos.lng], { animate: pan.animate, duration: pan.animate ? 0.4 : 0 });
       }
       if (s.layers !== prev.layers || s.theme !== prev.theme) {
-        const baseWanted = s.layers.satellite ? Lwait.sat : s.theme === "solar" ? Lwait.light : Lwait.dark;
-        [Lwait.dark, Lwait.light, Lwait.sat].forEach((ly) => {
+        const baseWanted = s.layers.satellite ? Lwait.sat : s.theme === "solar" ? Lwait.light : Lwait.land;
+        [Lwait.land, Lwait.light, Lwait.sat].forEach((ly) => {
           if (ly === baseWanted) {
             if (!m.hasLayer(ly)) ly.addTo(m);
           } else if (m.hasLayer(ly)) m.removeLayer(ly);
         });
+        toggle(m, Lwait.nautical, !s.layers.satellite);
         toggle(m, Lwait.seamark, s.layers.seamarks);
         toggle(m, Lwait.harbors, s.layers.harbors);
         toggle(m, Lwait.ais, s.layers.ais);

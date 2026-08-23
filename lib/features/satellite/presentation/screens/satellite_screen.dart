@@ -71,12 +71,7 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                   urlTemplate:
                       'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/GoogleMapsCompatible/{z}/{x}/{y}.jpg',
                   tileProvider: kIsWeb
-                      ? NetworkTileProvider(
-                          headers: const {
-                            'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
-                            'Referer': 'https://navikka.pages.dev',
-                          },
-                        )
+                      ? NetworkTileProvider()
                       : SafeTileProvider(
                           dio: ref.read(tileDioProvider),
                           userAgent: 'Navikka/1.0',
@@ -88,12 +83,7 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                   urlTemplate:
                       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                   tileProvider: kIsWeb
-                      ? NetworkTileProvider(
-                          headers: const {
-                            'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
-                            'Referer': 'https://navikka.pages.dev',
-                          },
-                        )
+                      ? NetworkTileProvider()
                       : SafeTileProvider(
                           dio: ref.read(tileDioProvider),
                           userAgent: 'Navikka/1.0',
@@ -105,12 +95,7 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                   urlTemplate:
                       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                   tileProvider: kIsWeb
-                      ? NetworkTileProvider(
-                          headers: const {
-                            'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
-                            'Referer': 'https://navikka.pages.dev',
-                          },
-                        )
+                      ? NetworkTileProvider()
                       : SafeTileProvider(
                           dio: ref.read(tileDioProvider),
                           userAgent: 'Navikka/1.0',
@@ -153,12 +138,7 @@ class _SatelliteScreenState extends ConsumerState<SatelliteScreen> {
                   child: TileLayer(
                     urlTemplate: MapUrls.traficomWmts,
                     tileProvider: kIsWeb
-                        ? NetworkTileProvider(
-                            headers: const {
-                              'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
-                              'Referer': 'https://navikka.pages.dev',
-                            },
-                          )
+                        ? NetworkTileProvider()
                         : SafeTileProvider(
                             dio: ref.read(tileDioProvider),
                             userAgent: 'Navikka/1.0',
