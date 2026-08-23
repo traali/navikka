@@ -134,49 +134,53 @@ class ForecastIntelligenceEngine extends _$ForecastIntelligenceEngine {
         }
       }
 
-      // Default fallback if a model is missing
-      fmiWind ??= observedWind;
-      metWind ??= (observedWind > 5.0 ? observedWind + 1.8 : observedWind);
-      openWeatherWind ??= (observedWind > 3.0
-          ? observedWind - 0.8
-          : observedWind);
+      // Never invent a missing model. Compare only providers that actually answered.
+      final modelWinds = <double>[
+        if (fmiWind != null) fmiWind,
+        if (metWind != null) metWind,
+        if (openWeatherWind != null) openWeatherWind,
+      ];
+      if (modelWinds.isNotEmpty) {
+        final minWind = modelWinds.reduce((a, b) => a < b ? a : b);
+        final maxWind = modelWinds.reduce((a, b) => a > b ? a : b);
+        final spread = modelWinds.length >= 2 ? maxWind - minWind : 0.0;
+        final obsVsForecastSpread = fmiWind != null
+            ? (observedWind - fmiWind).abs()
+            : 0.0;
+        final fmiTxt = fmiWind?.toStringAsFixed(1) ?? '—';
+        final metTxt = metWind?.toStringAsFixed(1) ?? '—';
 
-      final modelWinds = [fmiWind, metWind, openWeatherWind];
-      final minWind = modelWinds.reduce((a, b) => a < b ? a : b);
-      final maxWind = modelWinds.reduce((a, b) => a > b ? a : b);
-      final spread = maxWind - minWind;
-      final obsVsForecastSpread = (observedWind - fmiWind).abs();
-
-      if (spread >= 4.0 || obsVsForecastSpread >= 3.5) {
-        disagreement = SourceDisagreementEvent(
-          gridKey: gridKey,
-          severity: ForecastAlertSeverity.orange,
-          message:
-              'Mitattu havainto: ${observedWind.toStringAsFixed(1)} m/s · Malleissa merkittäviä eroja: FMI ${fmiWind.toStringAsFixed(1)} m/s, MET ${metWind.toStringAsFixed(1)} m/s — suosi varovaisempaa arviota',
-          minWindMs: minWind,
-          maxWindMs: maxWind,
-          minWaveMeters: wave?.waveHeight ?? 0,
-          maxWaveMeters: wave?.waveHeight ?? 0,
-          fmiWindMs: fmiWind,
-          metWindMs: metWind,
-          openWeatherWindMs: openWeatherWind,
-          observedWindMs: observedWind,
-        );
-      } else if (spread >= 2.0 || obsVsForecastSpread >= 2.0) {
-        disagreement = SourceDisagreementEvent(
-          gridKey: gridKey,
-          severity: ForecastAlertSeverity.yellow,
-          message:
-              'Mitattu havainto: ${observedWind.toStringAsFixed(1)} m/s · Ennusteet: FMI ${fmiWind.toStringAsFixed(1)} m/s · MET ${metWind.toStringAsFixed(1)} m/s',
-          minWindMs: minWind,
-          maxWindMs: maxWind,
-          minWaveMeters: wave?.waveHeight ?? 0,
-          maxWaveMeters: wave?.waveHeight ?? 0,
-          fmiWindMs: fmiWind,
-          metWindMs: metWind,
-          openWeatherWindMs: openWeatherWind,
-          observedWindMs: observedWind,
-        );
+        if (spread >= 4.0 || obsVsForecastSpread >= 3.5) {
+          disagreement = SourceDisagreementEvent(
+            gridKey: gridKey,
+            severity: ForecastAlertSeverity.orange,
+            message:
+                'Mitattu havainto: ${observedWind.toStringAsFixed(1)} m/s · Malleissa merkittäviä eroja: FMI $fmiTxt m/s, MET $metTxt m/s — suosi varovaisempaa arviota',
+            minWindMs: minWind,
+            maxWindMs: maxWind,
+            minWaveMeters: wave?.waveHeight ?? 0,
+            maxWaveMeters: wave?.waveHeight ?? 0,
+            fmiWindMs: fmiWind,
+            metWindMs: metWind,
+            openWeatherWindMs: openWeatherWind,
+            observedWindMs: observedWind,
+          );
+        } else if (spread >= 2.0 || obsVsForecastSpread >= 2.0) {
+          disagreement = SourceDisagreementEvent(
+            gridKey: gridKey,
+            severity: ForecastAlertSeverity.yellow,
+            message:
+                'Mitattu havainto: ${observedWind.toStringAsFixed(1)} m/s · Ennusteet: FMI $fmiTxt m/s · MET $metTxt m/s',
+            minWindMs: minWind,
+            maxWindMs: maxWind,
+            minWaveMeters: wave?.waveHeight ?? 0,
+            maxWaveMeters: wave?.waveHeight ?? 0,
+            fmiWindMs: fmiWind,
+            metWindMs: metWind,
+            openWeatherWindMs: openWeatherWind,
+            observedWindMs: observedWind,
+          );
+        }
       }
     }
 

@@ -2,12 +2,26 @@ import { MIN_SIZES, SPEED_ZONES } from "./catalog.ts";
 import { formatDdm, kmhToKn, pointInRing, type LatLng } from "./geo.ts";
 
 export function fogStatus(w: {
-  visM: number;
+  visM: number | null;
   tempC: number;
-  dewC: number;
+  dewC: number | null;
   humidity: number;
 }) {
-  const spread = Math.abs(w.tempC - w.dewC);
+  const spread = w.dewC == null ? Infinity : Math.abs(w.tempC - w.dewC);
+  if (w.visM == null) {
+    if (spread <= 1.2 && w.humidity >= 90) {
+      return {
+        level: "yellow" as const,
+        fi: "Utua / merisumuriski.",
+        en: "Mist / sea-fog condensation risk.",
+      };
+    }
+    return {
+      level: "muted" as const,
+      fi: "Näkyvyyttä ei mitattu.",
+      en: "No visibility observation.",
+    };
+  }
   if (w.visM <= 500)
     return {
       level: "red" as const,

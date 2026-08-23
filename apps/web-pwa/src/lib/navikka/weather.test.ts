@@ -35,6 +35,16 @@ describe("fogStatus COLREG 19/35", () => {
   it("good visibility stays green", () => {
     assert.equal(fogStatus(snap({})).level, "green");
   });
+
+  it("missing visM is unknown, not invented 14 km good vis", () => {
+    const f = fogStatus(snap({ visM: null }));
+    assert.equal(f.level, "muted");
+  });
+
+  it("missing dewC does not invent sea-fog from 11.1 °C", () => {
+    const f = fogStatus(snap({ visM: null, dewC: null, humidity: 92, tempC: 11 }));
+    assert.equal(f.level, "muted");
+  });
 });
 
 describe("fetchWeather failure must not look live", () => {
@@ -100,6 +110,57 @@ describe("fetchWeather failure must not look live", () => {
       assert.equal(w.windMs, 7.2);
       assert.equal(w.waveM, null);
       assert.equal(w.waterC, null);
+      assert.equal(w.visM, null);
+    } finally {
+      globalThis.fetch = orig;
+    }
+  });
+
+  it("does not invent dew 11.1 °C or gusts as wind×1.4", async () => {
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("oceanforecast")) {
+        return { ok: false, status: 404, json: async () => ({}) } as Response;
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          properties: {
+            timeseries: [
+              {
+                data: {
+                  instant: {
+                    details: { air_temperature: 12, wind_speed: 7.2 },
+                  },
+                },
+              },
+            ],
+          },
+        }),
+      } as Response;
+    }) as typeof fetch;
+    try {
+      const w = await fetchWeather(HELSINKI_SEA);
+      assert.equal(w.dewC, null);
+      assert.equal(w.gustMs, null);
+      assert.equal(w.visM, null);
+    } finally {
+      globalThis.fetch = orig;
+    }
+  });
+
+  it("throws when MET omits wind instead of inventing 6.4 m/s", async () => {
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          properties: { timeseries: [{ data: { instant: { details: { air_temperature: 12 } } } }] },
+        }),
+      }) as Response) as typeof fetch;
+    try {
+      await assert.rejects(() => fetchWeather(HELSINKI_SEA), /missing temp\/wind|failed/i);
     } finally {
       globalThis.fetch = orig;
     }

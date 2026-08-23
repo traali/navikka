@@ -171,8 +171,9 @@ export function MapView({ onReady }: Props) {
       onReadyRef.current?.({
         flyTo: (pos, zoom = 14.5) => map?.flyTo([pos.lat, pos.lng], zoom, { duration: 0.6 }),
         recenter: () => {
-          const p = useNav.getState().pos;
-          map?.flyTo([p.lat, p.lng], Math.max(map.getZoom(), 14), { duration: 0.5 });
+          const s = useNav.getState();
+          if (s.gpsSource !== "device") return;
+          map?.flyTo([s.pos.lat, s.pos.lng], Math.max(map.getZoom(), 14), { duration: 0.5 });
         },
       });
 

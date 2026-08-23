@@ -67,11 +67,11 @@ export function WeatherPanel() {
       </div>
       <div className="stat-grid">
         <Stat label={c.wind} value={fmtWind(w.windMs, windUnit)} sub={padCourse(w.windDir)} />
-        <Stat label={c.gust} value={fmtWind(w.gustMs, windUnit)} />
+        <Stat label={c.gust} value={w.gustMs == null ? "—" : fmtWind(w.gustMs, windUnit)} />
         <Stat label={c.waves} value={w.waveM == null ? "—" : fmtDepth(w.waveM, depthUnit)} sub={w.wavePeriod == null ? "" : `${c.period} ${w.wavePeriod.toFixed(0)} s`} />
         <Stat label={c.pressure} value={`${Math.round(w.pressureHpa)} hPa`} />
         <Stat label={c.water} value={w.waterC == null ? "—" : `${w.waterC.toFixed(1)} °C`} />
-        <Stat label={c.vis} value={w.visM >= 10000 ? "10+ km" : `${(w.visM / 1000).toFixed(1)} km`} />
+        <Stat label={c.vis} value={w.visM == null ? "—" : w.visM >= 10000 ? "10+ km" : `${(w.visM / 1000).toFixed(1)} km`} />
       </div>
       <p className="muted tiny">
         {c.wxSource}
@@ -347,22 +347,22 @@ export function SosSheet() {
   const copyPos = useNav((s) => s.copyPos);
   const { fw, ukc } = gpsLive ? ukcNow() : { fw: null, ukc: null };
   const close = () => useNav.getState().setSheet("none");
-  const ddm = formatDdm(pos);
-  const script = maydayScript({
-    name: vessel.name,
-    pos,
-    draftM: vessel.draftM,
-    fairway: fw?.name ?? null,
-    ukc,
-  });
-  const mayday = gpsLive
-    ? script
-    : `${c.waitingGps}\n${lang === "fi" ? "GPS ei kiinnittynyt — älä lue tätä sijaintia hätänä." : "No GPS fix — do not read this position as distress."}\n${script}`;
+  const ddm = gpsLive ? formatDdm(pos) : "—";
+  const script = gpsLive
+    ? maydayScript({
+        name: vessel.name,
+        pos,
+        draftM: vessel.draftM,
+        fairway: fw?.name ?? null,
+        ukc,
+      })
+    : `${c.waitingGps}\n${lang === "fi" ? "GPS ei kiinnittynyt — älä lue Helsingin oletuspinniä hätänä." : "No GPS fix — do not read a default chart pin as distress."}`;
+  const mayday = script;
   return (
     <Sheet title={c.sos} onClose={close} danger>
       <p className="mono pos-readout">{ddm}</p>
       <p className="muted tiny">
-        {vessel.name} · {fw && ukc != null ? `${c.ukc} ${ukc.toFixed(1)} m · ${fw.name}` : c.openWater}
+        {vessel.name} · {!gpsLive ? c.waitingGps : fw && ukc != null ? `${c.ukc} ${ukc.toFixed(1)} m · ${fw.name}` : c.openWater}
       </p>
       <div className="stack-btns">
         <a className="btn danger" href="tel:112">
@@ -371,12 +371,13 @@ export function SosSheet() {
         <a className="btn" href="tel:02941000">
           <Radio size={16} /> {c.mrcc} 0294 1000
         </a>
-        <button className="btn" type="button" onClick={() => void copyPos()}>
+        <button className="btn" type="button" onClick={() => void copyPos()} disabled={!gpsLive}>
           <Copy size={16} /> {copied ? c.copied : c.copyPos}
         </button>
         <button
           className="btn"
           type="button"
+          disabled={!gpsLive}
           onClick={() => void shareText("Navikka MAYDAY", mayday)}
         >
           {c.sharePos}
@@ -395,6 +396,7 @@ export function DetailSheet() {
   const sogKn = useNav((s) => s.sogKn);
   const ais = useNav((s) => s.ais);
   const aisSource = useNav((s) => s.aisSource);
+  const gpsLive = useNav((s) => s.gpsSource === "device");
   const close = () => useNav.getState().select(null);
   if (!sel) return null;
   if (sel.type === "harbor") {
@@ -448,10 +450,12 @@ export function DetailSheet() {
   if (sel.type === "ais") {
     const t = ais.find((x) => x.mmsi === sel.mmsi);
     if (!t) return null;
-    const cpa = computeCpa(pos, cog, sogKn, t.pos, t.cog, t.sogKn);
+    const cpa = gpsLive ? computeCpa(pos, cog, sogKn, t.pos, t.cog, t.sogKn) : null;
     const c = COPY[lang];
     const danger =
+      gpsLive &&
       aisSource === "live" &&
+      cpa != null &&
       (cpa.colliding || (cpa.tcpaMin > 0 && cpa.tcpaMin < 8 && cpa.cpaNm < 0.5));
     return (
       <Sheet title={t.name} onClose={close} danger={danger}>
@@ -459,11 +463,11 @@ export function DetailSheet() {
           <Stat label="MMSI" value={t.mmsi} />
           <Stat label={c.sog} value={`${t.sogKn.toFixed(1)} kn`} />
           <Stat label={c.cog} value={padCourse(t.cog)} />
-          <Stat label={c.cpa} value={`${cpa.cpaNm.toFixed(2)} NM`} />
+          <Stat label={c.cpa} value={cpa ? `${cpa.cpaNm.toFixed(2)} NM` : "—"} />
           <Stat
             label={c.tcpa}
             value={
-              !Number.isFinite(cpa.tcpaMin) ? "—" : cpa.opening ? c.opening : `${cpa.tcpaMin.toFixed(1)} min`
+              !cpa || !Number.isFinite(cpa.tcpaMin) ? "—" : cpa.opening ? c.opening : `${cpa.tcpaMin.toFixed(1)} min`
             }
           />
         </div>
@@ -490,8 +494,8 @@ export function DetailSheet() {
       <Sheet title={`${c.waypoint} ${sel.index + 1}`} onClose={close}>
         <p className="mono pos-readout">{formatDdm(p)}</p>
         <div className="stat-grid">
-          <Stat label={c.total} value={`${nmBetween(own, p).toFixed(2)} NM`} />
-          <Stat label={c.cog} value={padCourse(bearingDeg(own, p))} />
+          <Stat label={c.total} value={gpsLive ? `${nmBetween(own, p).toFixed(2)} NM` : "—"} />
+          <Stat label={c.cog} value={gpsLive ? padCourse(bearingDeg(own, p)) : "—"} />
         </div>
         <button className="btn danger" type="button" onClick={() => useNav.getState().removeWaypoint(sel.index)}>
           <Trash2 size={14} /> {c.deleteWp}
@@ -506,18 +510,19 @@ export function RouteHud() {
   const c = useCopy();
   const wps = useNav((s) => s.waypoints);
   const sog = useNav((s) => s.sogKn);
+  const gpsLive = useNav((s) => s.gpsSource === "device");
   const planning = useNav((s) => s.planning);
   const navigating = useNav((s) => s.navigating);
   const speedUnit = useNav((s) => s.speedUnit);
   if (!planning && wps.length === 0) return null;
-  const stats = routeStats(wps, sog);
+  const stats = routeStats(wps, gpsLive ? sog : 0);
   return (
     <div className="route-hud">
       <p className="tiny">{c.addWp}</p>
       {wps.length > 0 && (
         <p className="mono">
           {c.total} {stats.nm.toFixed(2)} NM · {c.eta} {stats.etaMin > 0 ? `${Math.round(stats.etaMin)} min` : "—"} ·{" "}
-          {fmtSpeed(sog, speedUnit)}
+          {gpsLive ? fmtSpeed(sog, speedUnit) : "—"}
         </p>
       )}
       <div className="row-btns">
@@ -540,22 +545,30 @@ export function VoiceSheet() {
   const w = useNav((s) => s.weather);
   const gpsLive = useNav((s) => s.gpsSource === "device");
   const { fw, ukc } = gpsLive ? ukcNow() : { fw: null, ukc: null };
-  const near = nearestHarbor(useNav.getState().pos);
+  const near = gpsLive ? nearestHarbor(useNav.getState().pos) : null;
   const close = () => useNav.getState().setSheet("none");
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [reply, setReply] = useState<string | null>(null);
   const replies = [
     lang === "fi"
-      ? fw && ukc != null
-        ? `Syvyys: ${fw.name}, kölivara ${ukc.toFixed(1)} m.`
-        : "Syvyys: avomeri, ei julkaistua väylää."
-      : fw && ukc != null
-        ? `Depth: ${fw.name}, UKC ${ukc.toFixed(1)} m.`
-        : "Depth: open water, no published fairway.",
+      ? !gpsLive
+        ? "Syvyys: GPS ei kiinnittynyt."
+        : fw && ukc != null
+          ? `Syvyys: ${fw.name}, kölivara ${ukc.toFixed(1)} m.`
+          : "Syvyys: avomeri, ei julkaistua väylää."
+      : !gpsLive
+        ? "Depth: no GPS fix."
+        : fw && ukc != null
+          ? `Depth: ${fw.name}, UKC ${ukc.toFixed(1)} m.`
+          : "Depth: open water, no published fairway.",
     lang === "fi"
-      ? `Lähin satama: ${near.harbor.name}, ${near.nm.toFixed(1)} NM.`
-      : `Nearest harbor: ${near.harbor.nameEn}, ${near.nm.toFixed(1)} NM.`,
+      ? near
+        ? `Lähin satama: ${near.harbor.name}, ${near.nm.toFixed(1)} NM.`
+        : "Lähin satama: GPS ei kiinnittynyt."
+      : near
+        ? `Nearest harbor: ${near.harbor.nameEn}, ${near.nm.toFixed(1)} NM.`
+        : "Nearest harbor: no GPS fix.",
     w
       ? lang === "fi"
         ? `Tuuli ${fmtWind(w.windMs, "ms")}${w.waveM == null ? "" : `, aallot ${w.waveM.toFixed(1)} m`}.`
@@ -568,13 +581,19 @@ export function VoiceSheet() {
     setBusy(true);
     setReply(null);
     const s = useNav.getState();
-    const ctx = [
-      `POS ${formatDdm(s.pos)}`,
-      `SOG ${s.sogKn.toFixed(1)} kn COG ${padCourse(s.cog)}`,
-      fw && ukc != null ? `UKC ${ukc.toFixed(1)} m ${fw.name}` : "Avomeri",
-      w ? `Tuuli ${w.windMs.toFixed(1)} m/s${w.waveM == null ? "" : ` aalto ${w.waveM.toFixed(1)} m`}` : "ei säätä",
-      `alus ${s.vessel.name} syväys ${s.vessel.draftM} m`,
-    ].join(" · ");
+    const ctx = gpsLive
+      ? [
+          `POS ${formatDdm(s.pos)}`,
+          `SOG ${s.sogKn.toFixed(1)} kn COG ${padCourse(s.cog)}`,
+          fw && ukc != null ? `UKC ${ukc.toFixed(1)} m ${fw.name}` : "Avomeri",
+          w ? `Tuuli ${w.windMs.toFixed(1)} m/s${w.waveM == null ? "" : ` aalto ${w.waveM.toFixed(1)} m`}` : "ei säätä",
+          `alus ${s.vessel.name} syväys ${s.vessel.draftM} m`,
+        ].join(" · ")
+      : [
+          "GPS ei kiinnittynyt — älä oleta Helsingin oletuspinniä veneeksi",
+          w ? `Karttasää tuuli ${w.windMs.toFixed(1)} m/s${w.waveM == null ? "" : ` aalto ${w.waveM.toFixed(1)} m`}` : "ei säätä",
+          `alus ${s.vessel.name} syväys ${s.vessel.draftM} m`,
+        ].join(" · ");
     try {
       const local = await askOnDevice(text, ctx, lang);
       setReply(local.text);
@@ -618,6 +637,7 @@ export function VoiceSheet() {
 export function SearchHits() {
   const q = useNav((s) => s.query).trim().toLowerCase();
   const lang = useNav((s) => s.lang);
+  const gpsLive = useNav((s) => s.gpsSource === "device");
   if (q.length < 2) return null;
   const coord = parseLatLngQuery(q);
   const hits = HARBORS.filter(
@@ -648,7 +668,7 @@ export function SearchHits() {
           }}
         >
           <Anchor size={14} /> {lang === "fi" ? h.name : h.nameEn}
-          <span>{nmBetween(useNav.getState().pos, h.pos).toFixed(1)} NM</span>
+          <span>{gpsLive ? `${nmBetween(useNav.getState().pos, h.pos).toFixed(1)} NM` : "—"}</span>
         </button>
       ))}
     </div>

@@ -51,6 +51,74 @@ void main() {
       expect(advice, contains('COLREG-säännön 5'));
     });
 
+    test('missing wave is not excellent 0.0 m seas', () async {
+      final weather = WeatherData(
+        timestamp: DateTime.now(),
+        location: const LatLng(60.15, 24.95),
+        stationName: 'Harmaja',
+        windSpeed: 4.5,
+        windGust: 5.5,
+        windDirection: 180,
+      );
+      const context = NavigationContext(
+        vesselType: VesselType.cabinBoat,
+      );
+
+      final advice = await service.getAdvice(
+        weather: weather,
+        wave: null,
+        forecasts: [],
+        status: SafetyStatus.green,
+        context: context,
+      );
+
+      expect(advice, isNot(contains('aallokko 0.0')));
+      expect(advice, contains('älä oleta tyyntä'));
+    });
+
+    test('missing wind is not excellent 0.0 m/s', () async {
+      const context = NavigationContext(
+        vesselType: VesselType.cabinBoat,
+      );
+
+      final advice = await service.getAdvice(
+        weather: null,
+        wave: null,
+        forecasts: [],
+        status: SafetyStatus.green,
+        context: context,
+      );
+
+      expect(advice, isNot(contains('0.0 m/s')));
+      expect(advice, isNot(contains('erinomainen')));
+      expect(advice, contains('älä oleta tyyntä'));
+    });
+
+    test('fresh breeze without waves is not 0.0 m seas', () async {
+      final weather = WeatherData(
+        timestamp: DateTime.now(),
+        location: const LatLng(60.15, 24.95),
+        stationName: 'Harmaja',
+        windSpeed: 8.0,
+        windGust: 10.0,
+        windDirection: 180,
+      );
+      const context = NavigationContext(
+        vesselType: VesselType.cabinBoat,
+      );
+
+      final advice = await service.getAdvice(
+        weather: weather,
+        wave: null,
+        forecasts: [],
+        status: SafetyStatus.green,
+        context: context,
+      );
+
+      expect(advice, isNot(contains('aallokko 0.0')));
+      expect(advice, contains('älä oleta tyyntä'));
+    });
+
     test('detects high gust factor squalls', () async {
       final weather = WeatherData(
         timestamp: DateTime.now(),
@@ -224,7 +292,8 @@ void main() {
       );
 
       expect(calmBriefing, contains('Reitti'));
-      expect(calmBriefing, contains('Reittilinja on suora ja turvallinen'));
+      expect(calmBriefing, contains('älä oleta tyyntä'));
+      expect(calmBriefing, isNot(contains('turvallinen')));
 
       final highWave = WaveData(
         timestamp: DateTime.now(),

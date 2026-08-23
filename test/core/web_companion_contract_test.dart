@@ -211,4 +211,28 @@ void main() {
         .split('Future<void> _syncSource')[0];
     expect(safety.contains('hasLocation'), isTrue);
   });
+
+  test('companion own-ship HUD/MAYDAY wait for LIVE GPS', () {
+    final cockpit = File(
+      'apps/web-pwa/src/components/navikka/cockpit.tsx',
+    ).readAsStringSync();
+    expect(cockpit, contains('gpsLive ? fmtSpeed(sog'));
+    final panels = File(
+      'apps/web-pwa/src/components/navikka/panels.tsx',
+    ).readAsStringSync();
+    expect(panels, contains('gpsLive ? formatDdm(pos) : "—"'));
+    expect(panels, contains('gpsLive &&'));
+    expect(panels, contains('aisSource === "live"'));
+    final catalog = File(
+      'apps/web-pwa/src/lib/navikka/catalog.ts',
+    ).readAsStringSync();
+    expect(catalog.contains('targets.length ? targets : seed'), isFalse);
+    final weather = File(
+      'apps/web-pwa/src/lib/navikka/weather.ts',
+    ).readAsStringSync();
+    expect(weather, contains('missing temp/wind'));
+    expect(weather.contains('visM: 14000,'), isFalse);
+    expect(weather.contains('windMs * 1.4'), isFalse);
+    expect(weather, contains('dewC: Number.isFinite'));
+  });
 }

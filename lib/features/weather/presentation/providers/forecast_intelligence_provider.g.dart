@@ -56,7 +56,7 @@ final class ForecastIntelligenceEngineProvider
 }
 
 String _$forecastIntelligenceEngineHash() =>
-    r'fc8407996caa2af77079429f38fde9913c88493b';
+    r'f525b5e4745286959222937776144ab22f93d016';
 
 /// Location-anchored Forecast Intelligence Provider.
 /// Tracks weather snapshots for the SAME grid cell (<= 5km).
