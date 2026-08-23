@@ -79,6 +79,27 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.equal(prov.includes("Timer.periodic(const Duration(seconds: 15)"), false);
   });
 
+  it("Skipper banner keeps last insight on weather reload", () => {
+    const src = readFileSync(
+      resolve(root, "lib/features/ai/presentation/widgets/skipper_insight_banner.dart"),
+      "utf8",
+    );
+    assert.match(src, /skipLoadingOnReload:\s*true/);
+  });
+
+  it("companion AIS requires lastAttemptAt backoff like weather", () => {
+    const policy = readFileSync(resolve(import.meta.dirname, "./fetch-policy.ts"), "utf8");
+    assert.match(policy, /AIS_RETRY_MS/);
+    assert.match(policy, /export function decideAisFetch/);
+    assert.equal(policy.includes("lastAttemptAt?:"), false);
+    const cockpit = readFileSync(
+      resolve(import.meta.dirname, "../../components/navikka/cockpit.tsx"),
+      "utf8",
+    );
+    assert.match(cockpit, /lastAisAttemptAt/);
+    assert.match(cockpit, /lastAttemptAt: lastAisAttemptAt/);
+  });
+
   it("empty live AIS does not paint seed MEGASTAR (NEXUS H1)", () => {
     const src = readFileSync(resolve(import.meta.dirname, "../../components/navikka/map-view.tsx"), "utf8");
     assert.match(src, /aisMarkersForMap/);

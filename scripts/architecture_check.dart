@@ -298,6 +298,39 @@ void _checkCompanionContract(List<Violation> violations) {
     }
   }
 
+  final skipperBanner = File(
+    'lib/features/ai/presentation/widgets/skipper_insight_banner.dart',
+  );
+  if (skipperBanner.existsSync()) {
+    final body = skipperBanner.readAsStringSync();
+    if (!body.contains('skipLoadingOnReload: true')) {
+      violations.add(
+        const Violation(
+          'lib/features/ai/presentation/widgets/'
+              'skipper_insight_banner.dart',
+          1,
+          'Skipper banner must keep last insight on reload '
+              '(skipLoadingOnReload: true)',
+        ),
+      );
+    }
+  }
+
+  final fetchPolicy = File('apps/web-pwa/src/lib/navikka/fetch-policy.ts');
+  if (fetchPolicy.existsSync()) {
+    final body = fetchPolicy.readAsStringSync();
+    if (!body.contains('AIS_RETRY_MS') ||
+        !body.contains('lastAttemptAt: number | null')) {
+      violations.add(
+        const Violation(
+          'apps/web-pwa/src/lib/navikka/fetch-policy.ts',
+          1,
+          'AIS fetch must require lastAttemptAt and 60s retry backoff',
+        ),
+      );
+    }
+  }
+
   final deployYml = File('.github/workflows/deploy.yml');
   if (deployYml.existsSync()) {
     final body = deployYml.readAsStringSync();

@@ -85,9 +85,7 @@ class WaveImpactHudWidget extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: colors.surfaceHighlight,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: color.withValues(alpha: 0.3),
-                        ),
+                        border: Border.all(color: color.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,9 +122,7 @@ class WaveImpactHudWidget extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: colors.surfaceHighlight,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: colors.glassBorder,
-                        ),
+                        border: Border.all(color: colors.glassBorder),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,9 +157,7 @@ class WaveImpactHudWidget extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: colors.surfaceHighlight,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: colors.glassBorder,
-                        ),
+                        border: Border.all(color: colors.glassBorder),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,16 +323,10 @@ class WaveImpactHudWidget extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 6),
-            Container(
-              width: 1,
-              height: 12,
-              color: colors.glassBorder,
-            ),
+            Container(width: 1, height: 12, color: colors.glassBorder),
             const SizedBox(width: 6),
             Text(
-              state.hasSensorSamples
-                  ? '${state.hitsPerMinute}/min'
-                  : '—/min',
+              state.hasSensorSamples ? '${state.hitsPerMinute}/min' : '—/min',
               style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 11,
@@ -349,10 +337,7 @@ class WaveImpactHudWidget extends ConsumerWidget {
               const SizedBox(width: 4),
               Text(
                 '• ${state.attackDirection.label}',
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: 10,
-                ),
+                style: TextStyle(color: colors.textSecondary, fontSize: 10),
               ),
             ],
           ],

@@ -117,4 +117,21 @@ void main() {
       isFalse,
     );
   });
+
+  test('Skipper banner and AIS retry share underway honesty', () {
+    final banner = File(
+      'lib/features/ai/presentation/widgets/'
+      'skipper_insight_banner.dart',
+    ).readAsStringSync();
+    expect(banner, contains('skipLoadingOnReload: true'));
+    final policy = File(
+      'apps/web-pwa/src/lib/navikka/fetch-policy.ts',
+    ).readAsStringSync();
+    expect(policy, contains('AIS_RETRY_MS'));
+    expect(policy.contains('lastAttemptAt?:'), isFalse);
+    final cockpit = File(
+      'apps/web-pwa/src/components/navikka/cockpit.tsx',
+    ).readAsStringSync();
+    expect(cockpit, contains('lastAisAttemptAt'));
+  });
 }

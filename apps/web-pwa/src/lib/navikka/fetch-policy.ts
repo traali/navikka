@@ -15,6 +15,7 @@ export const AIS_BBOX_DEG = 0.4;
 /** Digitraffic `radius` is kilometres. 0.4° ≈ 44 km. */
 export const AIS_RADIUS_KM = 45;
 export const WEATHER_RETRY_MS = 60 * 1000;
+export const AIS_RETRY_MS = 60 * 1000;
 
 export const pollStats = {
   weather: 0,
@@ -111,16 +112,25 @@ export function decideWeatherFetch(opts: {
 export function decideAisFetch(opts: {
   now: number;
   lastAt: number | null;
+  lastAttemptAt: number | null;
   hidden: boolean;
   inflight: boolean;
   active: boolean;
-}): { fetch: boolean; reason: "first" | "ttl" | "hidden" | "fresh" | "inflight" } {
+}): { fetch: boolean; reason: "first" | "ttl" | "hidden" | "fresh" | "inflight" | "backoff" } {
   if (opts.hidden) return { fetch: false, reason: "hidden" };
   if (opts.inflight) return { fetch: false, reason: "inflight" };
-  if (opts.lastAt == null) return { fetch: true, reason: "first" };
+  if (opts.lastAt == null) {
+    if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < AIS_RETRY_MS) {
+      return { fetch: false, reason: "backoff" };
+    }
+    return { fetch: true, reason: "first" };
+  }
   const ttl = opts.active ? AIS_TTL_FOLLOW_MS : AIS_TTL_IDLE_MS;
-  if (opts.now - opts.lastAt >= ttl) return { fetch: true, reason: "ttl" };
-  return { fetch: false, reason: "fresh" };
+  if (opts.now - opts.lastAt < ttl) return { fetch: false, reason: "fresh" };
+  if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < AIS_RETRY_MS) {
+    return { fetch: false, reason: "backoff" };
+  }
+  return { fetch: true, reason: "ttl" };
 }
 
 export function decideGpsAccept(opts: {

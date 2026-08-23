@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { HELSINKI_SEA } from "./geo.ts";
 import {
   AIS_RADIUS_KM,
+  AIS_RETRY_MS,
   AIS_TTL_FOLLOW_MS,
   aisQuery,
   decideAisFetch,
@@ -188,6 +189,7 @@ describe("decideAisFetch", () => {
     const fresh = decideAisFetch({
       now: AIS_TTL_FOLLOW_MS - 1,
       lastAt: 0,
+      lastAttemptAt: null,
       hidden: false,
       inflight: false,
       active: true,
@@ -195,6 +197,7 @@ describe("decideAisFetch", () => {
     const due = decideAisFetch({
       now: AIS_TTL_FOLLOW_MS,
       lastAt: 0,
+      lastAttemptAt: null,
       hidden: false,
       inflight: false,
       active: true,
@@ -207,11 +210,49 @@ describe("decideAisFetch", () => {
     const d = decideAisFetch({
       now: 120_000,
       lastAt: 0,
+      lastAttemptAt: null,
       hidden: false,
       inflight: false,
       active: false,
     });
     assert.equal(d.fetch, false);
+  });
+
+  it("failed first AIS backs off 60 s instead of 15 s storm", () => {
+    const d1 = decideAisFetch({
+      now: 10_000,
+      lastAt: null,
+      lastAttemptAt: 9_000,
+      hidden: false,
+      inflight: false,
+      active: true,
+    });
+    assert.equal(d1.fetch, false);
+    if (!d1.fetch) assert.equal(d1.reason, "backoff");
+
+    const d2 = decideAisFetch({
+      now: 70_000,
+      lastAt: null,
+      lastAttemptAt: 9_000,
+      hidden: false,
+      inflight: false,
+      active: true,
+    });
+    assert.equal(d2.fetch, true);
+    if (d2.fetch) assert.equal(d2.reason, "first");
+  });
+
+  it("TTL retry backs off 60 s after a failed refresh", () => {
+    const d = decideAisFetch({
+      now: AIS_TTL_FOLLOW_MS + 5_000,
+      lastAt: 0,
+      lastAttemptAt: AIS_TTL_FOLLOW_MS + 4_000,
+      hidden: false,
+      inflight: false,
+      active: true,
+    });
+    assert.equal(d.fetch, false);
+    if (!d.fetch) assert.equal(d.reason, "backoff");
   });
 });
 
