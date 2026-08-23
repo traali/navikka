@@ -383,6 +383,11 @@ export function SosSheet() {
 export function DetailSheet() {
   const sel = useNav((s) => s.selection);
   const lang = useNav((s) => s.lang);
+  const pos = useNav((s) => s.pos);
+  const cog = useNav((s) => s.cog);
+  const sogKn = useNav((s) => s.sogKn);
+  const ais = useNav((s) => s.ais);
+  const aisSource = useNav((s) => s.aisSource);
   const close = () => useNav.getState().select(null);
   if (!sel) return null;
   if (sel.type === "harbor") {
@@ -434,12 +439,13 @@ export function DetailSheet() {
     );
   }
   if (sel.type === "ais") {
-    const t = useNav.getState().ais.find((x) => x.mmsi === sel.mmsi);
+    const t = ais.find((x) => x.mmsi === sel.mmsi);
     if (!t) return null;
-    const own = useNav.getState();
-    const cpa = computeCpa(own.pos, own.cog, own.sogKn, t.pos, t.cog, t.sogKn);
+    const cpa = computeCpa(pos, cog, sogKn, t.pos, t.cog, t.sogKn);
     const c = COPY[lang];
-    const danger = cpa.colliding || (cpa.tcpaMin > 0 && cpa.tcpaMin < 8 && cpa.cpaNm < 0.5);
+    const danger =
+      aisSource === "live" &&
+      (cpa.colliding || (cpa.tcpaMin > 0 && cpa.tcpaMin < 8 && cpa.cpaNm < 0.5));
     return (
       <Sheet title={t.name} onClose={close} danger={danger}>
         <div className="stat-grid">

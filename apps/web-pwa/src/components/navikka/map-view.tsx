@@ -108,7 +108,8 @@ export function MapView({ onReady }: Props) {
         L.polygon(
           z.ring.map((p) => [p.lat, p.lng] as [number, number]),
           { color: "#f59e0b", weight: 1, fillOpacity: 0.16, fillColor: "#f59e0b" },
-        ).on("click", () => useNav.getState().select({ type: "fish", id: z.id }));
+        ).on("click", () => useNav.getState().select({ type: "fish", id: z.id }))
+          .addTo(fish);
       }
 
       const harbors = L.layerGroup();

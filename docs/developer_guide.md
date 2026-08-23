@@ -86,17 +86,29 @@ dart format .
 # 2. Static Analysis (Zero warnings, Zero errors)
 flutter analyze
 
-# 3. Unit & Widget Tests
+# 3. Architecture contract (includes companion /cockpit lock)
+dart run scripts/architecture_check.dart
+
+# 4. Unit & Widget Tests (includes test/core/web_companion_contract_test.dart)
 flutter test
 
-# 4. Database Schema Migration Tests
+# 5. Database Schema Migration Tests
 flutter test test/core/db/app_database_migration_test.dart
 
-# 5. Playwright E2E Browser Tests
+# 6. React companion (Node) — required if you touched apps/web-pwa, web/_redirects, or Pages deploy
+cd apps/web-pwa
+npm test
+npm run typecheck
+
+# 7. Playwright E2E Browser Tests
 cd e2e
 npm install
 npm test
 ```
+
+CI (`ci.yml` verify) runs **both** stacks on every PR: Flutter tests + architecture_check **and** companion `npm test` / `typecheck` / `--base=/cockpit/` build. Do not make companion tests path-filtered-only.
+
+Companion ways of working: [`AGENTS.md` §13](../AGENTS.md). Underway numbers live only in `apps/web-pwa/src/lib/navikka/fetch-policy.ts`.
 
 ---
 

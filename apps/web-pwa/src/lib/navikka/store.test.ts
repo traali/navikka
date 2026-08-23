@@ -83,6 +83,16 @@ describe("nav store", () => {
     assert.equal(useNav.getState().weatherError, "Säätä ei saatu.");
   });
 
+  it("seed AIS is not live and a fetch error does not wipe the seed", () => {
+    assert.equal(useNav.getState().aisSource, "seed");
+    assert.ok(useNav.getState().ais.length >= 1);
+    useNav.getState().setAisError("AIS-virhe");
+    assert.equal(useNav.getState().aisSource, "seed");
+    assert.ok(useNav.getState().ais.length >= 1);
+    useNav.getState().setAis([{ mmsi: "1", name: "LIVE", sogKn: 8, cog: 90, pos: HELSINKI_SEA, kind: "ferry" }], "live");
+    assert.equal(useNav.getState().aisSource, "live");
+  });
+
   it("does not invent UKC at Porkkala", () => {
     useNav.getState().setPos({ lat: 59.986, lng: 24.52 }, 6, 270, "demo", 8);
     const { fw, ukc } = ukcNow();
