@@ -1,0 +1,124 @@
+import { haversineM, type LatLng } from "./geo.ts";
+
+/** MET / FMI usable grid. ~5.5 km — NOT GPS precision. */
+export const WEATHER_SNAP_DEG = 0.05;
+export const WEATHER_TTL_MS = 10 * 60 * 1000;
+export const WEATHER_STALE_MS = 15 * 60 * 1000;
+export const AIS_TTL_FOLLOW_MS = 60 * 1000;
+export const AIS_TTL_IDLE_MS = 180 * 1000;
+export const GPS_MIN_MS = 500;
+export const GPS_MIN_M = 15;
+export const FOLLOW_PAN_MIN_M = 12;
+export const POLL_CHECK_MS = 15_000;
+export const DEMO_TICK_MS = 1000;
+export const AIS_BBOX_DEG = 0.4;
+
+export const pollStats = {
+  weather: 0,
+  ais: 0,
+  skippedWeather: 0,
+  skippedAis: 0,
+};
+
+export function resetPollStats() {
+  pollStats.weather = 0;
+  pollStats.ais = 0;
+  pollStats.skippedWeather = 0;
+  pollStats.skippedAis = 0;
+}
+
+export function snapCoord(v: number, deg = WEATHER_SNAP_DEG) {
+  return Math.round(v / deg) * deg;
+}
+
+export function snapPos(pos: LatLng, deg = WEATHER_SNAP_DEG): LatLng {
+  return { lat: snapCoord(pos.lat, deg), lng: snapCoord(pos.lng, deg) };
+}
+
+export function weatherQuery(pos: LatLng) {
+  const s = snapPos(pos);
+  return { lat: s.lat.toFixed(2), lon: s.lng.toFixed(2), snapped: s };
+}
+
+export type RefreshDecision =
+  | { fetch: true; reason: "first" | "ttl" | "moved"; snapped: LatLng }
+  | { fetch: false; reason: "hidden" | "fresh" | "inflight"; snapped: LatLng };
+
+export function decideWeatherFetch(opts: {
+  now: number;
+  pos: LatLng;
+  lastAt: number | null;
+  lastPos: LatLng | null;
+  hidden: boolean;
+  inflight: boolean;
+}): RefreshDecision {
+  const snapped = snapPos(opts.pos);
+  if (opts.hidden) return { fetch: false, reason: "hidden", snapped };
+  if (opts.inflight) return { fetch: false, reason: "inflight", snapped };
+  if (opts.lastAt == null) return { fetch: true, reason: "first", snapped };
+  const sameCell =
+    opts.lastPos != null &&
+    snapPos(opts.lastPos).lat === snapped.lat &&
+    snapPos(opts.lastPos).lng === snapped.lng;
+  const age = opts.now - opts.lastAt;
+  if (!sameCell) return { fetch: true, reason: "moved", snapped };
+  if (age >= WEATHER_TTL_MS) return { fetch: true, reason: "ttl", snapped };
+  return { fetch: false, reason: "fresh", snapped };
+}
+
+export function decideAisFetch(opts: {
+  now: number;
+  lastAt: number | null;
+  hidden: boolean;
+  inflight: boolean;
+  active: boolean;
+}): { fetch: boolean; reason: "first" | "ttl" | "hidden" | "fresh" | "inflight" } {
+  if (opts.hidden) return { fetch: false, reason: "hidden" };
+  if (opts.inflight) return { fetch: false, reason: "inflight" };
+  if (opts.lastAt == null) return { fetch: true, reason: "first" };
+  const ttl = opts.active ? AIS_TTL_FOLLOW_MS : AIS_TTL_IDLE_MS;
+  if (opts.now - opts.lastAt >= ttl) return { fetch: true, reason: "ttl" };
+  return { fetch: false, reason: "fresh" };
+}
+
+export function decideGpsAccept(opts: {
+  now: number;
+  pos: LatLng;
+  lastAt: number;
+  lastPos: LatLng | null;
+}): boolean {
+  if (opts.lastPos == null) return true;
+  const dt = opts.now - opts.lastAt;
+  const dist = haversineM(opts.lastPos, opts.pos);
+  return dt >= GPS_MIN_MS || dist >= GPS_MIN_M;
+}
+
+export function decideFollowPan(opts: {
+  follow: boolean;
+  followJustOn: boolean;
+  from: LatLng;
+  to: LatLng;
+  sogKn: number;
+}): { pan: boolean; animate: boolean } {
+  if (!opts.follow) return { pan: false, animate: false };
+  if (opts.followJustOn) return { pan: true, animate: opts.sogKn <= 2 };
+  const dist = haversineM(opts.from, opts.to);
+  if (dist < FOLLOW_PAN_MIN_M) return { pan: false, animate: false };
+  return { pan: true, animate: opts.sogKn <= 2 };
+}
+
+export function weatherAgeMs(updated: string | number, now = Date.now()) {
+  const t = typeof updated === "number" ? updated : Date.parse(updated);
+  if (!Number.isFinite(t)) return Infinity;
+  return Math.max(0, now - t);
+}
+
+export function formatWeatherAge(ms: number, lang: "fi" | "en") {
+  if (ms < 45_000) return lang === "fi" ? "juuri" : "just now";
+  const min = Math.max(1, Math.round(ms / 60_000));
+  return lang === "fi" ? `${min} min sitten` : `${min} min ago`;
+}
+
+export function isWeatherStale(ms: number) {
+  return ms >= WEATHER_STALE_MS;
+}

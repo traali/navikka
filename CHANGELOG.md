@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **React web-PWA companion (`apps/web-pwa`)**: Leaflet cockpit for Helsinki waters (SOG/COG/UKC HUD, harbors, fairways, speed-limit boxes, fishing rules, MET Norway weather, AIS, MAYDAY/112/MRCC, FI/EN, five bridge themes). Lives next to Flutter, does **not** replace `web/` or `flutter build web`.
+- **iPhone 11 / 12 Chrome (CriOS / WebKit) hardening**: `100dvh` + `-webkit-fill-available`, `viewport-fit=cover`, `env(safe-area-inset-*)`, 16px inputs (no iOS focus-zoom), 44px targets, 375px HUD media query, clipboard `execCommand` fallback, SOS Share Sheet, Wake Lock retry on `visibilitychange`, `crypto.randomUUID` polyfill.
+- **Tests (65+ `node:test` cases)**: haversine/CPA/UKC, Kauppatori 5 km/h no-wake, kuha 42 cm / taimen 60 cm, COLREG 19/35 fog, MAYDAY text, store demo-vs-device GPS, iPhone 11 vs 12 viewport contracts, **underway fetch policy**, last-good weather on radio loss, no Helsinki fairway at Porkkala. Path-filtered GitHub Action `.github/workflows/web-pwa.yml`.
+- **Friday 2026-08-21 field test**: iPhone 11 or 12 + Chrome loaded the companion. Playwright re-check on 375×812 @2x and 390×844 @3x with CriOS UA: no overflow, 16px inputs, map tiles, SOS 112.
+- **Underway skipper skill** (`.agent/skills/navikka-underway`): weather/AIS/GPS/map rules so agents do not refetch MET on every GPS tick.
+
+### Fixed
+- **Weather fetched all the time while boating**: MET URLs used `toFixed(4)` (~11 m), so every GPS sample was a new cache-busting request, plus weather+ocean+AIS on one 120 s loop. Now snap to `0.05°` (~5.5 km), weather TTL **10 min**, AIS **60 s** underway / **180 s** idle, pause when the tab is hidden, keep last good weather, show age ("juuri" / "N min sitten") instead of a perpetual spinner. GPS apply-throttle 500 ms / 15 m; map follow pan only after ~12 m, no animation when SOG > 2 kn. 16 s demo watch: **1 weather fetch, 1 AIS fetch**.
+- **Radio-loss weather lie**: MET failure used to return a calm 6.4 m/s fallback stamped `updated: now`, so the HUD said "juuri" and overwrote a real gale. Failure now throws; last good snap and its age stay; skipper sees "Säätä ei saatu."
+- **MAYDAY / UKC off Helsinki**: `nearestFairwayDepth` always returned a Helsinki channel. Beyond 1 km (Porkkala, open Gulf) UKC is "—" and the VHF readout says *Off-fairway / avomeri* instead of "Sisäväylä 2,4 m".
+- **Salmon id `loh` → `lohi`**: catch log now matches the Finnish species key; 45 cm lohi is undersize.
+- **Waypoint tap**: selecting a route mark opens a detail sheet (DDM, range/bearing, delete) instead of a blank overlay.
+- **CPA Opening**: when TCPA < 0 the sheet shows current range + "Avautuva", not a past closest-approach.
+- **MapView unmount**: re-check `cancelled` before window resize listeners; tear the map down if the import finished after unmount.
+- **Companion `tsc`**: `@types/node` + `npm run typecheck` in the web-pwa workflow.
+
+### Notes
+- Flutter PWA (`web/`, Cloudflare Pages) is unchanged.
+- Companion does not persist live GPS/weather; only theme, units, vessel, route, and catch log.
+
 ## [1.25.0] - 2026-08-17
 
 ### Modular On-Device Marine AI Suite & IMU Wave Slamming Estimator
