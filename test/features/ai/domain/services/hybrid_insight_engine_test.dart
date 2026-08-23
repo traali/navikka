@@ -299,4 +299,36 @@ void main() {
       ),
     );
   });
+
+  test('edge template advice is not stamped as AI inference', () async {
+    when(
+      () => heuristicEngine.analyze(
+        weather: any(named: 'weather'),
+        wave: any(named: 'wave'),
+        forecasts: any(named: 'forecasts'),
+        windowHours: any(named: 'windowHours'),
+        thresholds: any(named: 'thresholds'),
+      ),
+    ).thenReturn(
+      WeatherInsight(
+        status: SafetyStatus.green,
+        advice: 'Heuristic fine',
+        timestamp: DateTime.now(),
+      ),
+    );
+
+    final result = await hybridEngine.getInsight(
+      weather: WeatherData(
+        timestamp: DateTime.now(),
+        location: const LatLng(0, 0),
+        stationName: 'Test',
+      ),
+      wave: null,
+      forecasts: [],
+      navContext: NavigationContext.empty(),
+    );
+
+    expect(result.isAIInference, isFalse);
+    expect(result.advice, 'Mock AI Advice');
+  });
 }

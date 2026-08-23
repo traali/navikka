@@ -254,9 +254,9 @@ class _MapContentState extends ConsumerState<MapContent> {
     // Watch map settings and camera state
     // PERFORMANCE: Use select() to only rebuild when specific values change
     // Note: contributions are watched inside _ContributionMarkerLayer, not here.
-    final lightningStrikes = ref
-        .watch(pointWeatherControllerProvider)
-        .lightningStrikes;
+    final lightningStrikes = ref.watch(
+      pointWeatherControllerProvider.select((s) => s.lightningStrikes),
+    );
     final isFishingMode =
         ref.watch(fishingModeControllerProvider).value?.isEnabled ?? false;
     final layerFilterAsync = ref.watch(layerFilterProvider);

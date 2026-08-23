@@ -350,19 +350,11 @@ class _RoutePlannerScreenState extends ConsumerState<RoutePlannerScreen> {
                                       Row(
                                         children: [
                                           Text(
-                                            'SKIPPER AI REITTIARVIO',
+                                            'SKIPPER REITTIARVIO',
                                             style: AppTextStyles.nvXs.copyWith(
                                               color: colors.primaryAction,
                                               fontWeight: FontWeight.bold,
                                               letterSpacing: 1,
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                          Text(
-                                            'Luottamus: 96%',
-                                            style: AppTextStyles.nvXs.copyWith(
-                                              color: colors.textSecondary,
-                                              fontSize: 9,
                                             ),
                                           ),
                                         ],

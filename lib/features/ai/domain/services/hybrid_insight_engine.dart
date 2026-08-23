@@ -155,9 +155,8 @@ class HybridInsightEngine {
             ? audit.status
             : heuristicInsight.status,
         advice: finalAdvice,
-        isAIInference: true,
+        isAIInference: false,
       );
-    }
 
     // Even if AI is disabled, if the audit finds a critical discrepancy, we should warn.
     if (audit.status.index > heuristicInsight.status.index) {

@@ -129,7 +129,6 @@ class _SkipperInsightBannerState extends ConsumerState<SkipperInsightBanner> {
                           ),
                         ],
                         const SizedBox(width: 8),
-                        // Nova Explainable AI Confidence Score Badge
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 5,
@@ -144,7 +143,7 @@ class _SkipperInsightBannerState extends ConsumerState<SkipperInsightBanner> {
                             ),
                           ),
                           child: Text(
-                            'Luottamus 94%',
+                            insight.isAIInference ? 'Malli' : 'Säännöt',
                             style: TextStyle(
                               color: statusColor,
                               fontSize: 8.5,

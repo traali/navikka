@@ -152,6 +152,8 @@ describe("nav store", () => {
     const parsed = JSON.parse(raw) as { state?: Record<string, unknown> };
     assert.equal("sogKn" in (parsed.state ?? {}), false);
     assert.equal("gpsSource" in (parsed.state ?? {}), false);
+    assert.equal("ais" in (parsed.state ?? {}), false);
+    assert.equal("pos" in (parsed.state ?? {}), false);
     assert.ok("theme" in (parsed.state ?? {}));
     assert.ok("vessel" in (parsed.state ?? {}));
   });

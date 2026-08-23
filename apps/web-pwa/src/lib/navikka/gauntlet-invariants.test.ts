@@ -120,5 +120,6 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.match(src, /basemaps\.cartocdn\.com/);
     assert.match(src, /julkinen\.traficom\.fi/);
     assert.match(src, /layers\.enc/);
+    assert.equal(src.includes("ENC · Traficom"), false);
   });
 });

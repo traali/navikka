@@ -261,11 +261,8 @@ export const useNav = create<NavState>()(
         vessel: s.vessel,
         waypoints: s.waypoints,
         catches: s.catches,
-        pos: s.pos,
         weather: s.weather,
         weatherAt: s.weatherAt,
-        ais: s.ais,
-        aisAt: s.aisAt,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<NavState>;
@@ -275,7 +272,9 @@ export const useNav = create<NavState>()(
           sogKn: 0,
           cog: 0,
           gpsSource: "none" as const,
-          aisSource: (p.ais?.length ? p.aisSource : "live") ?? "live",
+          ais: [],
+          aisSource: "live" as const,
+          aisAt: null,
           layers: { ...current.layers, ...p.layers, enc: p.layers?.enc ?? true },
         };
       },

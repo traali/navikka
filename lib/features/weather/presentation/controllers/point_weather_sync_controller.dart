@@ -76,14 +76,15 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
       _forecastTimer?.cancel();
     });
 
-    // ── PRIMARY TRIGGER: Boat position ──
-    ref.listen<LatLng>(
-      mapProvider.select((s) => s.userLocation),
-      (prev, next) {
-        if (_isDisposed) return;
-        _checkBoatTriggers(next);
-      },
-    );
+    // ── PRIMARY TRIGGER: Boat position (only after a real GPS fix) ──
+    ref.listen(mapProvider.select((s) => (s.userLocation, s.hasLocation)), (
+      prev,
+      next,
+    ) {
+      if (_isDisposed) return;
+      if (!next.$2) return;
+      _checkBoatTriggers(next.$1);
+    });
 
     // ── SECONDARY TRIGGER: Camera pan ──
     ref.listen(significantMapCameraPositionProvider, (prev, next) {
@@ -91,19 +92,22 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
       _checkPanTriggers(next.center);
     });
 
-    // Initial sync if map is ready
-    final initial = ref.read(mapProvider).userLocation;
-    Future.microtask(() {
-      if (!_isDisposed) {
-        _staggeredStartup(initial);
-      }
-    });
+    // Initial sync only after GPS — Helsinki default pin is not the boat.
+    final initialMap = ref.read(mapProvider);
+    if (initialMap.hasLocation) {
+      Future.microtask(() {
+        if (!_isDisposed) {
+          _staggeredStartup(initialMap.userLocation);
+        }
+      });
+    }
 
     ref.listen(isOnlineProvider, (prev, next) {
       if (_isDisposed) return;
       if (prev == false && next) {
-        final currentPos = ref.read(mapProvider).userLocation;
-        _syncAllPending(currentPos);
+        final map = ref.read(mapProvider);
+        if (!map.hasLocation) return;
+        _syncAllPending(map.userLocation);
       }
     });
 
@@ -123,8 +127,9 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
       WeatherSyncConstants.forecastTtl,
       (_) {
         if (_isDisposed) return;
-        final boatPos = ref.read(mapProvider).userLocation;
-        _checkBoatTriggers(boatPos);
+        final map = ref.read(mapProvider);
+        if (!map.hasLocation) return;
+        _checkBoatTriggers(map.userLocation);
       },
     );
   }

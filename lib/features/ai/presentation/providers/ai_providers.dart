@@ -64,20 +64,23 @@ Future<WeatherInsight> skipperInsight(Ref ref) async {
 
   final vesselProfile = ref.watch(vesselSettingsControllerProvider).value;
   final activeRoute = ref.watch(activeRouteProvider).value;
-  final plannedRoute = ref.watch(routePlannerControllerProvider);
+  final plannedWaypoints = ref.watch(
+    routePlannerControllerProvider.select((s) => s.waypoints),
+  );
+  final plannedConflicts = ref.watch(
+    routePlannerControllerProvider.select((s) => s.conflicts),
+  );
   final engine = ref.watch(hybridInsightEngineProvider);
 
   final navContext = NavigationContext(
     vesselType: vesselProfile?.type ?? VesselType.openBoat,
     draftDepth: vesselProfile?.draftDepth,
-    hasActiveRoute: activeRoute != null || plannedRoute.waypoints.isNotEmpty,
+    hasActiveRoute: activeRoute != null || plannedWaypoints.isNotEmpty,
     activeRouteName:
         activeRoute?.name ??
-        (plannedRoute.waypoints.isNotEmpty ? 'Planned Route' : null),
-    routePoints: plannedRoute.waypoints
-        .map((w) => LatLng(w.lat, w.lon))
-        .toList(),
-    detectedHazards: plannedRoute.conflicts.map((c) => c.category).toList(),
+        (plannedWaypoints.isNotEmpty ? 'Planned Route' : null),
+    routePoints: plannedWaypoints.map((w) => LatLng(w.lat, w.lon)).toList(),
+    detectedHazards: plannedConflicts.map((c) => c.category).toList(),
   );
 
   // 4. Generate insight based on current weather/waves + context

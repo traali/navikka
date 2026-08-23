@@ -178,4 +178,26 @@ void main() {
     expect(src, contains('basemaps.cartocdn.com'));
     expect(src, contains('julkinen.traficom.fi'));
   });
+
+  test('skipper HUD does not invent confidence percentages', () {
+    for (final path in [
+      'lib/features/ai/presentation/widgets/skipper_insight_banner.dart',
+      'lib/features/weather/presentation/screens/weather_screen.dart',
+      'lib/features/navigation/presentation/screens/route_planner_screen.dart',
+    ]) {
+      final src = File(path).readAsStringSync();
+      expect(src.contains('Luottamus 94%'), isFalse, reason: path);
+      expect(src.contains('Luottamus: 96%'), isFalse, reason: path);
+      expect(src.contains('clamp(88, 98)'), isFalse, reason: path);
+    }
+  });
+
+  test('companion persist does not store AIS or live GPS', () {
+    final src = File(
+      'apps/web-pwa/src/lib/navikka/store.ts',
+    ).readAsStringSync();
+    expect(src, contains('name: LS'));
+    expect(src.contains('ais: s.ais'), isFalse);
+    expect(src.contains('pos: s.pos'), isFalse);
+  });
 }

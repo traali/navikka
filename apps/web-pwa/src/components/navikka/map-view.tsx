@@ -134,7 +134,7 @@ export function MapView({ onReady }: Props) {
         zIndexOffset: 1000,
         interactive: false,
       });
-      boat.addTo(map);
+      if (useNav.getState().gpsSource === "device") boat.addTo(map);
 
       const route = L.polyline([], { color: "#00f2fe", weight: 3, opacity: 0.9 });
       const wps = L.layerGroup();
@@ -186,17 +186,22 @@ export function MapView({ onReady }: Props) {
       const L = Lmod;
       if (!m || !Lwait.boat || !L) return;
       const boat = Lwait.boat as import("leaflet").Marker;
-      if (s.pos !== prev.pos || s.cog !== prev.cog) {
-        boat.setLatLng([s.pos.lat, s.pos.lng]);
-        boat.setIcon(boatIcon(L, s.cog));
-        const pan = decideFollowPan({
-          follow: s.follow,
-          followJustOn: s.follow && !prev.follow,
-          from: prev.pos,
-          to: s.pos,
-          sogKn: s.sogKn,
-        });
-        if (pan.pan) m.panTo([s.pos.lat, s.pos.lng], { animate: pan.animate, duration: pan.animate ? 0.4 : 0 });
+      if (s.gpsSource === "device") {
+        if (!m.hasLayer(boat)) boat.addTo(m);
+        if (s.pos !== prev.pos || s.cog !== prev.cog) {
+          boat.setLatLng([s.pos.lat, s.pos.lng]);
+          if (s.cog !== prev.cog) boat.setIcon(boatIcon(L, s.cog));
+          const pan = decideFollowPan({
+            follow: s.follow,
+            followJustOn: s.follow && !prev.follow,
+            from: prev.pos,
+            to: s.pos,
+            sogKn: s.sogKn,
+          });
+          if (pan.pan) m.panTo([s.pos.lat, s.pos.lng], { animate: pan.animate, duration: pan.animate ? 0.4 : 0 });
+        }
+      } else if (m.hasLayer(boat)) {
+        m.removeLayer(boat);
       }
       if (s.layers !== prev.layers || s.theme !== prev.theme) {
         const baseWanted = s.layers.satellite ? Lwait.sat : s.theme === "solar" ? Lwait.light : Lwait.land;
