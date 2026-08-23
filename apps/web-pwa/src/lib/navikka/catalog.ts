@@ -1,4 +1,4 @@
-import { type LatLng, HELSINKI_SEA, haversineM } from "./geo.ts";
+import { type LatLng, HELSINKI_SEA, haversineM, distToPolylineM } from "./geo.ts";
 
 export type Harbor = {
   id: string;
@@ -351,21 +351,19 @@ export const SEARCH_INDEX = [
   },
 ];
 
-/** Skipper is "on" a published channel within ~0.5 NM of a polyline vertex. Beyond: open water. */
+/** Skipper is "on" a published channel within 1 km (cross-track) of a fairway polyline. Beyond: no fairway data. */
 export const FAIRWAY_MAX_M = 1000;
 
 export function nearestFairwayDepth(pos: LatLng) {
-  let best = FAIRWAYS[0]!;
+  let best: Fairway | null = null;
   let bestD = Infinity;
   for (const f of FAIRWAYS) {
-    for (const p of f.path) {
-      const d = haversineM(pos, p);
-      if (d < bestD) {
-        bestD = d;
-        best = f;
-      }
+    const d = distToPolylineM(pos, f.path);
+    if (d < bestD) {
+      bestD = d;
+      best = f;
     }
   }
-  if (bestD > FAIRWAY_MAX_M) return null;
+  if (bestD > FAIRWAY_MAX_M || !best) return null;
   return best;
 }

@@ -22,6 +22,15 @@ describe("catalog", () => {
     assert.ok(["local-24", "lautta-4", "hel-9"].includes(fw.id), fw.id);
   });
 
+  it("recognizes hel-9 fairway at segment midpoint between distant vertices", () => {
+    // Leg 1 is 60.12, 24.96 -> 60.14, 24.97 (2.3 km). Midpoint is >1.1 km from vertices.
+    const mid = { lat: 60.13, lng: 24.965 };
+    const fw = nearestFairwayDepth(mid);
+    assert.ok(fw);
+    assert.equal(fw.id, "hel-9");
+    assert.equal(fw.depthM, 9.0);
+  });
+
   it("does not invent a Helsinki fairway at Porkkala", () => {
     assert.equal(nearestFairwayDepth({ lat: 59.986, lng: 24.52 }), null);
   });

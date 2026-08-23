@@ -137,6 +137,31 @@ export function routeStats(points: LatLng[], sogKn: number) {
   return { nm, legs, etaMin: hours * 60 };
 }
 
+export function distToSegmentM(p: LatLng, a: LatLng, b: LatLng): number {
+  const cosLat = Math.cos(toRad((a.lat + b.lat) / 2));
+  const dx = (b.lng - a.lng) * 111320 * cosLat;
+  const dy = (b.lat - a.lat) * 111320;
+  const px = (p.lng - a.lng) * 111320 * cosLat;
+  const py = (p.lat - a.lat) * 111320;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-6) return haversineM(p, a);
+  const t = Math.max(0, Math.min(1, (px * dx + py * dy) / lenSq));
+  const projLat = a.lat + t * (b.lat - a.lat);
+  const projLng = a.lng + t * (b.lng - a.lng);
+  return haversineM(p, { lat: projLat, lng: projLng });
+}
+
+export function distToPolylineM(pos: LatLng, path: LatLng[]): number {
+  if (path.length === 0) return Infinity;
+  if (path.length === 1) return haversineM(pos, path[0]!);
+  let minD = Infinity;
+  for (let i = 0; i < path.length - 1; i++) {
+    const d = distToSegmentM(pos, path[i]!, path[i + 1]!);
+    if (d < minD) minD = d;
+  }
+  return minD;
+}
+
 export function underKeelClearance(fairwayDepthM: number, draftM: number, seaAnomalyM: number) {
   return fairwayDepthM + seaAnomalyM - draftM;
 }

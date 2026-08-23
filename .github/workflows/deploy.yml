@@ -82,10 +82,9 @@ jobs:
         run: |
           cd apps/web-pwa
           npm ci
-          npm run build -- --base=./
-          mkdir -p ../../build/web/cockpit ../../build/web/pwa
+          npm run build -- --base=/cockpit/
+          mkdir -p ../../build/web/cockpit
           cp -r dist/* ../../build/web/cockpit/
-          cp -r dist/* ../../build/web/pwa/
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4

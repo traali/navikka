@@ -4,6 +4,8 @@ import {
   bearingDeg,
   computeCpa,
   destination,
+  distToPolylineM,
+  distToSegmentM,
   formatDdm,
   haversineM,
   HELSINKI_SEA,
@@ -109,5 +111,18 @@ describe("geo", () => {
     assert.deepEqual(parseLatLngQuery("60.155,24.89"), { lat: 60.155, lng: 24.89 });
     assert.equal(parseLatLngQuery("0 0"), null);
     assert.equal(parseLatLngQuery("helsinki"), null);
+  });
+
+  it("calculates distance to line segment and polyline accurately", () => {
+    const a = { lat: 60.10, lng: 24.90 };
+    const b = { lat: 60.20, lng: 24.90 };
+    const onSegment = { lat: 60.15, lng: 24.90 };
+    const offSegment = { lat: 60.15, lng: 24.91 }; // ~556m east
+    assert.ok(distToSegmentM(onSegment, a, b) < 1);
+    assert.ok(Math.abs(distToSegmentM(offSegment, a, b) - 556) < 15);
+
+    const poly = [a, b, { lat: 60.20, lng: 25.00 }];
+    assert.ok(distToPolylineM(onSegment, poly) < 1);
+    assert.ok(Math.abs(distToPolylineM(offSegment, poly) - 556) < 15);
   });
 });

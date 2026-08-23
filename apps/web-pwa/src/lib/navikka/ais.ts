@@ -20,12 +20,12 @@ type Feature = {
 };
 
 export async function fetchAisAround(pos: LatLng): Promise<LiveAis[]> {
-  try {
-    const res = await fetch("https://meri.digitraffic.fi/api/ais/v1/locations", {
-      headers: { Accept: "application/json" },
-    });
-    if (!res.ok) return [];
-    const json = (await res.json()) as { features?: Feature[] };
+  const url = `https://meri.digitraffic.fi/api/ais/v1/locations?latitude=${pos.lat.toFixed(3)}&longitude=${pos.lng.toFixed(3)}&radius=45`;
+  const res = await fetch(url, {
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) throw new Error(`AIS fetch failed: ${res.status}`);
+  const json = (await res.json()) as { features?: Feature[] };
     const near: LiveAis[] = [];
     for (const f of json.features ?? []) {
       const coords = f.geometry?.coordinates;
@@ -49,9 +49,6 @@ export async function fetchAisAround(pos: LatLng): Promise<LiveAis[]> {
       return da - db;
     });
     return near.slice(0, 48);
-  } catch {
-    return [];
-  }
 }
 
 export async function fetchLiveAis(pos: LatLng): Promise<LiveAis[]> {

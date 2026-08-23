@@ -40,21 +40,27 @@ export function weatherQuery(pos: LatLng) {
   return { lat: s.lat.toFixed(2), lon: s.lng.toFixed(2), snapped: s };
 }
 
+export const WEATHER_RETRY_MS = 60 * 1000;
+
 export type RefreshDecision =
   | { fetch: true; reason: "first" | "ttl" | "moved"; snapped: LatLng }
-  | { fetch: false; reason: "hidden" | "fresh" | "inflight"; snapped: LatLng };
+  | { fetch: false; reason: "hidden" | "fresh" | "inflight" | "backoff"; snapped: LatLng };
 
 export function decideWeatherFetch(opts: {
   now: number;
   pos: LatLng;
   lastAt: number | null;
   lastPos: LatLng | null;
+  lastAttemptAt?: number | null;
   hidden: boolean;
   inflight: boolean;
 }): RefreshDecision {
   const snapped = snapPos(opts.pos);
   if (opts.hidden) return { fetch: false, reason: "hidden", snapped };
   if (opts.inflight) return { fetch: false, reason: "inflight", snapped };
+  if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < WEATHER_RETRY_MS) {
+    return { fetch: false, reason: "backoff", snapped };
+  }
   if (opts.lastAt == null) return { fetch: true, reason: "first", snapped };
   const sameCell =
     opts.lastPos != null &&

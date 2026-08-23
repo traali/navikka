@@ -92,6 +92,32 @@ describe("decideWeatherFetch", () => {
     if (d.fetch) assert.equal(d.reason, "moved");
   });
 
+  it("backs off for 60s after a failed fetch attempt when lastAt is null", () => {
+    const d1 = decideWeatherFetch({
+      now: 10_000,
+      pos,
+      lastAt: null,
+      lastPos: null,
+      lastAttemptAt: 9_000,
+      hidden: false,
+      inflight: false,
+    });
+    assert.equal(d1.fetch, false);
+    if (!d1.fetch) assert.equal(d1.reason, "backoff");
+
+    const d2 = decideWeatherFetch({
+      now: 70_000,
+      pos,
+      lastAt: null,
+      lastPos: null,
+      lastAttemptAt: 9_000,
+      hidden: false,
+      inflight: false,
+    });
+    assert.equal(d2.fetch, true);
+    if (d2.fetch) assert.equal(d2.reason, "first");
+  });
+
   it("does not fetch in a background iPhone Chrome tab", () => {
     const d = decideWeatherFetch({
       now: WEATHER_TTL_MS * 2,

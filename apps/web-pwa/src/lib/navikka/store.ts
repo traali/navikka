@@ -94,7 +94,9 @@ type NavState = {
   weatherPos: LatLng | null;
   weatherFetching: boolean;
   ais: AisTarget[];
+  aisSource: "seed" | "live";
   aisAt: number | null;
+  aisError: string | null;
   selection: Selection | null;
   copied: boolean;
   setTab: (tab: Tab) => void;
@@ -115,7 +117,8 @@ type NavState = {
   clearRoute: () => void;
   addCatch: (species: string, cm: number) => void;
   setWeather: (w: WeatherSnap | null, err?: string | null) => void;
-  setAis: (targets: AisTarget[]) => void;
+  setAis: (targets: AisTarget[], source?: "seed" | "live") => void;
+  setAisError: (err: string | null) => void;
   select: (s: Selection | null) => void;
   tickDemo: () => void;
   copyPos: () => Promise<void>;
@@ -160,7 +163,9 @@ export const useNav = create<NavState>()(
       weatherPos: null,
       weatherFetching: false,
       ais: AIS_SEED,
+      aisSource: "seed",
       aisAt: null,
+      aisError: null,
       selection: null,
       copied: false,
       setTab: (tab) => set({ tab, sheet: "none" }),
@@ -217,11 +222,14 @@ export const useNav = create<NavState>()(
         }
         set({ weatherError: weatherError ?? get().weatherError, weatherFetching: false });
       },
-      setAis: (ais) =>
+      setAis: (ais, source = "live") =>
         set({
-          ais: ais.length ? ais : get().ais,
-          aisAt: ais.length ? Date.now() : get().aisAt,
+          ais,
+          aisSource: source,
+          aisAt: source === "live" ? Date.now() : get().aisAt,
+          aisError: null,
         }),
+      setAisError: (aisError) => set({ aisError }),
       select: (selection) => set({ selection, sheet: selection ? "detail" : "none" }),
       tickDemo: () => {
         const s = get();

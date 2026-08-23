@@ -81,10 +81,17 @@ export function Cockpit() {
         const now = Date.now();
         if (!decideGpsAccept({ now, pos, lastAt, lastPos })) return;
         lastAt = now;
-        lastPos = pos;
-        const sog = (p.coords.speed ?? 0) * 1.94384;
-        const cog = p.coords.heading ?? useNav.getState().cog;
-        useNav.getState().setPos(pos, sog > 0.4 ? sog : useNav.getState().sogKn, cog, "device", p.coords.accuracy);
+        const rawSpeed = p.coords.speed;
+        const hasSpeed = rawSpeed !== null && Number.isFinite(rawSpeed);
+        const sog = hasSpeed ? Math.max(0, rawSpeed * 1.94384) : 0;
+        const rawCog = p.coords.heading;
+        const cog =
+          rawCog !== null && Number.isFinite(rawCog)
+            ? rawCog
+            : hasSpeed && sog > 0.5
+              ? useNav.getState().cog
+              : 0;
+        useNav.getState().setPos(pos, sog, cog, "device", p.coords.accuracy);
       },
       () => {
         /* keep demo track if user denies */
@@ -122,6 +129,7 @@ export function Cockpit() {
     let alive = true;
     let weatherInflight = false;
     let aisInflight = false;
+    let lastWeatherAttemptAt: number | null = null;
 
     const tick = async () => {
       const hidden = document.visibilityState !== "visible";
@@ -131,12 +139,14 @@ export function Cockpit() {
         pos: s.pos,
         lastAt: s.weatherAt,
         lastPos: s.weatherPos,
+        lastAttemptAt: lastWeatherAttemptAt,
         hidden,
         inflight: weatherInflight,
       });
       if (!wx.fetch) pollStats.skippedWeather += 1;
       if (wx.fetch && alive) {
         weatherInflight = true;
+        lastWeatherAttemptAt = Date.now();
         pollStats.weather += 1;
         useNav.setState({ weatherFetching: true });
         try {
@@ -161,10 +171,9 @@ export function Cockpit() {
         pollStats.ais += 1;
         try {
           const targets = await fetchAisAround(s.pos);
-          if (alive && targets.length) useNav.getState().setAis(targets);
-          else if (alive) useNav.setState({ aisAt: Date.now() });
+          if (alive) useNav.getState().setAis(targets, "live");
         } catch {
-          if (alive) useNav.setState({ aisAt: Date.now() });
+          if (alive) useNav.getState().setAisError("AIS-virhe");
         } finally {
           aisInflight = false;
         }
