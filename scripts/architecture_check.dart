@@ -409,4 +409,25 @@ void _checkCompanionContract(List<Violation> violations) {
       );
     }
   }
+
+  for (final rel in [
+    'lib/features/ai/presentation/widgets/skipper_insight_banner.dart',
+    'lib/features/weather/presentation/screens/weather_screen.dart',
+    'lib/features/navigation/presentation/screens/route_planner_screen.dart',
+  ]) {
+    final f = File(rel);
+    if (!f.existsSync()) continue;
+    final src = f.readAsStringSync();
+    if (src.contains('Luottamus 94%') ||
+        src.contains('Luottamus: 96%') ||
+        src.contains('clamp(88, 98)')) {
+      violations.add(
+        Violation(
+          rel,
+          1,
+          'Skipper HUD must not invent a confidence percentage',
+        ),
+      );
+    }
+  }
 }

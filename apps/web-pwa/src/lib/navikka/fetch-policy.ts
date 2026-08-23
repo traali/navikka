@@ -55,22 +55,37 @@ export function aisQuery(pos: LatLng) {
   };
 }
 
-/** First LIVE GPS sample must not inherit demo 6.2 kn / 112°. CriOS speed is often null. */
+/** First LIVE GPS sample must not inherit demo 6.2 kn / 112°. CriOS speed is often null or stuck at 0 — derive from movement. */
 export function deviceFixKinematics(opts: {
   wasDemo: boolean;
   speedMs: number | null | undefined;
   headingDeg: number | null | undefined;
   prevSogKn: number;
   prevCog: number;
+  movedM?: number;
+  dtMs?: number;
 }): { sogKn: number; cog: number } {
-  const speedKnown = opts.speedMs != null && Number.isFinite(opts.speedMs);
+  const reportedFinite = opts.speedMs != null && Number.isFinite(opts.speedMs);
   const headingKnown = opts.headingDeg != null && Number.isFinite(opts.headingDeg);
-  const kn = speedKnown ? opts.speedMs! * 1.94384 : 0;
+  const derivedKn =
+    opts.movedM != null &&
+    opts.dtMs != null &&
+    opts.dtMs >= 400 &&
+    opts.movedM >= 8
+      ? (opts.movedM / (opts.dtMs / 1000)) * 1.94384
+      : 0;
+  const reportedKn = reportedFinite ? opts.speedMs! * 1.94384 : 0;
+  const reportedUnusable = !reportedFinite || (reportedKn < 0.4 && derivedKn > 0.8);
   let sogKn: number;
-  if (opts.wasDemo) sogKn = kn > 0.4 ? kn : 0;
-  else if (!speedKnown) sogKn = opts.prevSogKn;
-  else sogKn = kn > 0.4 ? kn : 0;
-  const cog = headingKnown ? ((opts.headingDeg! + 360) % 360) : opts.wasDemo ? 0 : opts.prevCog;
+  if (!reportedUnusable) sogKn = reportedKn > 0.4 ? reportedKn : 0;
+  else if (derivedKn > 0.4) sogKn = derivedKn;
+  else if (opts.wasDemo) sogKn = 0;
+  else sogKn = opts.prevSogKn;
+  const cog = headingKnown
+    ? ((opts.headingDeg! + 360) % 360)
+    : opts.wasDemo
+      ? 0
+      : opts.prevCog;
   return { sogKn, cog };
 }
 

@@ -178,4 +178,37 @@ void main() {
     expect(src, contains('basemaps.cartocdn.com'));
     expect(src, contains('julkinen.traficom.fi'));
   });
+
+  test('skipper HUD does not invent confidence percentages', () {
+    for (final path in [
+      'lib/features/ai/presentation/widgets/skipper_insight_banner.dart',
+      'lib/features/weather/presentation/screens/weather_screen.dart',
+      'lib/features/navigation/presentation/screens/route_planner_screen.dart',
+    ]) {
+      final src = File(path).readAsStringSync();
+      expect(src.contains('Luottamus 94%'), isFalse, reason: path);
+      expect(src.contains('Luottamus: 96%'), isFalse, reason: path);
+      expect(src.contains('clamp(88, 98)'), isFalse, reason: path);
+    }
+  });
+
+  test('companion persist does not store AIS or live GPS', () {
+    final src = File(
+      'apps/web-pwa/src/lib/navikka/store.ts',
+    ).readAsStringSync();
+    expect(src, contains('name: LS'));
+    expect(src.contains('ais: s.ais'), isFalse);
+    expect(src.contains('pos: s.pos'), isFalse);
+    expect(src, contains('pos: current.pos'));
+  });
+
+  test('weather safety timer does not treat Helsinki pin as the boat', () {
+    final src = File(
+      'lib/features/weather/presentation/controllers/point_weather_sync_controller.dart',
+    ).readAsStringSync();
+    final safety = src
+        .split('void _syncSafety')[1]
+        .split('Future<void> _syncSource')[0];
+    expect(safety.contains('hasLocation'), isTrue);
+  });
 }

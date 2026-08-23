@@ -222,7 +222,7 @@ final class SkipperInsightProvider
   }
 }
 
-String _$skipperInsightHash() => r'e3387cf955e4184e7f813ada5e578f90a6ddabdb';
+String _$skipperInsightHash() => r'4ca952fa9ccac86ba4fe1d8f6573d361ccf662f1';
 
 @ProviderFor(SkipperSettingsController)
 final skipperSettingsControllerProvider = SkipperSettingsControllerProvider._();

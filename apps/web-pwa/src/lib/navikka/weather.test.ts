@@ -63,4 +63,45 @@ describe("fetchWeather failure must not look live", () => {
       globalThis.fetch = orig;
     }
   });
+
+  it("does not invent 0.6 m waves when ocean forecast is missing", async () => {
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("oceanforecast")) {
+        return { ok: false, status: 404, json: async () => ({}) } as Response;
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          properties: {
+            timeseries: [
+              {
+                data: {
+                  instant: {
+                    details: {
+                      air_temperature: 12,
+                      wind_speed: 7.2,
+                      wind_from_direction: 240,
+                      air_pressure_at_sea_level: 1008,
+                      relative_humidity: 80,
+                      dew_point_temperature: 8,
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        }),
+      } as Response;
+    }) as typeof fetch;
+    try {
+      const w = await fetchWeather(HELSINKI_SEA);
+      assert.equal(w.windMs, 7.2);
+      assert.equal(w.waveM, null);
+      assert.equal(w.waterC, null);
+    } finally {
+      globalThis.fetch = orig;
+    }
+  });
 });

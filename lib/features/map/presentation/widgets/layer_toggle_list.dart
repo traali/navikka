@@ -102,7 +102,7 @@ class LayerToggleList extends ConsumerWidget {
           context,
           title: 'Karttapohja: OpenStreetMap',
           subtitle:
-              'Käytä OpenStreetMapia (Oletus: Traficom virallinen merikartta)',
+              'Käytä OpenStreetMapia (oletus: Traficom merikartta, rasteri — ei S-57 ENC)',
           value: state.showOsmBasemap,
           onChanged: (_) => notifier.toggleOsmBasemap(),
         ),

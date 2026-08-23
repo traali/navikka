@@ -114,11 +114,24 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.equal(aisMarkersForMap([], "seed").length, AIS_SEED.length);
   });
 
+  it("persist merge refuses a stored boat position", () => {
+    const src = readFileSync(resolve(import.meta.dirname, "./store.ts"), "utf8");
+    assert.match(src, /pos:\s*current\.pos/);
+    assert.match(src, /ais:\s*\[\]/);
+  });
+
+  it("search does not teleport own-ship to a harbor", () => {
+    const src = readFileSync(resolve(import.meta.dirname, "../../components/navikka/panels.tsx"), "utf8");
+    assert.match(src, /peek\(/);
+    assert.equal(src.includes("pos: h.pos"), false);
+  });
+
   it("companion basemap is not Esri Ocean (Helsinki z13 watermark)", () => {
     const src = readFileSync(resolve(import.meta.dirname, "../../components/navikka/map-view.tsx"), "utf8");
     assert.equal(src.includes("World_Ocean_Base"), false);
     assert.match(src, /basemaps\.cartocdn\.com/);
     assert.match(src, /julkinen\.traficom\.fi/);
     assert.match(src, /layers\.enc/);
+    assert.equal(src.includes("ENC · Traficom"), false);
   });
 });

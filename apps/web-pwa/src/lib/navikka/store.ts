@@ -36,10 +36,10 @@ export type WeatherSnap = {
   humidity: number;
   visM: number;
   cloudPct: number;
-  waveM: number;
+  waveM: number | null;
   waveDir: number;
-  wavePeriod: number;
-  waterC: number;
+  wavePeriod: number | null;
+  waterC: number | null;
   dewC: number;
   updated: string;
 };
@@ -100,6 +100,8 @@ type NavState = {
   aisError: string | null;
   selection: Selection | null;
   copied: boolean;
+  lookAt: LatLng | null;
+  lookSeq: number;
   setTab: (tab: Tab) => void;
   setTheme: (theme: Theme) => void;
   setLang: (lang: Lang) => void;
@@ -121,6 +123,7 @@ type NavState = {
   setAis: (targets: AisTarget[], source?: "seed" | "live") => void;
   setAisError: (err: string | null) => void;
   select: (s: Selection | null) => void;
+  peek: (pos: LatLng) => void;
   tickDemo: () => void;
   copyPos: () => Promise<void>;
 };
@@ -170,6 +173,8 @@ export const useNav = create<NavState>()(
       aisError: null,
       selection: null,
       copied: false,
+      lookAt: null,
+      lookSeq: 0,
       setTab: (tab) => set({ tab, sheet: "none" }),
       setTheme: (theme) => set({ theme }),
       setLang: (lang) => set({ lang }),
@@ -233,6 +238,7 @@ export const useNav = create<NavState>()(
         }),
       setAisError: (aisError) => set({ aisError }),
       select: (selection) => set({ selection, sheet: selection ? "detail" : "none" }),
+      peek: (pos) => set({ lookAt: pos, lookSeq: get().lookSeq + 1, follow: false, tab: "map" }),
       tickDemo: () => {
         const s = get();
         if (s.gpsSource !== "demo") return;
@@ -261,21 +267,22 @@ export const useNav = create<NavState>()(
         vessel: s.vessel,
         waypoints: s.waypoints,
         catches: s.catches,
-        pos: s.pos,
         weather: s.weather,
         weatherAt: s.weatherAt,
-        ais: s.ais,
-        aisAt: s.aisAt,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<NavState>;
         return {
           ...current,
           ...p,
+          pos: current.pos,
           sogKn: 0,
           cog: 0,
           gpsSource: "none" as const,
-          aisSource: (p.ais?.length ? p.aisSource : "live") ?? "live",
+          gpsAccM: 0,
+          ais: [],
+          aisSource: "live" as const,
+          aisAt: null,
           layers: { ...current.layers, ...p.layers, enc: p.layers?.enc ?? true },
         };
       },

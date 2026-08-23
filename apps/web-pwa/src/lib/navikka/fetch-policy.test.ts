@@ -339,6 +339,32 @@ describe("device GPS kinematics", () => {
     assert.equal(k.cog, 40);
   });
 
+  it("derives SOG from movement when CriOS speed stays null after LIVE", () => {
+    const k = deviceFixKinematics({
+      wasDemo: false,
+      speedMs: null,
+      headingDeg: null,
+      prevSogKn: 0,
+      prevCog: 0,
+      movedM: 25,
+      dtMs: 2000,
+    });
+    assert.ok(k.sogKn > 20 && k.sogKn < 30, String(k.sogKn));
+  });
+
+  it("derives SOG when CriOS reports speed 0 while the boat is moving", () => {
+    const k = deviceFixKinematics({
+      wasDemo: false,
+      speedMs: 0,
+      headingDeg: null,
+      prevSogKn: 0,
+      prevCog: 0,
+      movedM: 25,
+      dtMs: 2000,
+    });
+    assert.ok(k.sogKn > 20 && k.sogKn < 30, String(k.sogKn));
+  });
+
   it("keeps last GPS SOG when speed is null while already LIVE", () => {
     const k = deviceFixKinematics({
       wasDemo: false,

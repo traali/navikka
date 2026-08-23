@@ -34,10 +34,10 @@ export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
   const series0 = json.properties?.timeseries?.[0];
   if (!series0) throw new Error("Weather fetch failed: empty");
   const d0 = series0.data?.instant?.details ?? {};
-  let waveM = 0.6;
+  let waveM: number | null = null;
   let waveDir = d0.wind_from_direction ?? 220;
-  let wavePeriod = 4;
-  let waterC = 15;
+  let wavePeriod: number | null = null;
+  let waterC: number | null = null;
   try {
     const ocean = await fetch(
       `https://api.met.no/weatherapi/oceanforecast/2.0/complete?lat=${q.lat}&lon=${q.lon}`,
@@ -50,10 +50,10 @@ export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
         };
       };
       const od = oj.properties?.timeseries?.[0]?.data?.instant?.details ?? {};
-      waveM = od.sea_surface_wave_significant_height ?? waveM;
+      waveM = od.sea_surface_wave_significant_height ?? null;
       waveDir = od.sea_surface_wave_from_direction ?? waveDir;
-      wavePeriod = od.sea_surface_wave_period ?? wavePeriod;
-      waterC = od.sea_water_temperature ?? waterC;
+      wavePeriod = od.sea_surface_wave_period ?? null;
+      waterC = od.sea_water_temperature ?? null;
     }
   } catch {
     /* keep estimates from locationforecast */

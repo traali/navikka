@@ -68,9 +68,9 @@ export function WeatherPanel() {
       <div className="stat-grid">
         <Stat label={c.wind} value={fmtWind(w.windMs, windUnit)} sub={padCourse(w.windDir)} />
         <Stat label={c.gust} value={fmtWind(w.gustMs, windUnit)} />
-        <Stat label={c.waves} value={fmtDepth(w.waveM, depthUnit)} sub={`${c.period} ${w.wavePeriod.toFixed(0)} s`} />
+        <Stat label={c.waves} value={w.waveM == null ? "—" : fmtDepth(w.waveM, depthUnit)} sub={w.wavePeriod == null ? "" : `${c.period} ${w.wavePeriod.toFixed(0)} s`} />
         <Stat label={c.pressure} value={`${Math.round(w.pressureHpa)} hPa`} />
-        <Stat label={c.water} value={`${w.waterC.toFixed(1)} °C`} />
+        <Stat label={c.water} value={w.waterC == null ? "—" : `${w.waterC.toFixed(1)} °C`} />
         <Stat label={c.vis} value={w.visM >= 10000 ? "10+ km" : `${(w.visM / 1000).toFixed(1)} km`} />
       </div>
       <p className="muted tiny">
@@ -339,11 +339,13 @@ export function LayersSheet() {
 
 export function SosSheet() {
   const c = useCopy();
+  const lang = useNav((s) => s.lang);
   const pos = useNav((s) => s.pos);
+  const gpsLive = useNav((s) => s.gpsSource === "device");
   const vessel = useNav((s) => s.vessel);
   const copied = useNav((s) => s.copied);
   const copyPos = useNav((s) => s.copyPos);
-  const { fw, ukc } = ukcNow();
+  const { fw, ukc } = gpsLive ? ukcNow() : { fw: null, ukc: null };
   const close = () => useNav.getState().setSheet("none");
   const ddm = formatDdm(pos);
   const script = maydayScript({
@@ -353,6 +355,9 @@ export function SosSheet() {
     fairway: fw?.name ?? null,
     ukc,
   });
+  const mayday = gpsLive
+    ? script
+    : `${c.waitingGps}\n${lang === "fi" ? "GPS ei kiinnittynyt — älä lue tätä sijaintia hätänä." : "No GPS fix — do not read this position as distress."}\n${script}`;
   return (
     <Sheet title={c.sos} onClose={close} danger>
       <p className="mono pos-readout">{ddm}</p>
@@ -372,12 +377,12 @@ export function SosSheet() {
         <button
           className="btn"
           type="button"
-          onClick={() => void shareText("Navikka MAYDAY", script)}
+          onClick={() => void shareText("Navikka MAYDAY", mayday)}
         >
           {c.sharePos}
         </button>
       </div>
-      <pre className="mayday">{script}</pre>
+      <pre className="mayday">{mayday}</pre>
     </Sheet>
   );
 }
@@ -533,7 +538,8 @@ export function VoiceSheet() {
   const c = useCopy();
   const lang = useNav((s) => s.lang);
   const w = useNav((s) => s.weather);
-  const { fw, ukc } = ukcNow();
+  const gpsLive = useNav((s) => s.gpsSource === "device");
+  const { fw, ukc } = gpsLive ? ukcNow() : { fw: null, ukc: null };
   const near = nearestHarbor(useNav.getState().pos);
   const close = () => useNav.getState().setSheet("none");
   const [q, setQ] = useState("");
@@ -552,8 +558,8 @@ export function VoiceSheet() {
       : `Nearest harbor: ${near.harbor.nameEn}, ${near.nm.toFixed(1)} NM.`,
     w
       ? lang === "fi"
-        ? `Tuuli ${fmtWind(w.windMs, "ms")}, aallot ${w.waveM.toFixed(1)} m.`
-        : `Wind ${fmtWind(w.windMs, "ms")}, waves ${w.waveM.toFixed(1)} m.`
+        ? `Tuuli ${fmtWind(w.windMs, "ms")}${w.waveM == null ? "" : `, aallot ${w.waveM.toFixed(1)} m`}.`
+        : `Wind ${fmtWind(w.windMs, "ms")}${w.waveM == null ? "" : `, waves ${w.waveM.toFixed(1)} m`}.`
       : c.offline,
   ];
   const ask = async () => {
@@ -566,7 +572,7 @@ export function VoiceSheet() {
       `POS ${formatDdm(s.pos)}`,
       `SOG ${s.sogKn.toFixed(1)} kn COG ${padCourse(s.cog)}`,
       fw && ukc != null ? `UKC ${ukc.toFixed(1)} m ${fw.name}` : "Avomeri",
-      w ? `Tuuli ${w.windMs.toFixed(1)} m/s aalto ${w.waveM.toFixed(1)} m` : "ei säätä",
+      w ? `Tuuli ${w.windMs.toFixed(1)} m/s${w.waveM == null ? "" : ` aalto ${w.waveM.toFixed(1)} m`}` : "ei säätä",
       `alus ${s.vessel.name} syväys ${s.vessel.draftM} m`,
     ].join(" · ");
     try {
@@ -623,9 +629,9 @@ export function SearchHits() {
         <button
           type="button"
           onClick={() => {
-            useNav.getState().setPos(coord);
+            useNav.getState().peek(coord);
             useNav.getState().setQuery("");
-            useNav.setState({ follow: true, sheet: "none" });
+            useNav.setState({ follow: false, sheet: "none" });
           }}
         >
           GPS {formatDdm(coord)}
@@ -638,7 +644,7 @@ export function SearchHits() {
           onClick={() => {
             useNav.getState().select({ type: "harbor", id: h.id });
             useNav.getState().setQuery("");
-            useNav.setState({ pos: h.pos, follow: true });
+            useNav.getState().peek(h.pos);
           }}
         >
           <Anchor size={14} /> {lang === "fi" ? h.name : h.nameEn}

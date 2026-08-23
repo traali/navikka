@@ -136,6 +136,11 @@ class HybridInsightEngine {
         }
       }
 
+      // Missing weather is not "excellent 0.0 m/s". Templates stay heuristic.
+      if (weather == null) {
+        return heuristicInsight;
+      }
+
       // 🧠 Edge AI fallback (on-device or existing cloud)
       aiAdvice = await _aiService.getAdvice(
         weather: weather,
@@ -155,7 +160,7 @@ class HybridInsightEngine {
             ? audit.status
             : heuristicInsight.status,
         advice: finalAdvice,
-        isAIInference: true,
+        isAIInference: false,
       );
     }
 

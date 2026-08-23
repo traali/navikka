@@ -1,11 +1,12 @@
-/* Companion offline shell + tile cache. Same-origin + Carto/Traficom/OpenSeaMap. */
-const SHELL = "navikka-shell-v1";
-const TILES = "navikka-tiles-v1";
+/* Companion offline shell + bounded tile cache. */
+const SHELL = "navikka-shell-v2";
+const TILES = "navikka-tiles-v2";
+const TILE_MAX = 400;
+const SHELL_MAX = 80;
 const TILE_HOSTS = [
   "basemaps.cartocdn.com",
   "julkinen.traficom.fi",
   "tiles.openseamap.org",
-  "server.arcgisonline.com",
 ];
 
 self.addEventListener("install", (event) => {
@@ -19,8 +20,27 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((k) => k !== SHELL && k !== TILES).map((k) => caches.delete(k))),
+      )
+      .then(() => self.clients.claim()),
+  );
 });
+
+async function putCapped(cache, req, res, max) {
+  await cache.put(req, res);
+  const keys = await cache.keys();
+  if (keys.length <= max) return;
+  const drop = keys.length - max;
+  await Promise.all(keys.slice(0, drop).map((k) => cache.delete(k)));
+}
+
+async function putTile(cache, req, res) {
+  await putCapped(cache, req, res, TILE_MAX);
+}
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
@@ -37,30 +57,29 @@ self.addEventListener("fetch", (event) => {
       caches.open(TILES).then(async (cache) => {
         const hit = await cache.match(req);
         if (hit) return hit;
-        try {
-          const res = await fetch(req);
-          if (res.ok) await cache.put(req, res.clone());
-          return res;
-        } catch (e) {
-          if (hit) return hit;
-          throw e;
-        }
+        const res = await fetch(req);
+        if (res.ok) await putTile(cache, req, res.clone());
+        return res;
       }),
     );
     return;
   }
   if (url.origin !== self.location.origin) return;
+  const isDoc = req.mode === "navigate" || req.destination === "document";
   event.respondWith(
     fetch(req)
       .then((res) => {
-        if (res.ok && req.mode !== "navigate") {
+        if (res.ok && (isDoc || req.destination === "script" || req.destination === "style" || req.destination === "font")) {
           const copy = res.clone();
-          caches.open(SHELL).then((c) => c.put(req, copy));
+          caches.open(SHELL).then((c) => putCapped(c, req, copy, SHELL_MAX));
         }
         return res;
       })
-      .catch(() =>
-        caches.match(req).then((h) => h || caches.match(new URL("index.html", self.registration.scope))),
-      ),
+      .catch(async () => {
+        const hit = await caches.match(req);
+        if (hit) return hit;
+        if (isDoc) return caches.match(new URL("index.html", self.registration.scope));
+        return Response.error();
+      }),
   );
 });

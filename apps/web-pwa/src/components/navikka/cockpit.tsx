@@ -23,7 +23,7 @@ import {
   pollStats,
   weatherAgeMs,
 } from "@/lib/navikka/fetch-policy";
-import { padCourse } from "@/lib/navikka/geo";
+import { bearingDeg, haversineM, padCourse } from "@/lib/navikka/geo";
 import { MapView, type MapHandle } from "@/components/navikka/map-view";
 import {
   DetailSheet,
@@ -80,15 +80,23 @@ export function Cockpit() {
         const pos = { lat: p.coords.latitude, lng: p.coords.longitude };
         const now = Date.now();
         if (!decideGpsAccept({ now, pos, lastAt, lastPos })) return;
+        const moved = lastPos ? haversineM(lastPos, pos) : 0;
+        const dt = lastAt ? now - lastAt : 0;
+        let heading = p.coords.heading;
+        if ((heading == null || !Number.isFinite(heading)) && lastPos && moved > 8) {
+          heading = bearingDeg(lastPos, pos);
+        }
         lastAt = now;
         lastPos = pos;
         const prev = useNav.getState();
         const k = deviceFixKinematics({
           wasDemo: prev.gpsSource !== "device",
           speedMs: p.coords.speed,
-          headingDeg: p.coords.heading,
+          headingDeg: heading,
           prevSogKn: prev.sogKn,
           prevCog: prev.cog,
+          movedM: moved,
+          dtMs: dt,
         });
         useNav.getState().setPos(pos, k.sogKn, k.cog, "device", p.coords.accuracy);
       },
@@ -244,8 +252,8 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
   const setQuery = useNav((s) => s.setQuery);
   const setSheet = useNav((s) => s.setSheet);
   const follow = useNav((s) => s.follow);
-  const { fw, ukc } = ukcNow();
-  const limit = overLimit(pos, sog);
+  const { fw, ukc } = gpsLive ? ukcNow() : { fw: null, ukc: null };
+  const limit = gpsLive ? overLimit(pos, sog) : null;
   const ukcAlarm = ukc != null && ukc < 0.5;
   const wxAge = weather ? weatherAgeMs(weather.updated) : Infinity;
   const wxStale = isWeatherStale(wxAge);
@@ -268,7 +276,7 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
         </div>
         <div className="tel">
           <span>{c.cog}</span>
-          <strong>{padCourse(cog)}</strong>
+          <strong>{gpsLive ? padCourse(cog) : "—"}</strong>
         </div>
         <div className={`tel ${ukcAlarm ? "alarm" : ""}`}>
           <span>{c.ukc}</span>

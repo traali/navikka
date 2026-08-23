@@ -142,7 +142,9 @@ class WaveImpactHudWidget extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            state.attackDirection.label,
+                            state.hasSensorSamples
+                                ? state.attackDirection.label
+                                : 'Ei anturidataa',
                             style: TextStyle(
                               color: colors.textSecondary,
                               fontSize: 10,
@@ -335,7 +337,7 @@ class WaveImpactHudWidget extends ConsumerWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (state.hitsPerMinute > 0) ...[
+            if (state.hasSensorSamples && state.hitsPerMinute > 0) ...[
               const SizedBox(width: 4),
               Text(
                 '• ${state.attackDirection.label}',

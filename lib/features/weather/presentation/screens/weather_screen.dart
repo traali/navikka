@@ -367,7 +367,7 @@ class _SkipperAssistantCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'SKIPPER AI',
+                        'SKIPPER',
                         style: AppTextStyles.nvXs.copyWith(
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.5,
@@ -392,7 +392,7 @@ class _SkipperAssistantCard extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'Paikallinen AI',
+                          insight.isAIInference ? 'Malli' : 'Säännöt',
                           style: AppTextStyles.nvXs.copyWith(
                             color: AppPalette.primaryAction,
                             fontSize: 9,
@@ -403,7 +403,9 @@ class _SkipperAssistantCard extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    'On-Device • Luottamus: ${(100 - insight.riskScore * 0.2).clamp(88, 98).round()}%',
+                    insight.isAIInference
+                        ? 'On-device / pilvi — ei ensisijaiseen navigointiin'
+                        : 'Heuristiikka — ei kielimallia',
                     style: AppTextStyles.nvXs.copyWith(
                       color: AppPalette.textSecondary,
                       fontSize: 9,

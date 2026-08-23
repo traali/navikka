@@ -1,5 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 const mem = new Map<string, string>();
 const ls = {
@@ -152,7 +153,15 @@ describe("nav store", () => {
     const parsed = JSON.parse(raw) as { state?: Record<string, unknown> };
     assert.equal("sogKn" in (parsed.state ?? {}), false);
     assert.equal("gpsSource" in (parsed.state ?? {}), false);
+    assert.equal("ais" in (parsed.state ?? {}), false);
+    assert.equal("pos" in (parsed.state ?? {}), false);
     assert.ok("theme" in (parsed.state ?? {}));
     assert.ok("vessel" in (parsed.state ?? {}));
+  });
+
+  it("merge refuses a ghost GPS fix from old localStorage", () => {
+    const src = readFileSync(new URL("./store.ts", import.meta.url), "utf8");
+    assert.match(src, /pos:\s*current\.pos/);
+    assert.match(src, /ais:\s*\[\]/);
   });
 });
