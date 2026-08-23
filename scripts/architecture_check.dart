@@ -442,9 +442,9 @@ void _checkCompanionContract(List<Violation> violations) {
       ),
     );
   }
-  final cockpit = File('apps/web-pwa/src/components/navikka/cockpit.tsx');
-  if (cockpit.existsSync() &&
-      !cockpit.readAsStringSync().contains('gpsLive ? fmtSpeed(sog')) {
+  final cockpitHud = File('apps/web-pwa/src/components/navikka/cockpit.tsx');
+  if (cockpitHud.existsSync() &&
+      !cockpitHud.readAsStringSync().contains('gpsLive ? fmtSpeed(sog')) {
     violations.add(
       Violation(
         'apps/web-pwa/src/components/navikka/cockpit.tsx',
