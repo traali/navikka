@@ -146,6 +146,11 @@ export function MapView({ onReady }: Props) {
         resize();
         requestAnimationFrame(resize);
       });
+      if (cancelled || !hostRef.current) {
+        map.remove();
+        mapRef.current = null;
+        return;
+      }
       delayed.push(...[120, 400, 1000].map((ms) => window.setTimeout(resize, ms)));
       window.addEventListener("orientationchange", resize);
       window.visualViewport?.addEventListener("resize", resize);

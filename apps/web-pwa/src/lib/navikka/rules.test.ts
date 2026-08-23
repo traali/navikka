@@ -56,6 +56,11 @@ describe("catch sizes", () => {
     assert.equal(catchLegal("ahven", 8).legal, true);
   });
 
+  it("lohi is undersize below 60 cm", () => {
+    assert.deepEqual(catchLegal("lohi", 45), { known: true, legal: false, minCm: 60 });
+    assert.deepEqual(catchLegal("lohi", 60), { known: true, legal: true, minCm: 60 });
+  });
+
   it("unknown species stay permissive", () => {
     assert.equal(catchLegal("silakka", 10).known, false);
     assert.equal(catchLegal("silakka", 10).legal, true);

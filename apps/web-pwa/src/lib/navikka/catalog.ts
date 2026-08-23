@@ -256,7 +256,7 @@ export const MIN_SIZES: { id: string; fi: string; en: string; cm: number }[] = [
   { id: "ahven", fi: "Ahven", en: "Perch", cm: 0 },
   { id: "hauki", fi: "Hauki", en: "Pike", cm: 0 },
   { id: "taimen", fi: "Meritaimen", en: "Sea trout", cm: 60 },
-  { id: "loh", fi: "Lohi", en: "Salmon", cm: 60 },
+  { id: "lohi", fi: "Lohi", en: "Salmon", cm: 60 },
   { id: "siika", fi: "Siika", en: "Whitefish", cm: 0 },
 ];
 

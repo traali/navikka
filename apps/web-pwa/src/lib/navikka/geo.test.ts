@@ -72,6 +72,17 @@ describe("geo", () => {
     assert.ok(cpa.tcpaMin > 0);
     assert.ok(cpa.cpaNm < 0.15, String(cpa.cpaNm));
     assert.equal(cpa.colliding, true);
+    assert.equal(cpa.opening, false);
+  });
+
+  it("CPA of diverging tracks reports current range as Opening, not past minimum", () => {
+    const own = HELSINKI_SEA;
+    const tgt = destination(own, 180, 400);
+    const cpa = computeCpa(own, 0, 8, tgt, 180, 8);
+    assert.equal(cpa.opening, true);
+    assert.equal(cpa.colliding, false);
+    assert.ok(cpa.tcpaMin < 0);
+    assert.ok(Math.abs(cpa.cpaNm - 400 / 1852) < 0.02, String(cpa.cpaNm));
   });
 
   it("CPA of parallel same-speed tracks is not colliding", () => {

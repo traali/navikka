@@ -77,6 +77,7 @@ export type CpaResult = {
   cpaNm: number;
   tcpaMin: number;
   colliding: boolean;
+  opening: boolean;
 };
 
 /** Great-circle-ish CPA using local ENU approximation. */
@@ -98,14 +99,23 @@ export function computeCpa(
   const rvy = tvy - ovy;
   const rr = rvx * rvx + rvy * rvy;
   if (rr < 1e-6) {
-    return { cpaNm: Math.hypot(dx, dy) / 1852, tcpaMin: Infinity, colliding: false };
+    return { cpaNm: Math.hypot(dx, dy) / 1852, tcpaMin: Infinity, colliding: false, opening: false };
   }
   const tcpaSec = -((dx * rvx + dy * rvy) / rr);
+  if (tcpaSec < 0) {
+    return {
+      cpaNm: Math.hypot(dx, dy) / 1852,
+      tcpaMin: tcpaSec / 60,
+      colliding: false,
+      opening: true,
+    };
+  }
   const cpaM = Math.hypot(dx + rvx * tcpaSec, dy + rvy * tcpaSec);
   return {
     cpaNm: cpaM / 1852,
     tcpaMin: tcpaSec / 60,
-    colliding: tcpaSec > 0 && tcpaSec < 12 * 60 && cpaM < 185.2,
+    colliding: tcpaSec < 12 * 60 && cpaM < 185.2,
+    opening: false,
   };
 }
 

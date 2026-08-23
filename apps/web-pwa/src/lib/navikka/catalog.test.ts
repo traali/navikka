@@ -29,7 +29,8 @@ describe("catalog", () => {
   it("kuha / meritaimen / lohi keep statutory minima", () => {
     assert.equal(MIN_SIZES.find((s) => s.id === "kuha")?.cm, 42);
     assert.equal(MIN_SIZES.find((s) => s.id === "taimen")?.cm, 60);
-    assert.equal(MIN_SIZES.find((s) => s.id === "loh")?.cm, 60);
+    assert.equal(MIN_SIZES.find((s) => s.id === "lohi")?.cm, 60);
+    assert.equal(MIN_SIZES.find((s) => s.id === "loh"), undefined);
   });
 
   it("speed zones include a no-wake box", () => {

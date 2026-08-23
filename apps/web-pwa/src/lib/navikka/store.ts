@@ -111,6 +111,7 @@ type NavState = {
   setVessel: (v: Partial<NavState["vessel"]>) => void;
   setPos: (pos: LatLng, sogKn?: number, cog?: number, source?: "demo" | "device", acc?: number) => void;
   addWaypoint: (p: LatLng) => void;
+  removeWaypoint: (index: number) => void;
   clearRoute: () => void;
   addCatch: (species: string, cm: number) => void;
   setWeather: (w: WeatherSnap | null, err?: string | null) => void;
@@ -183,6 +184,12 @@ export const useNav = create<NavState>()(
           gpsAccM: acc ?? get().gpsAccM,
         }),
       addWaypoint: (p) => set({ waypoints: [...get().waypoints, p] }),
+      removeWaypoint: (index) => {
+        const waypoints = get().waypoints.filter((_, i) => i !== index);
+        const sel = get().selection;
+        const drop = sel?.type === "wp";
+        set({ waypoints, selection: drop ? null : sel, sheet: drop ? "none" : get().sheet });
+      },
       clearRoute: () => set({ waypoints: [], navigating: false, planning: false }),
       addCatch: (species, cm) =>
         set({

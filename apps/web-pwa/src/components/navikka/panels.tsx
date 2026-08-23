@@ -10,7 +10,7 @@ import {
   Zap,
 } from "lucide-react";
 import { FISH_ZONES, HARBORS, MIN_SIZES } from "@/lib/navikka/catalog";
-import { computeCpa, formatDdm, nmBetween, padCourse, parseLatLngQuery, routeStats } from "@/lib/navikka/geo";
+import { computeCpa, formatDdm, nmBetween, padCourse, parseLatLngQuery, routeStats, bearingDeg } from "@/lib/navikka/geo";
 import { COPY } from "@/lib/navikka/i18n";
 import { catchLegal, fogStatus, maydayScript, shareText } from "@/lib/navikka/rules";
 import { formatWeatherAge, isWeatherStale, weatherAgeMs } from "@/lib/navikka/fetch-policy";
@@ -449,7 +449,9 @@ export function DetailSheet() {
           <Stat label={c.cpa} value={`${cpa.cpaNm.toFixed(2)} NM`} />
           <Stat
             label={c.tcpa}
-            value={Number.isFinite(cpa.tcpaMin) ? `${cpa.tcpaMin.toFixed(1)} min` : "—"}
+            value={
+              !Number.isFinite(cpa.tcpaMin) ? "—" : cpa.opening ? c.opening : `${cpa.tcpaMin.toFixed(1)} min`
+            }
           />
         </div>
         {danger && <p className="banner red">{lang === "fi" ? "Lähestymisvaara" : "Closing risk"}</p>}
@@ -462,6 +464,25 @@ export function DetailSheet() {
     return (
       <Sheet title={lang === "fi" ? z.name : z.nameEn} onClose={close}>
         <p>{lang === "fi" ? z.rule : z.ruleEn}</p>
+      </Sheet>
+    );
+  }
+  if (sel.type === "wp") {
+    const wps = useNav.getState().waypoints;
+    const p = wps[sel.index];
+    if (!p) return null;
+    const own = useNav.getState().pos;
+    const c = COPY[lang];
+    return (
+      <Sheet title={`${c.waypoint} ${sel.index + 1}`} onClose={close}>
+        <p className="mono pos-readout">{formatDdm(p)}</p>
+        <div className="stat-grid">
+          <Stat label={c.total} value={`${nmBetween(own, p).toFixed(2)} NM`} />
+          <Stat label={c.cog} value={padCourse(bearingDeg(own, p))} />
+        </div>
+        <button className="btn danger" type="button" onClick={() => useNav.getState().removeWaypoint(sel.index)}>
+          <Trash2 size={14} /> {c.deleteWp}
+        </button>
       </Sheet>
     );
   }

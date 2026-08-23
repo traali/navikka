@@ -114,6 +114,14 @@ describe("nav store", () => {
     assert.equal(minSizeFor("kuha")?.cm, 42);
   });
 
+  it("removeWaypoint drops the index and closes an open waypoint sheet", () => {
+    useNav.setState({ waypoints: [HELSINKI_SEA, { lat: 60.16, lng: 24.9 }], selection: { type: "wp", index: 0 }, sheet: "detail" });
+    useNav.getState().removeWaypoint(0);
+    assert.equal(useNav.getState().waypoints.length, 1);
+    assert.equal(useNav.getState().selection, null);
+    assert.equal(useNav.getState().sheet, "none");
+  });
+
   it("does not persist live GPS or weather into localStorage", async () => {
     useNav.setState({ theme: "aurora" });
     await new Promise((r) => setTimeout(r, 20));
