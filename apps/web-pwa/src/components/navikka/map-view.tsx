@@ -203,6 +203,9 @@ export function MapView({ onReady }: Props) {
       } else if (m.hasLayer(boat)) {
         m.removeLayer(boat);
       }
+      if (s.lookSeq !== prev.lookSeq && s.lookAt) {
+        m.flyTo([s.lookAt.lat, s.lookAt.lng], Math.max(m.getZoom(), 14), { duration: 0.55 });
+      }
       if (s.layers !== prev.layers || s.theme !== prev.theme) {
         const baseWanted = s.layers.satellite ? Lwait.sat : s.theme === "solar" ? Lwait.light : Lwait.land;
         [Lwait.land, Lwait.light, Lwait.sat].forEach((ly) => {

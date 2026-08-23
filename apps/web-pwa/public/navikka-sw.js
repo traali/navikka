@@ -2,6 +2,7 @@
 const SHELL = "navikka-shell-v2";
 const TILES = "navikka-tiles-v2";
 const TILE_MAX = 400;
+const SHELL_MAX = 80;
 const TILE_HOSTS = [
   "basemaps.cartocdn.com",
   "julkinen.traficom.fi",
@@ -29,12 +30,16 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-async function putTile(cache, req, res) {
+async function putCapped(cache, req, res, max) {
   await cache.put(req, res);
   const keys = await cache.keys();
-  if (keys.length <= TILE_MAX) return;
-  const drop = keys.length - TILE_MAX;
+  if (keys.length <= max) return;
+  const drop = keys.length - max;
   await Promise.all(keys.slice(0, drop).map((k) => cache.delete(k)));
+}
+
+async function putTile(cache, req, res) {
+  await putCapped(cache, req, res, TILE_MAX);
 }
 
 self.addEventListener("fetch", (event) => {
@@ -64,9 +69,9 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(req)
       .then((res) => {
-        if (res.ok && req.mode !== "navigate") {
+        if (res.ok && (isDoc || req.destination === "script" || req.destination === "style" || req.destination === "font")) {
           const copy = res.clone();
-          caches.open(SHELL).then((c) => c.put(req, copy));
+          caches.open(SHELL).then((c) => putCapped(c, req, copy, SHELL_MAX));
         }
         return res;
       })

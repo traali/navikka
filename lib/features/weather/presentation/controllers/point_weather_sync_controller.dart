@@ -432,9 +432,11 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
     if (_isDisposed) return;
     final isOnline = ref.read(isOnlineProvider);
     if (!isOnline) return;
+    final map = ref.read(mapProvider);
+    if (!map.hasLocation) return;
 
     final repo = ref.read(weatherRepositoryProvider);
-    final boatPos = ref.read(mapProvider).userLocation;
+    final boatPos = map.userLocation;
 
     _syncSource(WeatherSource.lightning, repo.syncRecentLightning, boatPos);
     _syncSource(WeatherSource.alerts, repo.syncActiveAlerts, boatPos);
@@ -446,6 +448,7 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
     LatLng boatPos,
   ) async {
     if (_isDisposed) return;
+    if (!ref.read(mapProvider).hasLocation) return;
     _inFlightSyncs++;
     _trackers[source]!.startSync();
     try {

@@ -18,6 +18,18 @@ class HeuristicInsightEngine {
   }) {
     final effectiveNow = now ?? DateTime.now();
 
+    if (weather == null && wave == null) {
+      const advice = 'Ei säähavaintoa. Älä oleta tyyntä — tarkista Sää-näkymä.';
+      return WeatherInsight(
+        status: SafetyStatus.green,
+        advice: advice,
+        timestamp: effectiveNow,
+        insightId: _computeInsightId(SafetyStatus.green, advice, effectiveNow),
+        reasons: const ['no-weather'],
+        riskScore: 0,
+      );
+    }
+
     // 1. Analyze Current State
     final currentStatus = _getCurrentStatus(weather, wave, thresholds);
     final currentAdvice = _getCurrentAdvice(

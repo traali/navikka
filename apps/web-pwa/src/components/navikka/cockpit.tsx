@@ -252,8 +252,8 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
   const setQuery = useNav((s) => s.setQuery);
   const setSheet = useNav((s) => s.setSheet);
   const follow = useNav((s) => s.follow);
-  const { fw, ukc } = ukcNow();
-  const limit = overLimit(pos, sog);
+  const { fw, ukc } = gpsLive ? ukcNow() : { fw: null, ukc: null };
+  const limit = gpsLive ? overLimit(pos, sog) : null;
   const ukcAlarm = ukc != null && ukc < 0.5;
   const wxAge = weather ? weatherAgeMs(weather.updated) : Infinity;
   const wxStale = isWeatherStale(wxAge);
@@ -276,7 +276,7 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
         </div>
         <div className="tel">
           <span>{c.cog}</span>
-          <strong>{padCourse(cog)}</strong>
+          <strong>{gpsLive ? padCourse(cog) : "—"}</strong>
         </div>
         <div className={`tel ${ukcAlarm ? "alarm" : ""}`}>
           <span>{c.ukc}</span>

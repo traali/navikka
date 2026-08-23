@@ -44,7 +44,7 @@ final class PointWeatherSyncControllerProvider
 }
 
 String _$pointWeatherSyncControllerHash() =>
-    r'56b39329989dc1b98bdb908900eeda2a3a9dc25b';
+    r'4881c610b24a83c40d95bc88fd43148c73741ba8';
 
 abstract class _$PointWeatherSyncController
     extends $Notifier<PointWeatherSyncState> {

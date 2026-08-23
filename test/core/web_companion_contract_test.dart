@@ -199,5 +199,16 @@ void main() {
     expect(src, contains('name: LS'));
     expect(src.contains('ais: s.ais'), isFalse);
     expect(src.contains('pos: s.pos'), isFalse);
+    expect(src, contains('pos: current.pos'));
+  });
+
+  test('weather safety timer does not treat Helsinki pin as the boat', () {
+    final src = File(
+      'lib/features/weather/presentation/controllers/point_weather_sync_controller.dart',
+    ).readAsStringSync();
+    final safety = src
+        .split('void _syncSafety')[1]
+        .split('Future<void> _syncSource')[0];
+    expect(safety.contains('hasLocation'), isTrue);
   });
 }
