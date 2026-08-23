@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:sakkoja/core/constants/map_constants.dart';
 import 'package:sakkoja/core/providers/core_providers.dart';
 import 'package:sakkoja/core/services/geometry_utils.dart';
 import 'package:sakkoja/core/theme/app_theme.dart';
@@ -339,7 +340,17 @@ class _MapContentState extends ConsumerState<MapContent> {
         },
       ),
       children: [
-        // 1. Base Map Tile Layer (Crisp, native brightness without desaturating color filters)
+        // Web: OSM under the nautical chart so a Traficom CORS miss
+        // cannot blank the screen. Failed Traficom tiles stay transparent.
+        if (kIsWeb && !layerFilter.showOsmBasemap)
+          TileLayer(
+            urlTemplate: MapUrls.openStreetMap,
+            tileProvider: _tileProvider,
+            evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
+            minZoom: 5,
+            maxZoom: 19,
+            maxNativeZoom: 19,
+          ),
         TileLayer(
           urlTemplate: layerFilter.showOsmBasemap
               ? MapUrls.openStreetMap
@@ -347,6 +358,7 @@ class _MapContentState extends ConsumerState<MapContent> {
           fallbackUrl: layerFilter.showOsmBasemap
               ? MapUrls.traficomWmts
               : MapUrls.openStreetMap,
+          errorImage: MemoryImage(MapConstants.transparentTile),
           tileProvider: _tileProvider,
           evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
           minZoom: 5,
