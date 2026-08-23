@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { AIS_SEED, HARBORS, MIN_SIZES, nearestFairwayDepth, type Harbor } from "./catalog.ts";
+import { HARBORS, MIN_SIZES, nearestFairwayDepth, type Harbor } from "./catalog.ts";
 import {
   destination,
   formatDdm,
@@ -79,12 +79,13 @@ type NavState = {
     fishing: boolean;
     speedLimits: boolean;
     satellite: boolean;
+    enc: boolean;
   };
   vessel: { name: string; draftM: number; loaM: number; airDraftM: number; fuelL: number };
   pos: LatLng;
   sogKn: number;
   cog: number;
-  gpsSource: "demo" | "device";
+  gpsSource: "none" | "device" | "demo";
   gpsAccM: number;
   waypoints: LatLng[];
   catches: CatchEntry[];
@@ -111,7 +112,7 @@ type NavState = {
   toggleRough: () => void;
   setUnits: (p: Partial<Pick<NavState, "speedUnit" | "windUnit" | "depthUnit">>) => void;
   setVessel: (v: Partial<NavState["vessel"]>) => void;
-  setPos: (pos: LatLng, sogKn?: number, cog?: number, source?: "demo" | "device", acc?: number) => void;
+  setPos: (pos: LatLng, sogKn?: number, cog?: number, source?: "none" | "device" | "demo", acc?: number) => void;
   addWaypoint: (p: LatLng) => void;
   removeWaypoint: (index: number) => void;
   clearRoute: () => void;
@@ -124,7 +125,7 @@ type NavState = {
   copyPos: () => Promise<void>;
 };
 
-const LS = "navikka-v1";
+const LS = "navikka-v2";
 
 export const useNav = create<NavState>()(
   persist(
@@ -148,13 +149,14 @@ export const useNav = create<NavState>()(
         fishing: false,
         speedLimits: true,
         satellite: false,
+        enc: true,
       },
       vessel: { name: "Oma vene", draftM: 0.9, loaM: 6.4, airDraftM: 2.1, fuelL: 80 },
       pos: HELSINKI_SEA,
-      sogKn: 6.2,
-      cog: 112,
-      gpsSource: "demo",
-      gpsAccM: 8,
+      sogKn: 0,
+      cog: 0,
+      gpsSource: "none",
+      gpsAccM: 0,
       waypoints: [],
       catches: [],
       weather: null,
@@ -162,8 +164,8 @@ export const useNav = create<NavState>()(
       weatherAt: null,
       weatherPos: null,
       weatherFetching: false,
-      ais: AIS_SEED,
-      aisSource: "seed",
+      ais: [],
+      aisSource: "live",
       aisAt: null,
       aisError: null,
       selection: null,
@@ -259,7 +261,24 @@ export const useNav = create<NavState>()(
         vessel: s.vessel,
         waypoints: s.waypoints,
         catches: s.catches,
+        pos: s.pos,
+        weather: s.weather,
+        weatherAt: s.weatherAt,
+        ais: s.ais,
+        aisAt: s.aisAt,
       }),
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<NavState>;
+        return {
+          ...current,
+          ...p,
+          sogKn: 0,
+          cog: 0,
+          gpsSource: "none" as const,
+          aisSource: (p.ais?.length ? p.aisSource : "live") ?? "live",
+          layers: { ...current.layers, ...p.layers, enc: p.layers?.enc ?? true },
+        };
+      },
     },
   ),
 );

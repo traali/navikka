@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { fetchAisAround } from "@/lib/navikka/ais";
 import {
-  DEMO_TICK_MS,
   POLL_CHECK_MS,
   decideAisFetch,
   decideGpsAccept,
@@ -65,11 +64,11 @@ export function Cockpit() {
   }, [theme]);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
-      if (document.visibilityState !== "visible") return;
-      useNav.getState().tickDemo();
-    }, DEMO_TICK_MS);
-    return () => window.clearInterval(id);
+    if (import.meta.env.DEV) return;
+    if (!("serviceWorker" in navigator)) return;
+    void navigator.serviceWorker
+      .register(`${import.meta.env.BASE_URL}navikka-sw.js`)
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -85,7 +84,7 @@ export function Cockpit() {
         lastPos = pos;
         const prev = useNav.getState();
         const k = deviceFixKinematics({
-          wasDemo: prev.gpsSource === "demo",
+          wasDemo: prev.gpsSource !== "device",
           speedMs: p.coords.speed,
           headingDeg: p.coords.heading,
           prevSogKn: prev.sogKn,
@@ -94,7 +93,7 @@ export function Cockpit() {
         useNav.getState().setPos(pos, k.sogKn, k.cog, "device", p.coords.accuracy);
       },
       () => {
-        /* keep demo track if user denies */
+        /* stay at 0 kn until a fix */
       },
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 8000 },
     );
@@ -259,7 +258,7 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
           <span>Navikka</span>
           <em>{c.tag}</em>
         </div>
-        <span className={`gps-pill ${gpsLive ? "live" : ""}`}>{gpsLive ? c.live : c.demo}</span>
+        <span className={`gps-pill ${gpsLive ? "live" : ""}`}>{gpsLive ? c.live : c.waitingGps}</span>
       </div>
       <div className="telemetry">
         <div className={`tel ${limit ? "alarm" : ""}`}>

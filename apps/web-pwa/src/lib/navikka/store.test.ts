@@ -22,6 +22,16 @@ Object.defineProperty(globalThis, "window", { value: { localStorage: ls }, confi
 const { minSizeFor, nearestHarbor, overLimit, ukcNow, useNav } = await import("./store.ts");
 const { HELSINKI_SEA } = await import("./geo.ts");
 
+describe("cold start", () => {
+  it("is not a Helsinki demo movie", () => {
+    const s = useNav.getState();
+    assert.equal(s.gpsSource, "none");
+    assert.equal(s.sogKn, 0);
+    assert.equal(s.ais.length, 0);
+    assert.equal(s.aisSource, "live");
+  });
+});
+
 describe("nav store", () => {
   before(() => {
     useNav.setState({
@@ -83,12 +93,11 @@ describe("nav store", () => {
     assert.equal(useNav.getState().weatherError, "Säätä ei saatu.");
   });
 
-  it("seed AIS is not live and a fetch error does not wipe the seed", () => {
-    assert.equal(useNav.getState().aisSource, "seed");
-    assert.ok(useNav.getState().ais.length >= 1);
+  it("empty AIS stays empty; live fetch does not paint seed (NEXUS H1)", () => {
+    useNav.setState({ ais: [], aisSource: "live" });
+    assert.equal(useNav.getState().ais.length, 0);
     useNav.getState().setAisError("AIS-virhe");
-    assert.equal(useNav.getState().aisSource, "seed");
-    assert.ok(useNav.getState().ais.length >= 1);
+    assert.equal(useNav.getState().ais.length, 0);
     useNav.getState().setAis([{ mmsi: "1", name: "LIVE", sogKn: 8, cog: 90, pos: HELSINKI_SEA, kind: "ferry" }], "live");
     assert.equal(useNav.getState().aisSource, "live");
     useNav.getState().setAis([], "live");
@@ -135,14 +144,14 @@ describe("nav store", () => {
     assert.equal(useNav.getState().sheet, "none");
   });
 
-  it("does not persist live GPS or weather into localStorage", async () => {
+  it("persists last chart/weather for offline, not fake SOG", async () => {
     useNav.setState({ theme: "aurora" });
     await new Promise((r) => setTimeout(r, 20));
-    const raw = mem.get("navikka-v1");
-    if (!raw) return; // persist is browser-only; skip if storage API is inert
+    const raw = mem.get("navikka-v2");
+    if (!raw) return;
     const parsed = JSON.parse(raw) as { state?: Record<string, unknown> };
-    assert.equal("pos" in (parsed.state ?? {}), false);
-    assert.equal("weather" in (parsed.state ?? {}), false);
+    assert.equal("sogKn" in (parsed.state ?? {}), false);
+    assert.equal("gpsSource" in (parsed.state ?? {}), false);
     assert.ok("theme" in (parsed.state ?? {}));
     assert.ok("vessel" in (parsed.state ?? {}));
   });

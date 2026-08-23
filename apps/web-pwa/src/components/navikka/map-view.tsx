@@ -87,7 +87,7 @@ export function MapView({ onReady }: Props) {
       const satellite = useNav.getState().layers.satellite;
       const base = satellite ? sat : theme === "solar" ? light : land;
       base.addTo(map);
-      if (!satellite) nautical.addTo(map);
+      if (!satellite && useNav.getState().layers.enc) nautical.addTo(map);
       if (useNav.getState().layers.seamarks) seamark.addTo(map);
 
       const fairways = L.layerGroup();
@@ -205,7 +205,7 @@ export function MapView({ onReady }: Props) {
             if (!m.hasLayer(ly)) ly.addTo(m);
           } else if (m.hasLayer(ly)) m.removeLayer(ly);
         });
-        toggle(m, Lwait.nautical, !s.layers.satellite);
+        toggle(m, Lwait.nautical, !s.layers.satellite && s.layers.enc);
         toggle(m, Lwait.seamark, s.layers.seamarks);
         toggle(m, Lwait.harbors, s.layers.harbors);
         toggle(m, Lwait.ais, s.layers.ais);
