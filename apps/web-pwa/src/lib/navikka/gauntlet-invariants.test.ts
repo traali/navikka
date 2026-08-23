@@ -54,4 +54,11 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.match(ci, /--base=\/cockpit\//);
     assert.equal(ci.includes("build/web/pwa"), false);
   });
+
+  it("Pages deploy skips when Cloudflare token is unset", () => {
+    const deploy = readFileSync(resolve(root, ".github/workflows/deploy.yml"), "utf8");
+    assert.match(deploy, /should_deploy/);
+    assert.match(deploy, /CLOUDFLARE_API_TOKEN/);
+    assert.match(deploy, /Skipping Cloudflare Pages deploy/);
+  });
 });

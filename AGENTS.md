@@ -1,7 +1,7 @@
 # AGENTS.md
 
 > **Purpose**: Router and context-injection guide for AI coding assistants and contributors working on the Navikka codebase.
-> **Last Verified**: 2026-08-23 @ `feat/gauntlet-invariants`
+> **Last Verified**: 2026-08-23 @ `ci/pages-skip-missing-secrets`
 > **Canonical Docs**: [llms.txt](file:///c:/dev2/gtp/sakkoja/llms.txt) (LLM Context Map) · [docs/architecture.md](file:///c:/dev2/gtp/sakkoja/docs/architecture.md) (Architecture Specification) · [docs/developer_guide.md](file:///c:/dev2/gtp/sakkoja/docs/developer_guide.md) (Developer Guide)
 
 ---
@@ -88,6 +88,7 @@ Helsinki skipper cockpit, not a second Navikka. Flutter `lib/` remains the produ
 - Flutter `verify` job runs `architecture_check.dart`, `flutter test` (includes `web_companion_contract_test.dart`), **and** `apps/web-pwa` `npm test` + `typecheck` + `--base=/cockpit/` build.
 - Path-filtered `.github/workflows/web-pwa.yml` is extra, not a substitute. Do not remove `npm test` from `ci.yml`.
 - Lefthook runs companion tests when `apps/web-pwa/**` is staged.
+- Pages deploy (`deploy.yml`) must **skip** (not fail) when `CLOUDFLARE_API_TOKEN` or `CLOUDFLARE_ACCOUNT_ID` is unset. Do not mark those secrets `required: true` on `workflow_call`. Live `/cockpit` still needs both secrets in the GitHub repo.
 
 **Do not**
 

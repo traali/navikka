@@ -54,6 +54,8 @@ Do not copy a second tree to `/pwa`. Build with `--base=/cockpit/`. Keep
   redirects will fail `flutter test`.
 - `ci.yml` verify **always** runs `apps/web-pwa` `npm test` + `typecheck`. Do
   not drop that step; `web-pwa.yml` is extra, path-filtered feedback.
+- Pages deploy skips (does not fail CI) when `CLOUDFLARE_API_TOKEN` or
+  `CLOUDFLARE_ACCOUNT_ID` is unset. Live `/cockpit` still needs both secrets.
 - Cockpit only *runs* the policy.
 
 ## Done when
