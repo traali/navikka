@@ -77,14 +77,20 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.match(prov, /shouldFetchAis/);
     assert.match(prov, /UnderwayFetch\.aisPollCheck/);
     assert.equal(prov.includes("Timer.periodic(const Duration(seconds: 15)"), false);
+    assert.equal(prov.includes("reasonMoved"), false);
   });
 
-  it("Skipper banner keeps last insight on weather reload", () => {
-    const src = readFileSync(
+  it("Skipper banner and Sää card keep last insight on weather reload", () => {
+    const banner = readFileSync(
       resolve(root, "lib/features/ai/presentation/widgets/skipper_insight_banner.dart"),
       "utf8",
     );
-    assert.match(src, /skipLoadingOnReload:\s*true/);
+    const screen = readFileSync(
+      resolve(root, "lib/features/weather/presentation/screens/weather_screen.dart"),
+      "utf8",
+    );
+    assert.match(banner, /skipLoadingOnReload:\s*true/);
+    assert.match(screen, /skipLoadingOnReload:\s*true/);
   });
 
   it("companion AIS requires lastAttemptAt backoff like weather", () => {

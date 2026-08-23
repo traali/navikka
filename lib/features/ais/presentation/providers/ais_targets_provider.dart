@@ -21,15 +21,23 @@ class AisTargetsNotifier extends _$AisTargetsNotifier {
       _pollingTimer?.cancel();
     });
 
-    // 2 km pan may justify a fetch, but still respects the 15 s check gate.
+    // 2 km pan may check immediately, but HTTP still respects 60/180 s TTL.
     ref.listen(significantMapCameraPositionProvider, (prev, next) {
-      unawaited(_maybeFetch(reasonMoved: true));
+      unawaited(_maybeFetch());
     });
 
     _startPolling();
-    final first = await _fetchTargets();
-    _lastFetchAt = DateTime.now();
-    return first;
+    try {
+      _inflight = true;
+      final first = await _fetchTargets();
+      _lastFetchAt = DateTime.now();
+      return first;
+    } catch (_) {
+      _lastFetchAt = DateTime.now();
+      rethrow;
+    } finally {
+      _inflight = false;
+    }
   }
 
   void _startPolling() {
@@ -40,21 +48,15 @@ class AisTargetsNotifier extends _$AisTargetsNotifier {
     });
   }
 
-  Future<void> _maybeFetch({bool reasonMoved = false}) async {
+  Future<void> _maybeFetch() async {
     if (_inflight || !ref.mounted) return;
     final sogKn = ref.read(mapProvider).currentSpeedKmh / 1.852;
-    if (!reasonMoved &&
-        !shouldFetchAis(
-          now: DateTime.now(),
-          lastAt: _lastFetchAt,
-          sogKn: sogKn,
-          inflight: _inflight,
-        )) {
-      return;
-    }
-    if (reasonMoved &&
-        _lastFetchAt != null &&
-        DateTime.now().difference(_lastFetchAt!) < UnderwayFetch.aisPollCheck) {
+    if (!shouldFetchAis(
+      now: DateTime.now(),
+      lastAt: _lastFetchAt,
+      sogKn: sogKn,
+      inflight: _inflight,
+    )) {
       return;
     }
     try {
@@ -65,6 +67,7 @@ class AisTargetsNotifier extends _$AisTargetsNotifier {
         state = AsyncValue.data(targets);
       }
     } catch (err, stack) {
+      _lastFetchAt = DateTime.now();
       if (ref.mounted && (state.value == null || state.value!.isEmpty)) {
         state = AsyncValue.error(err, stack);
       }
@@ -108,6 +111,7 @@ class AisTargetsNotifier extends _$AisTargetsNotifier {
       _lastFetchAt = DateTime.now();
       state = AsyncValue.data(targets);
     } catch (err, stack) {
+      _lastFetchAt = DateTime.now();
       state = AsyncValue.error(err, stack);
     }
   }

@@ -134,7 +134,9 @@ class WaveImpactHudWidget extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            '${state.hitsPerMinute} /min',
+                            state.hasSensorSamples
+                                ? '${state.hitsPerMinute} /min'
+                                : '— /min',
                             style: AppTextStyles.h4.copyWith(
                               color: colors.textPrimary,
                             ),

@@ -116,6 +116,7 @@ void main() {
       prov.contains('Timer.periodic(const Duration(seconds: 15)'),
       isFalse,
     );
+    expect(prov.contains('reasonMoved'), isFalse);
   });
 
   test('Skipper banner and AIS retry share underway honesty', () {
@@ -124,6 +125,10 @@ void main() {
       'skipper_insight_banner.dart',
     ).readAsStringSync();
     expect(banner, contains('skipLoadingOnReload: true'));
+    final screen = File(
+      'lib/features/weather/presentation/screens/weather_screen.dart',
+    ).readAsStringSync();
+    expect(screen, contains('skipLoadingOnReload: true'));
     final policy = File(
       'apps/web-pwa/src/lib/navikka/fetch-policy.ts',
     ).readAsStringSync();

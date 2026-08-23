@@ -296,6 +296,15 @@ void _checkCompanionContract(List<Violation> violations) {
         ),
       );
     }
+    if (body.contains('reasonMoved')) {
+      violations.add(
+        const Violation(
+          'lib/features/ais/presentation/providers/ais_targets_provider.dart',
+          1,
+          'Map pan must not bypass shouldFetchAis 60s/180s TTL',
+        ),
+      );
+    }
   }
 
   final aiProviders = File(
@@ -312,6 +321,22 @@ void _checkCompanionContract(List<Violation> violations) {
           'lib/features/ai/presentation/providers/ai_providers.dart',
           1,
           'skipperInsight .select requires flutter_riverpod import',
+        ),
+      );
+    }
+  }
+
+  final weatherScreen = File(
+    'lib/features/weather/presentation/screens/weather_screen.dart',
+  );
+  if (weatherScreen.existsSync()) {
+    final body = weatherScreen.readAsStringSync();
+    if (!body.contains('skipLoadingOnReload: true')) {
+      violations.add(
+        const Violation(
+          'lib/features/weather/presentation/screens/weather_screen.dart',
+          1,
+          'Sää skipper card must keep last insight on reload',
         ),
       );
     }

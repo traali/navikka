@@ -60,7 +60,7 @@ class _VoyageRecorderHudState extends ConsumerState<VoyageRecorderHud> {
     return Positioned(
       top: MediaQuery.paddingOf(context).top + 54,
       left: 12,
-      right: 56, // zoom +/- column on iPhone Chrome
+      right: 72, // zoom +/- is right:12 × 48px → occupies to 60; 12px gap
       child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 420),

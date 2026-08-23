@@ -52,6 +52,16 @@ describe("iPhone 11 / 12 + Chrome (WebKit)", () => {
     assert.match(css, /env\(safe-area-inset-bottom\)/);
     assert.match(css, /-webkit-text-size-adjust:\s*100%/);
     assert.match(css, /touch-action:\s*manipulation/);
+    const start = css.indexOf(".cockpit {");
+    const block = css.slice(start, css.indexOf("}", start));
+    assert.ok(
+      block.lastIndexOf("100dvh") > block.lastIndexOf("-webkit-fill-available"),
+      "100dvh must be last so CriOS URL bar does not undo it",
+    );
+  });
+
+  it("menu and catch inputs are 16px (iOS focus-zoom)", () => {
+    assert.match(css, /\.field input[\s\S]{0,180}font-size:\s*16px/);
   });
 
   it("keeps iPhone 11 (375px) HUD from overflowing", () => {
