@@ -24,6 +24,9 @@ class BottomTelemetryDock extends ConsumerWidget {
     }
 
     final mapState = ref.watch(mapProvider);
+    if (!mapState.hasLocation) {
+      return const SizedBox.shrink();
+    }
     final aisTargets = ref.watch(aisTargetsProvider).value ?? [];
     final cockpitState = ref.watch(cockpitModeProvider);
 

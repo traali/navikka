@@ -320,13 +320,12 @@ export const AIS_SEED: AisSeed[] = [
   },
 ];
 
-/** Live empty list must stay empty. Seed fallback is DEMO only (NEXUS H1). */
+/** Live empty list stays empty. Seed MEGASTAR is never painted (NEXUS H1). */
 export function aisMarkersForMap<T extends { mmsi: string }>(
   targets: T[],
-  source: "seed" | "live",
-  seed: T[] = AIS_SEED as unknown as T[],
+  _source?: "seed" | "live",
+  _seed?: T[],
 ): T[] {
-  if (source === "seed") return targets.length ? targets : seed;
   return targets;
 }
 

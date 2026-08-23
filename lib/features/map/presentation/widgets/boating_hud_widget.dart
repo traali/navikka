@@ -26,6 +26,9 @@ class BoatingHudWidget extends ConsumerWidget {
     }
 
     final mapState = ref.watch(mapProvider);
+    if (!mapState.hasLocation) {
+      return const SizedBox.shrink();
+    }
     final navStateAsync = ref.watch(navigationControllerProvider);
     final navState = navStateAsync.value;
 

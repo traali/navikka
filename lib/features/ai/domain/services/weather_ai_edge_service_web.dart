@@ -171,8 +171,12 @@ class LocalMarineReasoner {
     required SafetyStatus status,
     required NavigationContext context,
   }) {
-    final windSpeed = weather?.windSpeed ?? 0.0;
+    final windSpeed = weather?.windSpeed;
+    if (windSpeed == null) {
+      return 'Säätä ei saatavilla — älä oleta tyyntä. Pidä tähystys COLREG-säännön 5 mukaisesti.';
+    }
     final windGust = weather?.windGust ?? windSpeed;
+    final waveKnown = wave?.waveHeight != null;
     final waveHeight = wave?.waveHeight ?? 0.0;
     final wavePeriod = wave?.wavePeriod;
     final isSailing = context.vesselType == VesselType.sailboat;
@@ -181,7 +185,10 @@ class LocalMarineReasoner {
     // 1. Extreme Weather / Danger (Red)
     if (status == SafetyStatus.red || windSpeed >= 14.0 || waveHeight >= 2.0) {
       if (windSpeed >= 14.0) {
-        return 'Varoitus: Kova tuuli (${windSpeed.toStringAsFixed(1)} m/s, puuskat ${windGust.toStringAsFixed(1)} m/s) ja aallokko ${waveHeight.toStringAsFixed(1)} m ylittävät pienten alusten turvarajat. Hakeudu suojaisaan satamaan tai ankkuripaikalle.';
+        final waveTxt = waveKnown
+            ? ' ja aallokko ${waveHeight.toStringAsFixed(1)} m'
+            : '';
+        return 'Varoitus: Kova tuuli (${windSpeed.toStringAsFixed(1)} m/s, puuskat ${windGust.toStringAsFixed(1)} m/s)$waveTxt ylittävät pienten alusten turvarajat. Hakeudu suojaisaan satamaan tai ankkuripaikalle.';
       }
       return 'Varoitus: Sääolosuhteet ovat vaaralliset pienten alusten navigoinnille. Seuraa tutkakuvaa ja vältä avoselkäosuuksia.';
     }
@@ -311,13 +318,18 @@ class LocalMarineReasoner {
 
     // 6. Normal Cruising / Favorable Navigation (Green/Yellow)
     if (windSpeed <= 6.0 && waveHeight <= 0.6) {
+      if (!waveKnown) {
+        return 'Tuuli ${windSpeed.toStringAsFixed(1)} m/s. Aallokkoa ei saatavilla — älä oleta tyyntä. Pidä tähystys COLREG-säännön 5 mukaisesti.';
+      }
       final sailNote = isSailing
           ? ' Purjehdukseen suotuisat leppoisat tuulet.'
           : '';
       return 'Merisää on erinomainen matkaveneilyyn.$sailNote Tuuli ${windSpeed.toStringAsFixed(1)} m/s ja aallokko ${waveHeight.toStringAsFixed(1)} m mahdollistavat tasaisen matkanopeuden. Pidä tähystys COLREG-säännön 5 mukaisesti.';
     }
 
-    return 'Matkaveneilysää: Tuuli ${windSpeed.toStringAsFixed(1)} m/s (puuskat ${windGust.toStringAsFixed(1)} m/s), aallokko ${waveHeight.toStringAsFixed(1)} m. Olosuhteet ovat hallittavat normaaliin navigointiin.';
+    return waveKnown
+        ? 'Matkaveneilysää: Tuuli ${windSpeed.toStringAsFixed(1)} m/s (puuskat ${windGust.toStringAsFixed(1)} m/s), aallokko ${waveHeight.toStringAsFixed(1)} m. Olosuhteet ovat hallittavat normaaliin navigointiin.'
+        : 'Tuuli ${windSpeed.toStringAsFixed(1)} m/s (puuskat ${windGust.toStringAsFixed(1)} m/s). Aallokkoa ei saatavilla — älä oleta tyyntä. Pidä tähystys COLREG-säännön 5 mukaisesti.';
   }
 
   /// Analyzes a planned route and generates an intelligent weather-routing skipper briefing.
@@ -340,9 +352,13 @@ class LocalMarineReasoner {
         ? '${wave!.waveHeight!.toStringAsFixed(1)} m'
         : null;
 
-    final weatherSummary = wind != null
-        ? 'Olosuhteet reitillä: Tuuli $wind${waveH != null ? ', aallokko $waveH' : ''}.'
-        : 'Sääolosuhteet reitillä ovat vakaat.';
+    if (wind == null) {
+      return 'Reitti ($nm NM, $totalDurationMinutes min): Säätä ei saatavilla — älä oleta tyyntä. Muista seurata tähystystä ja väylämerkkejä.';
+    }
+
+    final weatherSummary = waveH != null
+        ? 'Olosuhteet reitillä: Tuuli $wind, aallokko $waveH.'
+        : 'Olosuhteet reitillä: Tuuli $wind. Aallokkoa ei saatavilla — älä oleta tyyntä.';
 
     if (wave != null && wave.waveHeight != null && wave.waveHeight! >= 1.2) {
       return 'Reitti ($nm NM, $totalDurationMinutes min): $weatherSummary Avomerialueilla aallokko on jyrkkää. Suositellaan reitin viemistä saariston suojaisempien väylien kautta.';
@@ -355,6 +371,8 @@ class LocalMarineReasoner {
       return 'Reitti ($nm NM, $totalDurationMinutes min): $weatherSummary Huomioi voimakkaat puuskat (${weather.windGust!.toStringAsFixed(1)} m/s) kapeikoissa ja saarten välisissä salmissa.';
     }
 
-    return 'Reitti ($nm NM, $totalDurationMinutes min): $weatherSummary Reittilinja on suora ja turvallinen. Muista seurata tähystystä ja väylämerkkejä.';
+    return waveH != null
+        ? 'Reitti ($nm NM, $totalDurationMinutes min): $weatherSummary Reittilinja on suora ja turvallinen. Muista seurata tähystystä ja väylämerkkejä.'
+        : 'Reitti ($nm NM, $totalDurationMinutes min): $weatherSummary Muista seurata tähystystä ja väylämerkkejä.';
   }
 }

@@ -430,4 +430,40 @@ void _checkCompanionContract(List<Violation> violations) {
       );
     }
   }
+
+  final catalog = File('apps/web-pwa/src/lib/navikka/catalog.ts');
+  if (catalog.existsSync() &&
+      catalog.readAsStringSync().contains('targets.length ? targets : seed')) {
+    violations.add(
+      Violation(
+        'apps/web-pwa/src/lib/navikka/catalog.ts',
+        1,
+        'Seed AIS (MEGASTAR) must never paint on an empty live list',
+      ),
+    );
+  }
+  final cockpit = File('apps/web-pwa/src/components/navikka/cockpit.tsx');
+  if (cockpit.existsSync() &&
+      !cockpit.readAsStringSync().contains('gpsLive ? fmtSpeed(sog')) {
+    violations.add(
+      Violation(
+        'apps/web-pwa/src/components/navikka/cockpit.tsx',
+        1,
+        'HUD SOG must stay em-dash until LIVE GPS',
+      ),
+    );
+  }
+  final weatherTs = File('apps/web-pwa/src/lib/navikka/weather.ts');
+  if (weatherTs.existsSync()) {
+    final wx = weatherTs.readAsStringSync();
+    if (wx.contains('windMs * 1.4') || wx.contains('FALLBACK.dewC')) {
+      violations.add(
+        Violation(
+          'apps/web-pwa/src/lib/navikka/weather.ts',
+          1,
+          'Compact MET must not invent gusts (wind×1.4) or dew 11.1 °C',
+        ),
+      );
+    }
+  }
 }

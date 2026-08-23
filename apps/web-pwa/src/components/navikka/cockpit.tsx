@@ -271,7 +271,7 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
       <div className="telemetry">
         <div className={`tel ${limit ? "alarm" : ""}`}>
           <span>{c.sog}</span>
-          <strong>{fmtSpeed(sog, speedUnit)}</strong>
+          <strong>{gpsLive ? fmtSpeed(sog, speedUnit) : "—"}</strong>
           {limit != null && <small>{limit} km/h</small>}
         </div>
         <div className="tel">
@@ -281,7 +281,7 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
         <div className={`tel ${ukcAlarm ? "alarm" : ""}`}>
           <span>{c.ukc}</span>
           <strong>{ukc == null ? "—" : fmtDepth(Math.max(ukc, 0), depthUnit)}</strong>
-          <small>{fw ? `${fw.depthM.toFixed(1)} m` : c.openWater}</small>
+          <small>{!gpsLive ? c.waitingGps : fw ? `${fw.depthM.toFixed(1)} m` : c.openWater}</small>
         </div>
         <div className={`tel ${wxStale ? "alarm" : ""}`}>
           <span>{c.wind}</span>
@@ -304,7 +304,11 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
         <button
           className={`fab ${follow ? "on" : ""}`}
           type="button"
-          onClick={onRecenter}
+          onClick={() => {
+            if (!gpsLive) return;
+            useNav.setState({ follow: true });
+            onRecenter();
+          }}
           aria-label={c.locate}
         >
           <Crosshair size={18} />

@@ -30,17 +30,17 @@ export type CatchEntry = {
 export type WeatherSnap = {
   tempC: number;
   windMs: number;
-  gustMs: number;
+  gustMs: number | null;
   windDir: number;
   pressureHpa: number;
   humidity: number;
-  visM: number;
+  visM: number | null;
   cloudPct: number;
   waveM: number | null;
   waveDir: number;
   wavePeriod: number | null;
   waterC: number | null;
-  dewC: number;
+  dewC: number | null;
   updated: string;
 };
 
@@ -247,6 +247,7 @@ export const useNav = create<NavState>()(
         set({ pos: next, cog: (wander + 360) % 360, sogKn: 5.4 + Math.random() * 1.6 });
       },
       copyPos: async () => {
+        if (get().gpsSource !== "device") return;
         const text = formatDdm(get().pos);
         const ok = await copyText(text);
         if (!ok) return;
@@ -315,7 +316,7 @@ export function ukcNow() {
   const s = useNav.getState();
   const fw = nearestFairwayDepth(s.pos);
   if (!fw) return { fw: null, ukc: null };
-  const sea = (s.weather?.waveM ?? 0) * -0.05;
+  const sea = s.weather?.waveM == null ? 0 : s.weather.waveM * -0.05;
   return { fw, ukc: underKeelClearance(fw.depthM, s.vessel.draftM, sea) };
 }
 

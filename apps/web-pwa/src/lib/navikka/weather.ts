@@ -2,22 +2,12 @@ import type { LatLng } from "./geo.ts";
 import { weatherQuery } from "./fetch-policy.ts";
 import type { WeatherSnap } from "./store.ts";
 
-/** Field defaults for a *successful* MET payload with missing keys. Never stamp this as live on fetch failure. */
-const FALLBACK: WeatherSnap = {
-  tempC: 14.2,
-  windMs: 6.4,
-  gustMs: 9.1,
+/** Compact MET has no visibility or dew. Never stamp 14 km / 0.6 m / 11.1 °C as live. */
+const FALLBACK = {
   windDir: 232,
   pressureHpa: 1012,
   humidity: 82,
-  visM: 14000,
   cloudPct: 48,
-  waveM: 0.7,
-  waveDir: 240,
-  wavePeriod: 4.2,
-  waterC: 16.4,
-  dewC: 11.1,
-  updated: "1970-01-01T00:00:00.000Z",
 };
 
 export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
@@ -34,8 +24,13 @@ export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
   const series0 = json.properties?.timeseries?.[0];
   if (!series0) throw new Error("Weather fetch failed: empty");
   const d0 = series0.data?.instant?.details ?? {};
+  const tempC = d0.air_temperature;
+  const windMs = d0.wind_speed;
+  if (!Number.isFinite(tempC) || !Number.isFinite(windMs)) {
+    throw new Error("Weather fetch failed: missing temp/wind");
+  }
   let waveM: number | null = null;
-  let waveDir = d0.wind_from_direction ?? 220;
+  let waveDir = d0.wind_from_direction ?? FALLBACK.windDir;
   let wavePeriod: number | null = null;
   let waterC: number | null = null;
   try {
@@ -59,19 +54,23 @@ export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
     /* keep estimates from locationforecast */
   }
   return {
-    tempC: d0.air_temperature ?? FALLBACK.tempC,
-    windMs: d0.wind_speed ?? FALLBACK.windMs,
-    gustMs: d0.wind_speed_of_gust ?? (d0.wind_speed ?? 0) * 1.4,
+    tempC,
+    windMs,
+    gustMs: Number.isFinite(d0.wind_speed_of_gust) ? d0.wind_speed_of_gust : null,
     windDir: d0.wind_from_direction ?? FALLBACK.windDir,
     pressureHpa: d0.air_pressure_at_sea_level ?? FALLBACK.pressureHpa,
     humidity: d0.relative_humidity ?? FALLBACK.humidity,
-    visM: (d0.fog_area_fraction ?? 0) > 50 ? 800 : 14000,
-    cloudPct: d0.cloud_area_fraction ?? 40,
+    visM: Number.isFinite(d0.fog_area_fraction)
+      ? d0.fog_area_fraction > 50
+        ? 800
+        : 14000
+      : null,
+    cloudPct: d0.cloud_area_fraction ?? FALLBACK.cloudPct,
     waveM,
     waveDir,
     wavePeriod,
     waterC,
-    dewC: d0.dew_point_temperature ?? FALLBACK.dewC,
+    dewC: Number.isFinite(d0.dew_point_temperature) ? d0.dew_point_temperature : null,
     updated: new Date().toISOString(),
   };
 }

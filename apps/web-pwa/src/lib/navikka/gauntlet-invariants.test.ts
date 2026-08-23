@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { AIS_SEED, aisMarkersForMap } from "./catalog.ts";
+import { aisMarkersForMap } from "./catalog.ts";
 
 const root = resolve(import.meta.dirname, "../../../../../");
 const compact = (s: string) => s.replace(/\s+/g, " ");
@@ -111,7 +111,27 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.match(src, /aisMarkersForMap/);
     assert.equal(src.includes("targets.length ? targets : AIS_SEED"), false);
     assert.equal(aisMarkersForMap([], "live").length, 0);
-    assert.equal(aisMarkersForMap([], "seed").length, AIS_SEED.length);
+    assert.equal(aisMarkersForMap([], "seed").length, 0);
+  });
+
+  it("HUD SOG and MAYDAY wait for LIVE GPS — Helsinki pin is not the boat", () => {
+    const cockpit = readFileSync(resolve(import.meta.dirname, "../../components/navikka/cockpit.tsx"), "utf8");
+    assert.match(cockpit, /gpsLive \? fmtSpeed\(sog/);
+    assert.match(cockpit, /if \(!gpsLive\) return;/);
+    const panels = readFileSync(resolve(import.meta.dirname, "../../components/navikka/panels.tsx"), "utf8");
+    assert.match(panels, /GPS ei kiinnittynyt — älä lue Helsingin oletuspinniä hätänä/);
+    assert.match(panels, /gpsLive \? formatDdm\(pos\) : "—"/);
+    assert.match(panels, /gpsLive &&\s*aisSource === "live"/);
+    assert.match(panels, /GPS ei kiinnittynyt — älä oleta Helsingin oletuspinniä veneeksi/);
+    const map = readFileSync(resolve(import.meta.dirname, "../../components/navikka/map-view.tsx"), "utf8");
+    assert.match(map, /if \(s\.gpsSource !== "device"\) return;/);
+    const weather = readFileSync(resolve(import.meta.dirname, "./weather.ts"), "utf8");
+    assert.match(weather, /missing temp\/wind/);
+    assert.match(weather, /Number.isFinite\(d0\.fog_area_fraction\)/);
+    assert.equal(weather.includes("visM: 14000,"), false);
+    assert.equal(weather.includes("windMs * 1.4"), false);
+    assert.match(weather, /dewC: Number.isFinite/);
+    assert.match(panels, /gpsLive \? `\$\{nmBetween/);
   });
 
   it("persist merge refuses a stored boat position", () => {
