@@ -127,6 +127,15 @@ jobs:
             --dart-define="APP_VERSION_BUILD_TIME=${APP_BUILD_TIME}" \
             --dart-define="APP_ENV=ci"
 
+      - name: Build and Bundle Web PWA Companion (Verification)
+        run: |
+          cd apps/web-pwa
+          npm ci
+          npm run build -- --base=./
+          mkdir -p ../../build/web/cockpit ../../build/web/pwa
+          cp -r dist/* ../../build/web/cockpit/
+          cp -r dist/* ../../build/web/pwa/
+
       - name: Report Bundle Size
         run: |
           echo "### 📦 Web Bundle Size" >> $GITHUB_STEP_SUMMARY

@@ -73,6 +73,20 @@ jobs:
       - name: Strip secrets from web build
         run: echo "" > build/web/assets/.env
 
+      - name: Setup Node for Web Companion
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Build and Bundle Web PWA Companion
+        run: |
+          cd apps/web-pwa
+          npm ci
+          npm run build -- --base=./
+          mkdir -p ../../build/web/cockpit ../../build/web/pwa
+          cp -r dist/* ../../build/web/cockpit/
+          cp -r dist/* ../../build/web/pwa/
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         env:
