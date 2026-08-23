@@ -391,4 +391,22 @@ void _checkCompanionContract(List<Violation> violations) {
       );
     }
   }
+
+  for (final rel in [
+    'lib/features/map/presentation/widgets/map_content.dart',
+    'lib/features/satellite/presentation/screens/satellite_screen.dart',
+  ]) {
+    final f = File(rel);
+    if (!f.existsSync()) continue;
+    if (f.readAsStringSync().contains("'User-Agent':")) {
+      violations.add(
+        Violation(
+          rel,
+          1,
+          'Web NetworkTileProvider must not set User-Agent/Referer '
+          '(Chrome forbids them; Traficom CORS preflight 403s the chart)',
+        ),
+      );
+    }
+  }
 }

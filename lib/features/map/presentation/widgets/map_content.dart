@@ -62,22 +62,17 @@ class _MapContentState extends ConsumerState<MapContent> {
 
   /// Stable TileProvider — created once, reused across rebuilds.
   ///
-  /// On **web**: uses flutter_map's [NetworkTileProvider] which delegates to
-  /// the browser's fetch API. The browser handles CORS natively — OSM, EOX,
-  /// and Traficom already serve `Access-Control-Allow-Origin: *` so no proxy
-  /// is needed for tile hosts. This also avoids violating OSM / ESRI ToS by
-  /// routing tiles through a shared proxy.
+  /// On **web**: [NetworkTileProvider] with **no custom headers**. Chrome
+  /// forbids `User-Agent` / `Referer` on `fetch`; setting them triggers a
+  /// Traficom CORS preflight that returns 403 and paints
+  /// "Map data not yet available" on every tile. The browser sends its own
+  /// UA + Referer. OSM / Traficom already send `Access-Control-Allow-Origin: *`.
   ///
-  /// On **native**: uses [DriftTileProvider] for offline SQLite tile caching.
+  /// On **native**: [DriftTileProvider] for offline SQLite tile caching.
   late final TileProvider _tileProvider =
       widget.tileProvider ??
       (kIsWeb
-          ? NetworkTileProvider(
-              headers: {
-                'User-Agent': 'Navikka/1.0 (navikka.pages.dev)',
-                'Referer': 'https://navikka.pages.dev',
-              },
-            )
+          ? NetworkTileProvider()
           : DriftTileProvider(
               tileDao: ref.read(appDatabaseProvider).tileDao,
               dio: ref.read(tileDioProvider),
@@ -349,6 +344,9 @@ class _MapContentState extends ConsumerState<MapContent> {
           urlTemplate: layerFilter.showOsmBasemap
               ? MapUrls.openStreetMap
               : MapUrls.traficomWmts,
+          fallbackUrl: layerFilter.showOsmBasemap
+              ? MapUrls.traficomWmts
+              : MapUrls.openStreetMap,
           tileProvider: _tileProvider,
           evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
           minZoom: 5,
