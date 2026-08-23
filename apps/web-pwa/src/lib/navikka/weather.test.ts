@@ -1,6 +1,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { fogStatus } from "./rules.ts";
+import { fetchWeather } from "./weather.ts";
+import { HELSINKI_SEA } from "./geo.ts";
 
 function snap(over: Partial<Parameters<typeof fogStatus>[0]>): Parameters<typeof fogStatus>[0] {
   return {
@@ -32,5 +34,19 @@ describe("fogStatus COLREG 19/35", () => {
 
   it("good visibility stays green", () => {
     assert.equal(fogStatus(snap({})).level, "green");
+  });
+});
+
+describe("fetchWeather failure must not look live", () => {
+  it("throws on network loss instead of returning calm fallback stamped as now", async () => {
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async () => {
+      throw new Error("network down");
+    }) as typeof fetch;
+    try {
+      await assert.rejects(() => fetchWeather(HELSINKI_SEA), /failed|network|down/i);
+    } finally {
+      globalThis.fetch = orig;
+    }
   });
 });

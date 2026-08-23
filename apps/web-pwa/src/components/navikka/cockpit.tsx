@@ -229,7 +229,7 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
   const follow = useNav((s) => s.follow);
   const { fw, ukc } = ukcNow();
   const limit = overLimit(pos, sog);
-  const ukcAlarm = ukc < 0.5;
+  const ukcAlarm = ukc != null && ukc < 0.5;
   const wxAge = weather ? weatherAgeMs(weather.updated) : Infinity;
   const wxStale = isWeatherStale(wxAge);
 
@@ -255,8 +255,8 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
         </div>
         <div className={`tel ${ukcAlarm ? "alarm" : ""}`}>
           <span>{c.ukc}</span>
-          <strong>{fmtDepth(Math.max(ukc, 0), depthUnit)}</strong>
-          <small>{fw.depthM.toFixed(1)} m</small>
+          <strong>{ukc == null ? "—" : fmtDepth(Math.max(ukc, 0), depthUnit)}</strong>
+          <small>{fw ? `${fw.depthM.toFixed(1)} m` : c.openWater}</small>
         </div>
         <div className={`tel ${wxStale ? "alarm" : ""}`}>
           <span>{c.wind}</span>

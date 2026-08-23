@@ -90,6 +90,7 @@ const FI = {
   staleWx: "Vanha sää",
   fetchingWx: "Haetaan merisäätä…",
   wxSource: "MET Norway · ruutu 5,5 km · enintään 10 min",
+  openWater: "Avomeri",
   disclaimer:
     "Ei virallinen merikartta. Varmista kulku Traficomin merikartasta.",
 };
@@ -184,6 +185,7 @@ const EN: typeof FI = {
   staleWx: "Stale weather",
   fetchingWx: "Fetching marine weather…",
   wxSource: "MET Norway · 5.5 km cell · at most 10 min",
+  openWater: "Open water",
   disclaimer: "Not an official chart. Confirm passage on Traficom charts.",
 };
 

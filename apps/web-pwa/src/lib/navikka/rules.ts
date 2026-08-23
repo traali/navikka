@@ -88,10 +88,15 @@ export function maydayScript(opts: {
   name: string;
   pos: LatLng;
   draftM: number;
-  fairway: string;
-  ukc: number;
+  fairway?: string | null;
+  ukc?: number | null;
 }) {
-  return `MAYDAY MAYDAY MAYDAY. This is ${opts.name}. Position ${formatDdm(opts.pos)}. Draft ${opts.draftM.toFixed(1)} m. Fairway ${opts.fairway} UKC ${opts.ukc.toFixed(1)} m.`;
+  const pos = `Position ${formatDdm(opts.pos)}`;
+  const draft = `Draft ${opts.draftM.toFixed(1)} m`;
+  if (!opts.fairway || opts.ukc == null) {
+    return `MAYDAY MAYDAY MAYDAY. This is ${opts.name}. ${pos}. ${draft}. Off-fairway / avomeri.`;
+  }
+  return `MAYDAY MAYDAY MAYDAY. This is ${opts.name}. ${pos}. ${draft}. Fairway ${opts.fairway} UKC ${opts.ukc.toFixed(1)} m.`;
 }
 
 /** iOS 15.3 and older Chrome/WebKit lack crypto.randomUUID. */

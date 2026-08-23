@@ -51,8 +51,44 @@ describe("nav store", () => {
   it("UKC is nearest fairway depth minus draft when seas are calm", () => {
     useNav.getState().setPos(HELSINKI_SEA, 6, 112, "demo", 8);
     const { fw, ukc } = ukcNow();
+    assert.ok(fw);
+    assert.ok(ukc != null);
     assert.ok(fw.depthM > 2);
     assert.ok(Math.abs(ukc - (fw.depthM - 0.9)) < 1e-9, String(ukc));
+  });
+
+  it("keeps last good weather when a later fetch fails", () => {
+    const live = {
+      tempC: 8,
+      windMs: 18.2,
+      gustMs: 24,
+      windDir: 240,
+      pressureHpa: 988,
+      humidity: 90,
+      visM: 4000,
+      cloudPct: 90,
+      waveM: 2.1,
+      waveDir: 240,
+      wavePeriod: 6,
+      waterC: 12,
+      dewC: 7,
+      updated: "2026-08-21T10:00:00.000Z",
+    };
+    useNav.getState().setWeather(live);
+    const at = useNav.getState().weatherAt;
+    useNav.getState().setWeather(null, "Säätä ei saatu.");
+    assert.equal(useNav.getState().weather?.windMs, 18.2);
+    assert.equal(useNav.getState().weather?.updated, "2026-08-21T10:00:00.000Z");
+    assert.equal(useNav.getState().weatherAt, at);
+    assert.equal(useNav.getState().weatherError, "Säätä ei saatu.");
+  });
+
+  it("does not invent UKC at Porkkala", () => {
+    useNav.getState().setPos({ lat: 59.986, lng: 24.52 }, 6, 270, "demo", 8);
+    const { fw, ukc } = ukcNow();
+    assert.equal(fw, null);
+    assert.equal(ukc, null);
+    useNav.getState().setPos(HELSINKI_SEA, 6, 112, "demo", 8);
   });
 
   it("does not flag overspeed in open Helsinki sea", () => {

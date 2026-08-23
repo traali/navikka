@@ -273,6 +273,7 @@ export { fmtDepth, fmtSpeed, fmtWind } from "./rules.ts";
 export function ukcNow() {
   const s = useNav.getState();
   const fw = nearestFairwayDepth(s.pos);
+  if (!fw) return { fw: null, ukc: null };
   const sea = (s.weather?.waveM ?? 0) * -0.05;
   return { fw, ukc: underKeelClearance(fw.depthM, s.vessel.draftM, sea) };
 }

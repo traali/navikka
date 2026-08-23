@@ -15,3 +15,9 @@ Digitraffic `/api/ais/v1/locations` is a **national** GeoJSON. Filter to ~0.4°
 of own ship before storing. Do not re-download because weather refreshed.
 
 Poll **check** interval may be 15 s. **Fetch** only when the table says so.
+
+On MET/HTTP failure: **throw**. Never return a synthetic snap with `updated: now`.
+The store keeps the last good `WeatherSnap` and `weatherAt`.
+
+Fairway lookup: only if nearest published polyline vertex is within **1 km**.
+Otherwise UKC/MAYDAY are open water — do not name a Helsinki channel.

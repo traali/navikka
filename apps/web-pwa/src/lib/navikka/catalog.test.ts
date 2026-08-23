@@ -17,8 +17,13 @@ describe("catalog", () => {
 
   it("nearest fairway to demo start is a local Helsinki channel with published depth", () => {
     const fw = nearestFairwayDepth(HELSINKI_SEA);
+    assert.ok(fw);
     assert.ok(fw.depthM >= 2.4);
     assert.ok(["local-24", "lautta-4", "hel-9"].includes(fw.id), fw.id);
+  });
+
+  it("does not invent a Helsinki fairway at Porkkala", () => {
+    assert.equal(nearestFairwayDepth({ lat: 59.986, lng: 24.52 }), null);
   });
 
   it("kuha / meritaimen / lohi keep statutory minima", () => {

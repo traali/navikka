@@ -77,6 +77,19 @@ describe("MAYDAY + ids", () => {
     assert.match(text, /Draft 0\.9 m/);
   });
 
+  it("MAYDAY omits a guessed Helsinki fairway when off-channel", () => {
+    const text = maydayScript({
+      name: "Oma vene",
+      pos: { lat: 59.986, lng: 24.52 },
+      draftM: 0.9,
+      fairway: null,
+      ukc: null,
+    });
+    assert.match(text, /avomeri/i);
+    assert.doesNotMatch(text, /Sisäväylä|Lauttasaari|Helsinki 9/);
+    assert.doesNotMatch(text, /UKC/);
+  });
+
   it("newId works without crypto.randomUUID (iOS 15.3 Chrome)", () => {
     const orig = globalThis.crypto;
     Object.defineProperty(globalThis, "crypto", { value: {}, configurable: true });

@@ -348,14 +348,14 @@ export function SosSheet() {
     name: vessel.name,
     pos,
     draftM: vessel.draftM,
-    fairway: fw.name,
+    fairway: fw?.name ?? null,
     ukc,
   });
   return (
     <Sheet title={c.sos} onClose={close} danger>
       <p className="mono pos-readout">{ddm}</p>
       <p className="muted tiny">
-        {vessel.name} · {c.ukc} {ukc.toFixed(1)} m · {fw.name}
+        {vessel.name} · {fw && ukc != null ? `${c.ukc} ${ukc.toFixed(1)} m · ${fw.name}` : c.openWater}
       </p>
       <div className="stack-btns">
         <a className="btn danger" href="tel:112">
@@ -509,8 +509,12 @@ export function VoiceSheet() {
   const close = () => useNav.getState().setSheet("none");
   const replies = [
     lang === "fi"
-      ? `Syvyys: ${fw.name}, kölivara ${ukc.toFixed(1)} m.`
-      : `Depth: ${fw.name}, UKC ${ukc.toFixed(1)} m.`,
+      ? fw && ukc != null
+        ? `Syvyys: ${fw.name}, kölivara ${ukc.toFixed(1)} m.`
+        : "Syvyys: avomeri, ei julkaistua väylää."
+      : fw && ukc != null
+        ? `Depth: ${fw.name}, UKC ${ukc.toFixed(1)} m.`
+        : "Depth: open water, no published fairway.",
     lang === "fi"
       ? `Lähin satama: ${near.harbor.name}, ${near.nm.toFixed(1)} NM.`
       : `Nearest harbor: ${near.harbor.nameEn}, ${near.nm.toFixed(1)} NM.`,
