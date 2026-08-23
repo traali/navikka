@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Anchor,
   Copy,
@@ -13,6 +13,7 @@ import { FISH_ZONES, HARBORS, MIN_SIZES } from "@/lib/navikka/catalog";
 import { computeCpa, formatDdm, nmBetween, padCourse, parseLatLngQuery, routeStats, bearingDeg } from "@/lib/navikka/geo";
 import { COPY } from "@/lib/navikka/i18n";
 import { catchLegal, fogStatus, maydayScript, shareText } from "@/lib/navikka/rules";
+import { askOnDevice } from "@/lib/navikka/local-llm";
 import { formatWeatherAge, isWeatherStale, weatherAgeMs } from "@/lib/navikka/fetch-policy";
 import {
   fmtDepth,
@@ -314,6 +315,7 @@ export function LayersSheet() {
   const items = [
     ["harbors", c.harbors],
     ["ais", c.ais],
+    ["enc", c.enc],
     ["seamarks", c.seamarks],
     ["speedLimits", c.speedLimits],
     ["fishing", c.fishingZones],
@@ -534,6 +536,9 @@ export function VoiceSheet() {
   const { fw, ukc } = ukcNow();
   const near = nearestHarbor(useNav.getState().pos);
   const close = () => useNav.getState().setSheet("none");
+  const [q, setQ] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [reply, setReply] = useState<string | null>(null);
   const replies = [
     lang === "fi"
       ? fw && ukc != null
@@ -551,6 +556,28 @@ export function VoiceSheet() {
         : `Wind ${fmtWind(w.windMs, "ms")}, waves ${w.waveM.toFixed(1)} m.`
       : c.offline,
   ];
+  const ask = async () => {
+    const text = q.trim();
+    if (!text || busy) return;
+    setBusy(true);
+    setReply(null);
+    const s = useNav.getState();
+    const ctx = [
+      `POS ${formatDdm(s.pos)}`,
+      `SOG ${s.sogKn.toFixed(1)} kn COG ${padCourse(s.cog)}`,
+      fw && ukc != null ? `UKC ${ukc.toFixed(1)} m ${fw.name}` : "Avomeri",
+      w ? `Tuuli ${w.windMs.toFixed(1)} m/s aalto ${w.waveM.toFixed(1)} m` : "ei säätä",
+      `alus ${s.vessel.name} syväys ${s.vessel.draftM} m`,
+    ].join(" · ");
+    try {
+      const local = await askOnDevice(text, ctx, lang);
+      setReply(local.text);
+    } catch {
+      setReply(lang === "fi" ? "Kippari ei vastaa." : "Skipper silent.");
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <Sheet title={c.skipper} onClose={close}>
       <p className="muted">{c.voiceHint}</p>
@@ -559,6 +586,25 @@ export function VoiceSheet() {
           <li key={r}>{r}</li>
         ))}
       </ul>
+      <form
+        className="ask-row"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void ask();
+        }}
+      >
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={c.askPlaceholder}
+          aria-label={c.askSkipper}
+          maxLength={280}
+        />
+        <button className="btn primary" type="submit" disabled={busy}>
+          {busy ? c.skipperBusy : c.askSkipper}
+        </button>
+      </form>
+      {reply && <p className="skipper-reply">{reply}</p>}
     </Sheet>
   );
 }

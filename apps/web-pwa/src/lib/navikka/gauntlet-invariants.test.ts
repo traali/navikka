@@ -119,5 +119,6 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.equal(src.includes("World_Ocean_Base"), false);
     assert.match(src, /basemaps\.cartocdn\.com/);
     assert.match(src, /julkinen\.traficom\.fi/);
+    assert.match(src, /layers\.enc/);
   });
 });
