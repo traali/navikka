@@ -93,7 +93,7 @@ void main() {
 
   test('Pages deploy skips when Cloudflare secrets are unset', () {
     final body = File('.github/workflows/deploy.yml').readAsStringSync();
-    expect(body, contains('if: needs.gate.outputs.should_deploy'));
+    expect(body, contains("if: needs.gate.outputs.should_deploy == 'true'"));
     expect(body, contains('required: false'));
     expect(body, contains('CLOUDFLARE_API_TOKEN'));
     expect(body, contains('CLOUDFLARE_ACCOUNT_ID'));
@@ -102,9 +102,10 @@ void main() {
 
   test('Flutter AIS is radius-bounded and TTL-gated like companion', () {
     final ds = File(
-      'lib/features/ais/data/datasources/digitraffic_ais_remote_data_source.dart',
+      'lib/features/ais/data/datasources/'
+      'digitraffic_ais_remote_data_source.dart',
     ).readAsStringSync();
-    expect(ds, contains('radius'));
+    expect(ds, contains("'radius':"));
     expect(ds, contains('latitude'));
     final prov = File(
       'lib/features/ais/presentation/providers/ais_targets_provider.dart',

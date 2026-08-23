@@ -34,7 +34,7 @@ final class AisTargetsNotifierProvider
 }
 
 String _$aisTargetsNotifierHash() =>
-    r'2a823662fe06558325905a3d5200d44ffe2e0f19';
+    r'0876dcf4640912e3b7643f0b6f599da71db58a10';
 
 abstract class _$AisTargetsNotifier extends $AsyncNotifier<List<AisTarget>> {
   FutureOr<List<AisTarget>> build();

@@ -58,7 +58,7 @@ describe("gauntlet source contracts (companion + Pages)", () => {
 
   it("Pages deploy skips when Cloudflare token is unset", () => {
     const deploy = readFileSync(resolve(root, ".github/workflows/deploy.yml"), "utf8");
-    assert.match(deploy, /if:\s*needs\.gate\.outputs\.should_deploy/);
+    assert.match(deploy, /if:\s*needs\.gate\.outputs\.should_deploy\s*==\s*'true'/);
     assert.match(deploy, /required:\s*false/);
     assert.match(deploy, /CLOUDFLARE_API_TOKEN/);
     assert.match(deploy, /Skipping Cloudflare Pages deploy/);
@@ -69,7 +69,7 @@ describe("gauntlet source contracts (companion + Pages)", () => {
       resolve(root, "lib/features/ais/data/datasources/digitraffic_ais_remote_data_source.dart"),
       "utf8",
     );
-    assert.match(ds, /radius/);
+    assert.match(ds, /'radius':/);
     const prov = readFileSync(
       resolve(root, "lib/features/ais/presentation/providers/ais_targets_provider.dart"),
       "utf8",

@@ -259,7 +259,7 @@ void _checkCompanionContract(List<Violation> violations) {
   );
   if (flutterAisDs.existsSync()) {
     final body = flutterAisDs.readAsStringSync();
-    if (!body.contains('radius')) {
+    if (!body.contains("'radius':") && !body.contains('"radius":')) {
       violations.add(
         const Violation(
           'lib/features/ais/data/datasources/'
@@ -301,14 +301,15 @@ void _checkCompanionContract(List<Violation> violations) {
   final deployYml = File('.github/workflows/deploy.yml');
   if (deployYml.existsSync()) {
     final body = deployYml.readAsStringSync();
-    if (!body.contains('if: needs.gate.outputs.should_deploy') ||
+    if (!body.contains("if: needs.gate.outputs.should_deploy == 'true'") ||
         !body.contains('required: false')) {
       violations.add(
         const Violation(
           '.github/workflows/deploy.yml',
           1,
           'Pages deploy must skip when CLOUDFLARE_API_TOKEN is unset '
-              '(if: needs.gate.outputs.should_deploy; secrets required: false)',
+              "(if: needs.gate.outputs.should_deploy == 'true'; "
+              'secrets required: false)',
         ),
       );
     }
