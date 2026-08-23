@@ -253,4 +253,19 @@ void _checkCompanionContract(List<Violation> violations) {
       );
     }
   }
+
+  final deployYml = File('.github/workflows/deploy.yml');
+  if (deployYml.existsSync()) {
+    final body = deployYml.readAsStringSync();
+    if (!body.contains('should_deploy')) {
+      violations.add(
+        const Violation(
+          '.github/workflows/deploy.yml',
+          1,
+          'Pages deploy must skip when CLOUDFLARE_API_TOKEN is unset '
+              '(do not fail main CI)',
+        ),
+      );
+    }
+  }
 }

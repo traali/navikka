@@ -89,4 +89,12 @@ void main() {
     ).readAsStringSync();
     expect(panels, contains('aisSource === "live"'));
   });
+
+  test('Pages deploy skips when Cloudflare secrets are unset', () {
+    final body = File('.github/workflows/deploy.yml').readAsStringSync();
+    expect(body, contains('should_deploy'));
+    expect(body, contains('CLOUDFLARE_API_TOKEN'));
+    expect(body, contains('CLOUDFLARE_ACCOUNT_ID'));
+    expect(body, contains('Skipping Cloudflare Pages deploy'));
+  });
 }

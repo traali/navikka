@@ -67,7 +67,7 @@ npm test
 npm run typecheck
 ```
 
-85+ `node:test` cases covering:
+86+ `node:test` cases covering:
 
 - geo: haversine, CPA, UKC, DDM, route ETA, Finnish-waters parse, **segment distance**
 - catalog: harbors, fairways, kuha 42 cm / taimen 60 cm, no-wake box, **hel-9 mid-leg on-channel**
@@ -77,7 +77,8 @@ npm run typecheck
   last-good weather, **seed AIS is not live**
 - fetch-policy: MET 0.05° snap, 10 min TTL, **60 s weather retry**, AIS radius=45,
   **deviceFixKinematics** (LIVE GPS does not inherit demo 6.2 kn)
-- gauntlet file contracts: `/cockpit/` redirects, `--base=/cockpit/`, CI `npm test`
+- gauntlet file contracts: `/cockpit/` redirects, `--base=/cockpit/`, CI `npm test`,
+  Pages skip when Cloudflare secrets are unset
 - iPhone: CriOS detection, 11 vs 12 viewports, 16px/44px/dvh/safe-area CSS contracts
 
 Flutter also locks this contract: `test/core/web_companion_contract_test.dart` +
