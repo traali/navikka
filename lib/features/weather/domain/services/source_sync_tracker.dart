@@ -19,6 +19,7 @@ class SourceSyncTracker {
   LatLng? _lastSyncBoatPosition;
   DateTime _lastPanSyncTime = DateTime.fromMillisecondsSinceEpoch(0);
   LatLng? _lastPanPosition;
+  DateTime? _lastAttemptTime;
   bool _hasSynced = false;
   bool _isSyncing = false;
 
@@ -31,6 +32,7 @@ class SourceSyncTracker {
   /// Starts sync in-flight tracking.
   void startSync() {
     _isSyncing = true;
+    _lastAttemptTime = _now();
   }
 
   /// Ends sync in-flight tracking.
@@ -47,7 +49,14 @@ class SourceSyncTracker {
     final now = _now();
     final timeExpired = now.difference(_lastSyncTime) >= ttl;
 
-    if (!_hasSynced) return true; // First sync always needed
+    if (!_hasSynced) {
+      if (_lastAttemptTime != null &&
+          now.difference(_lastAttemptTime!) < const Duration(seconds: 60)) {
+        return false;
+      }
+      return true;
+    }
+
 
     if (_lastSyncBoatPosition == null) return timeExpired;
 
@@ -107,6 +116,7 @@ class SourceSyncTracker {
     _lastSyncBoatPosition = null;
     _lastPanSyncTime = DateTime.fromMillisecondsSinceEpoch(0);
     _lastPanPosition = null;
+    _lastAttemptTime = null;
     _hasSynced = false;
     _isSyncing = false;
   }

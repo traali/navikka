@@ -2,14 +2,11 @@ import type { LatLng } from "./geo.ts";
 import { weatherQuery } from "./fetch-policy.ts";
 import type { WeatherSnap } from "./store.ts";
 
-/** Compact MET has no visibility or dew. Never stamp 14 km / 0.6 m / 11.1 °C as live. */
-const FALLBACK = {
-  windDir: 232,
-  pressureHpa: 1012,
-  humidity: 82,
-  cloudPct: 48,
-};
+function finiteOrNull(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
 
+/** Compact MET. Missing fields stay null — never mint 1012 hPa / 232° / 14 km vis. */
 export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
   const q = weatherQuery(pos);
   const headers = { Accept: "application/json" };
@@ -30,7 +27,7 @@ export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
     throw new Error("Weather fetch failed: missing temp/wind");
   }
   let waveM: number | null = null;
-  let waveDir = d0.wind_from_direction ?? FALLBACK.windDir;
+  let waveDir: number | null = finiteOrNull(d0.wind_from_direction);
   let wavePeriod: number | null = null;
   let waterC: number | null = null;
   try {
@@ -45,32 +42,28 @@ export async function fetchWeather(pos: LatLng): Promise<WeatherSnap> {
         };
       };
       const od = oj.properties?.timeseries?.[0]?.data?.instant?.details ?? {};
-      waveM = od.sea_surface_wave_significant_height ?? null;
-      waveDir = od.sea_surface_wave_from_direction ?? waveDir;
-      wavePeriod = od.sea_surface_wave_period ?? null;
-      waterC = od.sea_water_temperature ?? null;
+      waveM = finiteOrNull(od.sea_surface_wave_significant_height);
+      waveDir = finiteOrNull(od.sea_surface_wave_from_direction) ?? waveDir;
+      wavePeriod = finiteOrNull(od.sea_surface_wave_period);
+      waterC = finiteOrNull(od.sea_water_temperature);
     }
   } catch {
-    /* keep estimates from locationforecast */
+    /* ocean optional — do not invent 0.6 m */
   }
   return {
     tempC,
     windMs,
-    gustMs: Number.isFinite(d0.wind_speed_of_gust) ? d0.wind_speed_of_gust : null,
-    windDir: d0.wind_from_direction ?? FALLBACK.windDir,
-    pressureHpa: d0.air_pressure_at_sea_level ?? FALLBACK.pressureHpa,
-    humidity: d0.relative_humidity ?? FALLBACK.humidity,
-    visM: Number.isFinite(d0.fog_area_fraction)
-      ? d0.fog_area_fraction > 50
-        ? 800
-        : 14000
-      : null,
-    cloudPct: d0.cloud_area_fraction ?? FALLBACK.cloudPct,
+    gustMs: finiteOrNull(d0.wind_speed_of_gust),
+    windDir: finiteOrNull(d0.wind_from_direction),
+    pressureHpa: finiteOrNull(d0.air_pressure_at_sea_level),
+    humidity: finiteOrNull(d0.relative_humidity),
+    visM: null,
+    cloudPct: finiteOrNull(d0.cloud_area_fraction),
     waveM,
     waveDir,
     wavePeriod,
     waterC,
-    dewC: Number.isFinite(d0.dew_point_temperature) ? d0.dew_point_temperature : null,
+    dewC: finiteOrNull(d0.dew_point_temperature),
     updated: new Date().toISOString(),
   };
 }

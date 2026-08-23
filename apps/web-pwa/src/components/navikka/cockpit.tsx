@@ -142,6 +142,11 @@ export function Cockpit() {
     const tick = async () => {
       const hidden = document.visibilityState !== "visible";
       const s = useNav.getState();
+      if (s.gpsSource !== "device") {
+        pollStats.skippedWeather += 1;
+        pollStats.skippedAis += 1;
+        return;
+      }
       const wx = decideWeatherFetch({
         now: Date.now(),
         pos: s.pos,
@@ -283,10 +288,10 @@ function Hud({ onRecenter, gpsLive }: { onRecenter: () => void; gpsLive: boolean
           <strong>{ukc == null ? "—" : fmtDepth(Math.max(ukc, 0), depthUnit)}</strong>
           <small>{!gpsLive ? c.waitingGps : fw ? `${fw.depthM.toFixed(1)} m` : c.openWater}</small>
         </div>
-        <div className={`tel ${wxStale ? "alarm" : ""}`}>
+        <div className={`tel ${wxStale && gpsLive ? "alarm" : ""}`}>
           <span>{c.wind}</span>
-          <strong>{weather ? fmtWind(weather.windMs, windUnit) : "—"}</strong>
-          {weather && (
+          <strong>{gpsLive && weather ? fmtWind(weather.windMs, windUnit) : "—"}</strong>
+          {gpsLive && weather && (
             <small data-weather-age={Math.round(wxAge / 1000)}>{formatWeatherAge(wxAge, lang)}</small>
           )}
         </div>

@@ -453,15 +453,34 @@ void _checkCompanionContract(List<Violation> violations) {
       ),
     );
   }
+  if (cockpitHud.existsSync()) {
+    final hud = cockpitHud.readAsStringSync();
+    if (!hud.contains('gpsLive && weather') ||
+        !hud.contains('gpsSource !== "device"')) {
+      violations.add(
+        Violation(
+          'apps/web-pwa/src/components/navikka/cockpit.tsx',
+          1,
+          'Wind HUD and MET/AIS poll must wait for LIVE GPS (Helsinki pin is not the boat)',
+        ),
+      );
+    }
+  }
   final weatherTs = File('apps/web-pwa/src/lib/navikka/weather.ts');
   if (weatherTs.existsSync()) {
     final wx = weatherTs.readAsStringSync();
-    if (wx.contains('windMs * 1.4') || wx.contains('FALLBACK.dewC')) {
+    if (wx.contains('windMs * 1.4') ||
+        wx.contains('FALLBACK.dewC') ||
+        wx.contains('pressureHpa: 1012') ||
+        wx.contains('windDir: 232') ||
+        wx.contains('humidity: 82') ||
+        wx.contains('visM: 14000') ||
+        wx.contains('fog_area_fraction')) {
       violations.add(
         Violation(
           'apps/web-pwa/src/lib/navikka/weather.ts',
           1,
-          'Compact MET must not invent gusts (wind×1.4) or dew 11.1 °C',
+          'Compact MET must not invent gusts, dew, 1012 hPa, 232°, 82% RH, or 14 km vis',
         ),
       );
     }

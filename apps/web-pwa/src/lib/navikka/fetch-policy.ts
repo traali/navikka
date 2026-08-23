@@ -4,6 +4,8 @@ import { haversineM, type LatLng } from "./geo.ts";
 export const WEATHER_SNAP_DEG = 0.05;
 export const WEATHER_TTL_MS = 10 * 60 * 1000;
 export const WEATHER_STALE_MS = 15 * 60 * 1000;
+/** Ignore snap-line GPS jitter. A real cell change is ~5.5 km. */
+export const WEATHER_MOVE_MIN_M = 2000;
 export const AIS_TTL_FOLLOW_MS = 60 * 1000;
 export const AIS_TTL_IDLE_MS = 180 * 1000;
 export const GPS_MIN_MS = 500;
@@ -115,7 +117,9 @@ export function decideWeatherFetch(opts: {
     opts.lastPos != null &&
     snapPos(opts.lastPos).lat === snapped.lat &&
     snapPos(opts.lastPos).lng === snapped.lng;
-  if (!sameCell) return { fetch: true, reason: "moved", snapped };
+  const movedFar =
+    opts.lastPos != null && haversineM(opts.lastPos, opts.pos) >= WEATHER_MOVE_MIN_M;
+  if (!sameCell && movedFar) return { fetch: true, reason: "moved", snapped };
   const age = opts.now - opts.lastAt;
   if (age < WEATHER_TTL_MS) return { fetch: false, reason: "fresh", snapped };
   if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < WEATHER_RETRY_MS) {

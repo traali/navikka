@@ -56,7 +56,7 @@ class _VoiceCopilotMicButtonState extends State<VoiceCopilotMicButton>
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.mic, color: colors.primaryAction),
+                      Icon(Icons.chat_bubble_outline, color: colors.primaryAction),
                       const SizedBox(width: 8),
                       Text(
                         'HEI KIPPARI / HEY SKIPPER',
@@ -69,7 +69,7 @@ class _VoiceCopilotMicButtonState extends State<VoiceCopilotMicButton>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Käsivapaa veneilyavustaja (suomi & englanti)',
+                    'Pikakomennot — ei mikrofoni. Napauta sirua.',
                     style: AppTextStyles.caption.copyWith(
                       color: colors.textSecondary,
                     ),
@@ -160,7 +160,7 @@ class _VoiceCopilotMicButtonState extends State<VoiceCopilotMicButton>
           width: 1.5,
         ),
       ),
-      tooltip: 'Hei Kippari (Puheohjaus)',
+      tooltip: 'Hei Kippari (pikakomennot, ei mikki)',
       onPressed: () => _showVoiceModal(context),
       child: const Icon(Icons.mic, size: 20),
     );

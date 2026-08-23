@@ -566,24 +566,18 @@ class _SkipperSettingsScreenState extends ConsumerState<SkipperSettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Gemma 3 1B (Laitemalli)',
+                    'Gemma 3 1B — ei kytketty',
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.bold,
                       color: colors.textPrimary,
                     ),
                   ),
-                  if (downloadState.status == DownloadStatus.notDownloaded)
-                    Text(
-                      '~700 MB - Wi-Fi suositeltava',
-                      style: AppTextStyles.caption.copyWith(
-                        color: colors.textSecondary,
-                      ),
-                    )
-                  else
-                    Text(
-                      statusText,
-                      style: AppTextStyles.caption.copyWith(color: statusColor),
+                  Text(
+                    'Skipperi = sääntömoottori. $statusText — tiedostoa ei ladata päätelmään.',
+                    style: AppTextStyles.caption.copyWith(
+                      color: colors.textSecondary,
                     ),
+                  ),
                 ],
               ),
               const Spacer(),

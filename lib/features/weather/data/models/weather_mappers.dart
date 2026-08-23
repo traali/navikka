@@ -66,13 +66,20 @@ extension LightningStrikeDtoX on LightningStrikeDto {
 }
 
 extension SeaLevelDtoX on SeaLevelDto {
-  SeaLevel toEntity() {
+  SeaLevel? toEntityOrNull() {
+    final mm = seaLevel;
+    if (mm == null) return null;
     return SeaLevel(
       timestamp: timestamp,
-      seaLevel: seaLevel ?? 0.0,
+      seaLevel: mm,
       location: location,
       stationName: stationName,
     );
+  }
+
+  SeaLevel toEntity() {
+    return toEntityOrNull() ??
+        (throw StateError('SeaLevelDto missing seaLevel — do not mint 0 cm'));
   }
 }
 
