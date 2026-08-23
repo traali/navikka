@@ -100,7 +100,7 @@ jobs:
         continue-on-error: true  # Golden tests may fail on Linux fonts
 
       - name: Upload Coverage to CodeCov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: coverage/lcov.info
           fail_ci_if_error: false
