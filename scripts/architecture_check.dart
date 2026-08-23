@@ -150,14 +150,10 @@ void _checkCompanionContract(List<Violation> violations) {
   const redirectsPath = 'web/_redirects';
   final redirects = File(redirectsPath);
   if (!redirects.existsSync()) {
-    violations.add(
-      const Violation(redirectsPath, 1, 'web/_redirects missing'),
-    );
+    violations.add(const Violation(redirectsPath, 1, 'web/_redirects missing'));
     return;
   }
-  final text = redirects
-      .readAsStringSync()
-      .replaceAll(RegExp(r'\s+'), ' ');
+  final text = redirects.readAsStringSync().replaceAll(RegExp(r'\s+'), ' ');
   final cockpit = text.indexOf('/cockpit /cockpit/');
   final pwa = text.indexOf('/pwa /cockpit/');
   final catchAll = text.indexOf('/* /index.html');
@@ -205,11 +201,7 @@ void _checkCompanionContract(List<Violation> violations) {
     final body = f.readAsStringSync();
     if (!body.contains('--base=/cockpit/')) {
       violations.add(
-        Violation(
-          yml,
-          1,
-          'Companion must build with --base=/cockpit/',
-        ),
+        Violation(yml, 1, 'Companion must build with --base=/cockpit/'),
       );
     }
     if (body.contains('--base=./')) {
@@ -256,10 +248,9 @@ void _checkCompanionContract(List<Violation> violations) {
           'apps/web-pwa/src/lib/navikka/ais.ts',
           1,
           'AIS fetch must pass Digitraffic latitude/longitude/radius '
-          '(no national dump)',
+              '(no national dump)',
         ),
       );
     }
   }
 }
-

@@ -41,9 +41,7 @@ void main() {
   });
 
   test('companion AIS URL is radius-bounded', () {
-    final body = File(
-      'apps/web-pwa/src/lib/navikka/ais.ts',
-    ).readAsStringSync();
+    final body = File('apps/web-pwa/src/lib/navikka/ais.ts').readAsStringSync();
     expect(body, contains('aisQuery'));
     expect(body.contains('/locations"'), isFalse);
   });
@@ -64,9 +62,7 @@ void main() {
     ).readAsStringSync();
     expect(catalog, contains('distToPolylineM'));
     expect(catalog, contains('FAIRWAY_MAX_M'));
-    final geo = File(
-      'apps/web-pwa/src/lib/navikka/geo.ts',
-    ).readAsStringSync();
+    final geo = File('apps/web-pwa/src/lib/navikka/geo.ts').readAsStringSync();
     expect(geo, contains('export function distToSegmentM'));
   });
 
