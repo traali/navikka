@@ -169,4 +169,13 @@ void main() {
       contains('fallbackUrl:'),
     );
   });
+
+  test('companion map is not Esri Ocean', () {
+    final src = File(
+      'apps/web-pwa/src/components/navikka/map-view.tsx',
+    ).readAsStringSync();
+    expect(src.contains('World_Ocean_Base'), isFalse);
+    expect(src, contains('basemaps.cartocdn.com'));
+    expect(src, contains('julkinen.traficom.fi'));
+  });
 }
