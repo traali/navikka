@@ -7,17 +7,20 @@ import 'package:flutter_test/flutter_test.dart';
 String _compact(String text) => text.replaceAll(RegExp(r'\s+'), ' ');
 
 void main() {
-  test('Pages redirects send /cockpit and /pwa before the Flutter SPA catch-all', () {
-    final text = _compact(File('web/_redirects').readAsStringSync());
-    final cockpit = text.indexOf('/cockpit /cockpit/');
-    final pwa = text.indexOf('/pwa /cockpit/');
-    final catchAll = text.indexOf('/* /index.html');
-    expect(cockpit, greaterThanOrEqualTo(0));
-    expect(pwa, greaterThanOrEqualTo(0));
-    expect(catchAll, greaterThan(cockpit));
-    expect(catchAll, greaterThan(pwa));
-    expect(text, contains('/cockpit/* /cockpit/:splat'));
-  });
+  test(
+    'Pages redirects send /cockpit and /pwa before the Flutter SPA catch-all',
+    () {
+      final text = _compact(File('web/_redirects').readAsStringSync());
+      final cockpit = text.indexOf('/cockpit /cockpit/');
+      final pwa = text.indexOf('/pwa /cockpit/');
+      final catchAll = text.indexOf('/* /index.html');
+      expect(cockpit, greaterThanOrEqualTo(0));
+      expect(pwa, greaterThanOrEqualTo(0));
+      expect(catchAll, greaterThan(cockpit));
+      expect(catchAll, greaterThan(pwa));
+      expect(text, contains('/cockpit/* /cockpit/:splat'));
+    },
+  );
 
   test('deploy and CI build the companion at /cockpit/ not relative ./', () {
     for (final path in [
@@ -38,7 +41,9 @@ void main() {
   });
 
   test('companion AIS URL is radius-bounded', () {
-    final body = File('apps/web-pwa/src/lib/navikka/ais.ts').readAsStringSync();
+    final body = File(
+      'apps/web-pwa/src/lib/navikka/ais.ts',
+    ).readAsStringSync();
     expect(body, contains('aisQuery'));
     expect(body.contains('/locations"'), isFalse);
   });
@@ -59,7 +64,9 @@ void main() {
     ).readAsStringSync();
     expect(catalog, contains('distToPolylineM'));
     expect(catalog, contains('FAIRWAY_MAX_M'));
-    final geo = File('apps/web-pwa/src/lib/navikka/geo.ts').readAsStringSync();
+    final geo = File(
+      'apps/web-pwa/src/lib/navikka/geo.ts',
+    ).readAsStringSync();
     expect(geo, contains('export function distToSegmentM'));
   });
 
@@ -71,7 +78,9 @@ void main() {
   });
 
   test('seed AIS is not live and empty MET timeseries throws', () {
-    final store = File('apps/web-pwa/src/lib/navikka/store.ts').readAsStringSync();
+    final store = File(
+      'apps/web-pwa/src/lib/navikka/store.ts',
+    ).readAsStringSync();
     expect(store, contains('aisSource: "seed"'));
     expect(store, contains('setAisError'));
     final weather = File(
