@@ -74,7 +74,7 @@ jobs:
         run: echo "" > build/web/assets/.env
 
       - name: Setup Node for Web Companion
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
 
