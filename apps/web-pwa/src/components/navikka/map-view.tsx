@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import {
-  AIS_SEED,
+  aisMarkersForMap,
   FAIRWAYS,
   FISH_ZONES,
   HARBORS,
@@ -163,7 +163,7 @@ export function MapView({ onReady }: Props) {
         },
       });
 
-      syncAis(L, ais, useNav.getState().ais);
+      syncAis(L, ais, useNav.getState().ais, useNav.getState().aisSource);
       syncRoute(L, route, wps, useNav.getState().waypoints);
     })();
 
@@ -198,7 +198,9 @@ export function MapView({ onReady }: Props) {
         toggle(m, Lwait.speed, s.layers.speedLimits);
         toggle(m, Lwait.fish, s.layers.fishing);
       }
-      if (s.ais !== prev.ais) syncAis(L, Lwait.ais as import("leaflet").LayerGroup, s.ais);
+      if (s.ais !== prev.ais || s.aisSource !== prev.aisSource) {
+        syncAis(L, Lwait.ais as import("leaflet").LayerGroup, s.ais, s.aisSource);
+      }
       if (s.waypoints !== prev.waypoints) {
         syncRoute(L, Lwait.route as import("leaflet").Polyline, Lwait.wps as import("leaflet").LayerGroup, s.waypoints);
       }
@@ -258,9 +260,10 @@ function syncAis(
   L: typeof import("leaflet"),
   group: import("leaflet").LayerGroup,
   targets: AisTarget[],
+  source: "seed" | "live",
 ) {
   group.clearLayers();
-  const list = targets.length ? targets : AIS_SEED;
+  const list = aisMarkersForMap(targets, source);
   for (const t of list) {
     L.marker([t.pos.lat, t.pos.lng], { icon: aisIcon(L, t) }).on("click", () =>
       useNav.getState().select({ type: "ais", mmsi: t.mmsi }),

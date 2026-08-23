@@ -11,11 +11,20 @@ class FakeDigitrafficAisRemoteDataSource
     implements DigitrafficAisRemoteDataSource {
   DigitrafficFeatureCollectionDto? responseToReturn;
   bool shouldThrow = false;
+  double? lastLatitude;
+  double? lastLongitude;
+  double? lastRadiusKm;
 
   @override
   Future<DigitrafficFeatureCollectionDto> fetchAisLocations({
     CancelToken? cancelToken,
+    required double latitude,
+    required double longitude,
+    double? radiusKm,
   }) async {
+    lastLatitude = latitude;
+    lastLongitude = longitude;
+    lastRadiusKm = radiusKm;
     if (shouldThrow) {
       throw DioException(
         requestOptions: RequestOptions(path: ''),
@@ -95,6 +104,9 @@ void main() {
       expect(target.category, equals(ShipCategory.passenger));
       expect(target.position.latitude, equals(60.16));
       expect(target.position.longitude, equals(24.94));
+      expect(fakeRemoteDataSource.lastLatitude, isNotNull);
+      expect(fakeRemoteDataSource.lastLongitude, isNotNull);
+      expect(fakeRemoteDataSource.lastRadiusKm, equals(45));
     });
   });
 }

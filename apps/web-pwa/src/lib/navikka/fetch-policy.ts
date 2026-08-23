@@ -82,25 +82,30 @@ export function decideWeatherFetch(opts: {
   pos: LatLng;
   lastAt: number | null;
   lastPos: LatLng | null;
-  lastAttemptAt?: number | null;
+  lastAttemptAt: number | null;
   hidden: boolean;
   inflight: boolean;
 }): RefreshDecision {
   const snapped = snapPos(opts.pos);
   if (opts.hidden) return { fetch: false, reason: "hidden", snapped };
   if (opts.inflight) return { fetch: false, reason: "inflight", snapped };
-  if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < WEATHER_RETRY_MS) {
-    return { fetch: false, reason: "backoff", snapped };
+  if (opts.lastAt == null) {
+    if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < WEATHER_RETRY_MS) {
+      return { fetch: false, reason: "backoff", snapped };
+    }
+    return { fetch: true, reason: "first", snapped };
   }
-  if (opts.lastAt == null) return { fetch: true, reason: "first", snapped };
   const sameCell =
     opts.lastPos != null &&
     snapPos(opts.lastPos).lat === snapped.lat &&
     snapPos(opts.lastPos).lng === snapped.lng;
-  const age = opts.now - opts.lastAt;
   if (!sameCell) return { fetch: true, reason: "moved", snapped };
-  if (age >= WEATHER_TTL_MS) return { fetch: true, reason: "ttl", snapped };
-  return { fetch: false, reason: "fresh", snapped };
+  const age = opts.now - opts.lastAt;
+  if (age < WEATHER_TTL_MS) return { fetch: false, reason: "fresh", snapped };
+  if (opts.lastAttemptAt != null && opts.now - opts.lastAttemptAt < WEATHER_RETRY_MS) {
+    return { fetch: false, reason: "backoff", snapped };
+  }
+  return { fetch: true, reason: "ttl", snapped };
 }
 
 export function decideAisFetch(opts: {

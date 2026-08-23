@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sakkoja/core/constants/underway_fetch.dart';
 import 'package:sakkoja/core/theme/app_palette.dart';
 
 class OfflineBanner extends StatelessWidget {
@@ -19,14 +20,7 @@ class OfflineBanner extends StatelessWidget {
     final rawMsg =
         message ??
         (isOffline ? 'Ei verkkoyhteyttä (Offline)' : 'Päivitysvirhe');
-    final displayMsg =
-        (rawMsg.contains('DioException') ||
-            rawMsg.contains('XMLHttpRequest') ||
-            rawMsg.contains('SocketException') ||
-            rawMsg.contains('connection error') ||
-            rawMsg.contains('Failed host lookup'))
-        ? 'Säähavaintojen päivitys epäonnistui (yhteyskatkos). Näytetään viimeisin tallennettu havainto.'
-        : rawMsg;
+    final displayMsg = sanitizeNetworkError(rawMsg);
 
     return Container(
       width: double.infinity,

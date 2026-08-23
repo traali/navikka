@@ -99,11 +99,15 @@ class WaveImpactHudWidget extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            '${state.currentGForce.toStringAsFixed(1)}g',
+                            state.hasSensorSamples
+                                ? '${state.currentGForce.toStringAsFixed(1)}g'
+                                : '—',
                             style: AppTextStyles.h4.copyWith(color: color),
                           ),
                           Text(
-                            'Huippu: ${state.peakGForceLastMinute.toStringAsFixed(1)}g',
+                            state.hasSensorSamples
+                                ? 'Huippu: ${state.peakGForceLastMinute.toStringAsFixed(1)}g'
+                                : 'Ei anturidataa',
                             style: TextStyle(
                               color: colors.textSecondary,
                               fontSize: 10,
@@ -171,7 +175,9 @@ class WaveImpactHudWidget extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            '${state.estimatedWaveHeightM.toStringAsFixed(1)} m',
+                            state.hasSensorSamples
+                                ? '${state.estimatedWaveHeightM.toStringAsFixed(1)} m'
+                                : '—',
                             style: AppTextStyles.h4.copyWith(
                               color: colors.textPrimary,
                             ),
@@ -313,7 +319,9 @@ class WaveImpactHudWidget extends ConsumerWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              '${state.currentGForce.toStringAsFixed(1)}g',
+              state.hasSensorSamples
+                  ? '${state.currentGForce.toStringAsFixed(1)}g'
+                  : '— g',
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.bold,
@@ -328,7 +336,9 @@ class WaveImpactHudWidget extends ConsumerWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              '${state.hitsPerMinute}/min',
+              state.hasSensorSamples
+                  ? '${state.hitsPerMinute}/min'
+                  : '—/min',
               style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 11,

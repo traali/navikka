@@ -11,10 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **React web-PWA companion (`apps/web-pwa`)**: Leaflet cockpit for Helsinki waters (SOG/COG/UKC HUD, harbors, fairways, speed-limit boxes, fishing rules, MET Norway weather, AIS, MAYDAY/112/MRCC, FI/EN, five bridge themes). Lives next to Flutter, does **not** replace `web/` or `flutter build web`.
 - **iPhone 11 / 12 Chrome (CriOS / WebKit) hardening**: `100dvh` + `-webkit-fill-available`, `viewport-fit=cover`, `env(safe-area-inset-*)`, 16px inputs (no iOS focus-zoom), 44px targets, 375px HUD media query, clipboard `execCommand` fallback, SOS Share Sheet, Wake Lock retry on `visibilitychange`, `crypto.randomUUID` polyfill.
 - **Tests (65+ `node:test` cases)**: haversine/CPA/UKC, Kauppatori 5 km/h no-wake, kuha 42 cm / taimen 60 cm, COLREG 19/35 fog, MAYDAY text, store demo-vs-device GPS, iPhone 11 vs 12 viewport contracts, **underway fetch policy**, last-good weather on radio loss, no Helsinki fairway at Porkkala. Path-filtered GitHub Action `.github/workflows/web-pwa.yml`.
-- **Friday 2026-08-21 field test**: iPhone 11 or 12 + Chrome loaded the companion. Playwright re-check on 375×812 @2x and 390×844 @3x with CriOS UA: no overflow, 16px inputs, map tiles, SOS 112.
-- **Underway skipper skill** (`.agent/skills/navikka-underway`): weather/AIS/GPS/map rules so agents do not refetch MET on every GPS tick.
+- **Friday 2026-08-21 field test**: iPhone 11/12 Chrome loaded **navikka.pages.dev (Flutter PWA)**, not `/cockpit/`. Companion Playwright still covers 375×812 @2x and 390×844 @3x with CriOS UA.
+- **Underway skipper skill** (`.agent/skills/navikka-underway`): weather/AIS/GPS/map rules so agents do not refetch MET on every GPS tick. Flutter numbers live in `lib/core/constants/underway_fetch.dart`.
 
 ### Fixed
+- **Friday field test (Flutter PWA, 2026-08-21) — underway radio + HUD**: iPhone 11/12 Chrome on `navikka.pages.dev`. Weather **HTTP was already TTL-gated** (FMI 10 min / 17.5 km); the Sää title jumping 502→455→517 m was GPS jitter, not a MET refetch (`Päivitetty: 16:00` stayed frozen). Station distance is now bucketed to 100 m. Skipper card + `LinearProgressIndicator` flicker came from `skipperInsightProvider` watching full weather state (`isSyncing`) plus a 2 s delay — now value-selects, `skipLoadingOnReload`, no dummy progress. AIS was the real radio hog: `Timer.periodic(15s)` + national Digitraffic `/locations` with no radius; now `UnderwayFetch` (check 15 s, HTTP 60 s follow / 180 s idle, `radius=45` km, bbox ±0.4°). iOS Chrome Battery Status API reports 0 → Skipper said "AI Disabled - Low Battery" at ~50% iOS battery; 0/null/out-of-range is unknown. Wave HUD `1.0g` was `WaveImpactState.initial()` dummy; chip/sheet show "—" until IMU samples. REC "Lopeta & Tallenna" truncated by zoom column → `right: 56`, label "Lopeta". `DioException`/`XMLHttpRequest` no longer lands on the skipper HUD (`sanitizeNetworkError`).
+- **NEXUS v2.1 leftover on companion (main `6ba6270`)**: H1 empty live AIS no longer paints `AIS_SEED` (MEGASTAR ghosts). M1 weather backoff no longer blocks a new snap cell; `lastAttemptAt` is required. M2 skip-gate greps `if: needs.gate.outputs.should_deploy`. M3 README dropped "did not touch web/, lib/".
 - **Weather fetched all the time while boating**: MET URLs used `toFixed(4)` (~11 m), so every GPS sample was a new cache-busting request, plus weather+ocean+AIS on one 120 s loop. Now snap to `0.05°` (~5.5 km), weather TTL **10 min**, AIS **60 s** underway / **180 s** idle, pause when the tab is hidden, keep last good weather, show age ("juuri" / "N min sitten") instead of a perpetual spinner. GPS apply-throttle 500 ms / 15 m; map follow pan only after ~12 m, no animation when SOG > 2 kn. 16 s demo watch: **1 weather fetch, 1 AIS fetch**.
 - **Radio-loss weather lie**: MET failure used to return a calm 6.4 m/s fallback stamped `updated: now`, so the HUD said "juuri" and overwrote a real gale. Failure now throws; last good snap and its age stay; skipper sees "Säätä ei saatu."
 - **MAYDAY / UKC off Helsinki**: `nearestFairwayDepth` always returned a Helsinki channel. Beyond 1 km (Porkkala, open Gulf) UKC is "—" and the VHF readout says *Off-fairway / avomeri* instead of "Sisäväylä 2,4 m".
@@ -29,7 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Notes
-- Flutter PWA (`web/`, Cloudflare Pages) is unchanged.
+- Flutter PWA (`lib/`) now shares underway numbers with the companion via `lib/core/constants/underway_fetch.dart`.
+- Companion stays at `/cockpit/`. Live Pages publish still needs Cloudflare secrets in the GitHub repo.
 - Companion does not persist live GPS/weather; only theme, units, vessel, route, and catch log.
 
 ## [1.25.0] - 2026-08-17

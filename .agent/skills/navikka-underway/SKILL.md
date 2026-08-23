@@ -42,13 +42,20 @@ Do not copy a second tree to `/pwa`. Build with `--base=/cockpit/`. Keep
    Avomeri holes in hel-9. Porkkala stays null.
 10. **AIS:** `aisQuery` with radius 45 km. Seed traffic is DEMO (`aisSource:
     "seed"`). Do not CPA-alarm seed. Errors use `setAisError`, not wipe seed.
+    Empty **live** AIS must paint **zero** markers — never fall back to
+    `AIS_SEED` (MEGASTAR ghosts). Flutter `lib/` uses the same numbers in
+    `lib/core/constants/underway_fetch.dart`: poll **check** 15 s, HTTP fetch
+    60 s follow / 180 s idle, Digitraffic `radius=45`. Never national dump.
 11. **Do not set `User-Agent` from browser `fetch`** (CORS preflight on MET).
 12. **Fishing polygons** must `.addTo(fish)`.
+13. **iOS Chrome battery 0 is unknown, not low.** Station-distance HUD is
+    bucketed 100 m — that is GPS jitter, not an HTTP weather refetch.
 
 ## When editing
 
-- Thresholds live in `apps/web-pwa/src/lib/navikka/fetch-policy.ts` and are
-  locked by `fetch-policy.test.ts`.
+- Thresholds live in `apps/web-pwa/src/lib/navikka/fetch-policy.ts` and
+  `lib/core/constants/underway_fetch.dart`, locked by `fetch-policy.test.ts`
+  + `test/core/underway_fetch_test.dart`.
 - Flutter CI also reads these files (`test/core/web_companion_contract_test.dart`
   + `scripts/architecture_check.dart`). A Dart-only PR that reverts `/cockpit`
   redirects will fail `flutter test`.

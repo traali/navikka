@@ -320,6 +320,16 @@ export const AIS_SEED: AisSeed[] = [
   },
 ];
 
+/** Live empty list must stay empty. Seed fallback is DEMO only (NEXUS H1). */
+export function aisMarkersForMap<T extends { mmsi: string }>(
+  targets: T[],
+  source: "seed" | "live",
+  seed: T[] = AIS_SEED as unknown as T[],
+): T[] {
+  if (source === "seed") return targets.length ? targets : seed;
+  return targets;
+}
+
 export const SEARCH_INDEX = [
   ...HARBORS.map((h) => ({
     id: h.id,

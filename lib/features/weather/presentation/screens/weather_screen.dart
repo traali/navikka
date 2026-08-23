@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:sakkoja/core/constants/underway_fetch.dart';
 import 'package:sakkoja/core/theme/app_palette.dart';
 import 'package:sakkoja/core/theme/app_text_styles.dart';
 import 'package:sakkoja/core/theme/theme_provider.dart';
@@ -24,14 +25,12 @@ String _formatStationWithDistance(
   LatLng? stationLoc,
   LatLng target,
 ) {
-  final name = stationName ?? 'Havaintoasema';
-  if (stationLoc == null) return name;
+  if (stationLoc == null) {
+    return stationName ?? 'Havaintoasema';
+  }
   const dist = Distance();
   final meters = dist.as(LengthUnit.Meter, target, stationLoc);
-  final distStr = meters < 1000
-      ? '${meters.round()} m'
-      : '${(meters / 1000).toStringAsFixed(1)} km';
-  return '$name ($distStr)';
+  return formatStationWithDistance(stationName: stationName, meters: meters);
 }
 
 class WeatherScreen extends ConsumerWidget {
@@ -150,8 +149,9 @@ class WeatherScreen extends ConsumerWidget {
 
               // 2. Virtual Skipper Insight (Bento Header)
               insightAsync.when(
+                skipLoadingOnReload: true,
                 data: (insight) => _SkipperAssistantCard(insight: insight),
-                loading: () => const Center(child: LinearProgressIndicator()),
+                loading: () => const SizedBox.shrink(),
                 error: (err, stack) => const SizedBox.shrink(),
               ),
 

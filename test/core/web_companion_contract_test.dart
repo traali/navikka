@@ -53,7 +53,8 @@ void main() {
     expect(body, contains('deviceFixKinematics'));
     expect(body, contains('wasDemo'));
     expect(body, contains('WEATHER_RETRY_MS'));
-    expect(body, contains('lastAttemptAt'));
+    expect(body, contains('lastAttemptAt: number | null'));
+    expect(body.contains('lastAttemptAt?:'), isFalse);
   });
 
   test('companion fairway lookup uses segments', () {
@@ -92,9 +93,27 @@ void main() {
 
   test('Pages deploy skips when Cloudflare secrets are unset', () {
     final body = File('.github/workflows/deploy.yml').readAsStringSync();
-    expect(body, contains('should_deploy'));
+    expect(body, contains('if: needs.gate.outputs.should_deploy'));
+    expect(body, contains('required: false'));
     expect(body, contains('CLOUDFLARE_API_TOKEN'));
     expect(body, contains('CLOUDFLARE_ACCOUNT_ID'));
     expect(body, contains('Skipping Cloudflare Pages deploy'));
+  });
+
+  test('Flutter AIS is radius-bounded and TTL-gated like companion', () {
+    final ds = File(
+      'lib/features/ais/data/datasources/digitraffic_ais_remote_data_source.dart',
+    ).readAsStringSync();
+    expect(ds, contains('radius'));
+    expect(ds, contains('latitude'));
+    final prov = File(
+      'lib/features/ais/presentation/providers/ais_targets_provider.dart',
+    ).readAsStringSync();
+    expect(prov, contains('shouldFetchAis'));
+    expect(prov, contains('UnderwayFetch.aisPollCheck'));
+    expect(
+      prov.contains('Timer.periodic(const Duration(seconds: 15)'),
+      isFalse,
+    );
   });
 }

@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { AIS_SEED, aisMarkersForMap } from "./catalog.ts";
 
 const root = resolve(import.meta.dirname, "../../../../../");
 const compact = (s: string) => s.replace(/\s+/g, " ");
@@ -57,8 +58,32 @@ describe("gauntlet source contracts (companion + Pages)", () => {
 
   it("Pages deploy skips when Cloudflare token is unset", () => {
     const deploy = readFileSync(resolve(root, ".github/workflows/deploy.yml"), "utf8");
-    assert.match(deploy, /should_deploy/);
+    assert.match(deploy, /if:\s*needs\.gate\.outputs\.should_deploy/);
+    assert.match(deploy, /required:\s*false/);
     assert.match(deploy, /CLOUDFLARE_API_TOKEN/);
     assert.match(deploy, /Skipping Cloudflare Pages deploy/);
+  });
+
+  it("Flutter AIS queries Digitraffic with radius and 60s/180s TTL", () => {
+    const ds = readFileSync(
+      resolve(root, "lib/features/ais/data/datasources/digitraffic_ais_remote_data_source.dart"),
+      "utf8",
+    );
+    assert.match(ds, /radius/);
+    const prov = readFileSync(
+      resolve(root, "lib/features/ais/presentation/providers/ais_targets_provider.dart"),
+      "utf8",
+    );
+    assert.match(prov, /shouldFetchAis/);
+    assert.match(prov, /UnderwayFetch\.aisPollCheck/);
+    assert.equal(prov.includes("Timer.periodic(const Duration(seconds: 15)"), false);
+  });
+
+  it("empty live AIS does not paint seed MEGASTAR (NEXUS H1)", () => {
+    const src = readFileSync(resolve(import.meta.dirname, "../../components/navikka/map-view.tsx"), "utf8");
+    assert.match(src, /aisMarkersForMap/);
+    assert.equal(src.includes("targets.length ? targets : AIS_SEED"), false);
+    assert.equal(aisMarkersForMap([], "live").length, 0);
+    assert.equal(aisMarkersForMap([], "seed").length, AIS_SEED.length);
   });
 });

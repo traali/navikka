@@ -18,10 +18,17 @@ haversine). Never the unfiltered national dump. Keep the 0.4° client filter.
 
 Poll **check** interval may be 15 s. **Fetch** only when the table says so.
 
+Flutter PWA (`lib/core/constants/underway_fetch.dart`) must keep these same
+numbers. AIS HTTP is `shouldFetchAis` (60 s follow / 180 s idle); the 15 s
+timer is only a check. Never `GET /locations` without radius. iOS Chrome
+battery 0 is unknown. Station-distance HUD is bucketed to 100 m.
+
 On MET/HTTP failure **or empty timeseries**: **throw**. Never return a
 synthetic snap with `updated: now`. The store keeps the last good
 `WeatherSnap`. Cockpit stamps `lastAttemptAt` so the next tick is not
-`"first"` (`WEATHER_RETRY_MS` = 60 s).
+`"first"` (`WEATHER_RETRY_MS` = 60 s). **Backoff does not block a new snap
+cell** (`moved` beats retry). `lastAttemptAt` is required on
+`decideWeatherFetch`.
 
 Fairway lookup: distance to polyline **segments**, within **1 km**.
 Otherwise UKC/MAYDAY are open water — do not name a Helsinki channel at

@@ -254,16 +254,61 @@ void _checkCompanionContract(List<Violation> violations) {
     }
   }
 
+  final flutterAisDs = File(
+    'lib/features/ais/data/datasources/digitraffic_ais_remote_data_source.dart',
+  );
+  if (flutterAisDs.existsSync()) {
+    final body = flutterAisDs.readAsStringSync();
+    if (!body.contains('radius')) {
+      violations.add(
+        const Violation(
+          'lib/features/ais/data/datasources/'
+              'digitraffic_ais_remote_data_source.dart',
+          1,
+          'Flutter AIS must query Digitraffic with radius, '
+              'not the national dump',
+        ),
+      );
+    }
+  }
+
+  final flutterAisProv = File(
+    'lib/features/ais/presentation/providers/ais_targets_provider.dart',
+  );
+  if (flutterAisProv.existsSync()) {
+    final body = flutterAisProv.readAsStringSync();
+    if (!body.contains('shouldFetchAis') ||
+        !body.contains('UnderwayFetch.aisPollCheck')) {
+      violations.add(
+        const Violation(
+          'lib/features/ais/presentation/providers/ais_targets_provider.dart',
+          1,
+          'Flutter AIS must check every 15s but fetch on 60s/180s TTL',
+        ),
+      );
+    }
+    if (body.contains('Timer.periodic(const Duration(seconds: 15)')) {
+      violations.add(
+        const Violation(
+          'lib/features/ais/presentation/providers/ais_targets_provider.dart',
+          1,
+          'Do not HTTP-fetch AIS every 15s; use UnderwayFetch TTL',
+        ),
+      );
+    }
+  }
+
   final deployYml = File('.github/workflows/deploy.yml');
   if (deployYml.existsSync()) {
     final body = deployYml.readAsStringSync();
-    if (!body.contains('should_deploy')) {
+    if (!body.contains('if: needs.gate.outputs.should_deploy') ||
+        !body.contains('required: false')) {
       violations.add(
         const Violation(
           '.github/workflows/deploy.yml',
           1,
           'Pages deploy must skip when CLOUDFLARE_API_TOKEN is unset '
-              '(do not fail main CI)',
+              '(if: needs.gate.outputs.should_deploy; secrets required: false)',
         ),
       );
     }

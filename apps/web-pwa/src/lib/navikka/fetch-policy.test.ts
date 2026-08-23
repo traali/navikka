@@ -50,6 +50,7 @@ describe("decideWeatherFetch", () => {
       pos,
       lastAt: null,
       lastPos: null,
+      lastAttemptAt: null,
       hidden: false,
       inflight: false,
     });
@@ -63,6 +64,7 @@ describe("decideWeatherFetch", () => {
       pos: { lat: pos.lat + 0.002, lng: pos.lng + 0.002 },
       lastAt: 0,
       lastPos: snapped,
+      lastAttemptAt: null,
       hidden: false,
       inflight: false,
     });
@@ -76,6 +78,7 @@ describe("decideWeatherFetch", () => {
       pos,
       lastAt: 0,
       lastPos: snapped,
+      lastAttemptAt: null,
       hidden: false,
       inflight: false,
     });
@@ -89,6 +92,21 @@ describe("decideWeatherFetch", () => {
       pos: { lat: pos.lat + 0.08, lng: pos.lng },
       lastAt: 0,
       lastPos: snapped,
+      lastAttemptAt: 29_000,
+      hidden: false,
+      inflight: false,
+    });
+    assert.equal(d.fetch, true);
+    if (d.fetch) assert.equal(d.reason, "moved");
+  });
+
+  it("moved cell fetches even when lastAttemptAt is 1s old (NEXUS M1)", () => {
+    const d = decideWeatherFetch({
+      now: 10_000,
+      pos: { lat: pos.lat + 0.08, lng: pos.lng },
+      lastAt: 0,
+      lastPos: snapped,
+      lastAttemptAt: 9_000,
       hidden: false,
       inflight: false,
     });
@@ -122,12 +140,27 @@ describe("decideWeatherFetch", () => {
     if (d2.fetch) assert.equal(d2.reason, "first");
   });
 
+  it("same-cell TTL expiry backs off for 60s after a failed refresh", () => {
+    const d = decideWeatherFetch({
+      now: WEATHER_TTL_MS + 5_000,
+      pos,
+      lastAt: 0,
+      lastPos: snapped,
+      lastAttemptAt: WEATHER_TTL_MS + 4_000,
+      hidden: false,
+      inflight: false,
+    });
+    assert.equal(d.fetch, false);
+    if (!d.fetch) assert.equal(d.reason, "backoff");
+  });
+
   it("does not fetch in a background iPhone Chrome tab", () => {
     const d = decideWeatherFetch({
       now: WEATHER_TTL_MS * 2,
       pos,
       lastAt: 0,
       lastPos: snapped,
+      lastAttemptAt: null,
       hidden: true,
       inflight: false,
     });
@@ -141,6 +174,7 @@ describe("decideWeatherFetch", () => {
       pos,
       lastAt: 0,
       lastPos: snapped,
+      lastAttemptAt: null,
       hidden: false,
       inflight: true,
     });
