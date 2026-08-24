@@ -2,7 +2,7 @@
 
 > **Audit date**: 2026-08-24
 > **Audited revision**: `1bde577` (`fix: own-ship HUD/MAYDAY wait for LIVE GPS; never invent dew/gust/waves (#20)`), branch `main`, working tree clean, synced with `origin/main`.
-> **Methodology**: Static analysis + parallel sub-agent sweeps. Full runtime suites (`flutter test`, companion `npm test`, Playwright e2e) were **not executed** during this pass; every finding below cites static, verifiable evidence.
+> **Methodology**: Static analysis + parallel sub-agent sweeps, followed by a full runtime re-verification pass: `flutter test` → **589 passed / 2 skipped / 0 failed**; companion `npm test` → **110 passed / 0 failed** + `tsc --noEmit` clean. Playwright e2e remains unexecuted (see F-07 — the suite is not machine-runnable off its author's laptop).
 > **Status**: Complete. Remediation tracking lives in [§7 Roadmap](#7-remediation-roadmap).
 
 ---
@@ -99,7 +99,7 @@ Each finding is fact-checked with exact locations. Vote counts are from §6.2.
 
 ### F-07 — e2e suite broken and orphaned from CI · 10 votes · 🔴 P0
 
-* **Evidence**: `e2e/ulkoasu_layouts.spec.ts:3` hardcodes personal Windows artifact dir `C:/Users/aoinonen/.gemini/antigravity/brain/…` (throws off-machine) and hardcodes production URL `https://sakkoja.pages.dev`, ignoring `baseURL`. `live_audit.spec.ts` performs zero assertions. No workflow under `.github/workflows/` runs `cd e2e && npm test`, despite AGENTS.md §3 advertising it. `e2e/` root carries ~25 ad-hoc `capture_*.mjs` scripts and committed PNG artifacts (~20 MB).
+* **Evidence**: `e2e/ulkoasu_layouts.spec.ts:4` hardcodes personal Windows artifact dir `C:/Users/aoinonen/.gemini/antigravity/brain/…` (throws off-machine; hardcoded production URL at `:24`) ignoring `baseURL`. `live_audit.spec.ts` performs zero assertions. No workflow under `.github/workflows/` runs `cd e2e && npm test`, despite AGENTS.md §3 advertising it. `e2e/` root carries ~25 ad-hoc `capture_*.mjs` scripts and committed PNG artifacts (~20 MB).
 * **Impact**: Playwright suite verifies nothing reproducibly and hits production by default.
 
 ### F-08 — Golden-test infrastructure vestigial · 4 votes · 🟡 P2
@@ -150,7 +150,7 @@ Condensed per-reviewer records. Each entry lists the reviewer lens, principal ob
 | 14 | Runtime adaptation & UX edge cases | Layered degradation (SW offline shell `navikka-sw.js:68–84`; ocean-forecast fallback `weather.ts:36–55`); CriOS speed-null derivation tested (`fetch-policy.ts:58–90`); FIFO-not-LRU tile eviction | F-04, F-07, F-01, F-09, F-06 |
 | 15 | Governance & pipeline security | Sanitized HUD error strings (`underway_fetch.dart:87–109`); `.env` stripped pre-deploy (`deploy.yml:97–98`); README silent on the one cloud pathway | F-01, F-12, F-07, F-09, F-06 |
 | 16 | Empathy, WCAG & i18n | fi/en dictionaries present; sparse Flutter semantics (7 instances); dynamic alert states lack live regions; language leak in a11y layer | F-01, F-04, F-10, F-07, F-05 |
-| 17 | Frontend aesthetics & naming | Coherent OLED identity; 5-layout system ambitious but unverifiable as shipped (`ulkoasu_layouts.spec.ts:3`); analyzer polish debt (12 infos incl. `map_content.dart:352`) | F-10, F-04, F-01, F-05, F-02 |
+| 17 | Frontend aesthetics & naming | Coherent OLED identity; 5-layout system ambitious but unverifiable as shipped (`ulkoasu_layouts.spec.ts:4`); analyzer polish debt (12 infos incl. `map_content.dart:352`) | F-10, F-04, F-01, F-05, F-02 |
 | 18 | Error logging & recoverability | `Log.*` discipline enforced (`architecture_check.dart:109–124`); gale/shelter advice tested (`local_marine_ai_test.dart:190–222`); silent sensor-death UX | F-09, F-07, F-04, F-06, F-01 |
 | 19 | Algorithmic & memory efficiency | Bounded ring buffers (50 gyro samples, 30 peak-G, `wave_impact_ai_service.dart:155–199`); mutation-during-build antipattern; non-clearing `copyWith` | F-03, F-11, F-02, F-05, F-06 |
 | 20 | Resource & concurrency efficiency | SW cache caps bound storage (`sw.js:4–5`); `_inFlightSyncs` race guard + coalescing (`point_weather_sync_controller.dart:64,290–298`); autoDispose wiping snapshot store | F-11, F-02, F-05, F-09, F-03 |
@@ -167,7 +167,7 @@ Condensed per-reviewer records. Each entry lists the reviewer lens, principal ob
 | Security vs Governance | Implied API-key exposure risk | **Debunked** — secure storage + Drift null-out verified (`skipper_settings_repository_impl.dart:15–16,71`). True issue is silent read failure at `:88`. |
 | Coverage vs Risk | "Maintainability acceptable given contract tests" | **Upheld (against Risk)** — contract tests lock policy strings, not parsers; six datasource files lack any dedicated tests. |
 | Zero-defect vs Adaptation | "Runtime adaptation covers sensor loss" | **Upheld (against Adaptation)** — SW/fallbacks cover network loss only; IMU `onError` log-and-abandon (`wave_impact_ai_service.dart:122–131`). |
-| Transparency vs Aesthetics | "Visual hierarchy well-tested by layout spec" | **Upheld (against Aesthetics)** — spec machine-locked (`ulkoasu_layouts.spec.ts:3`) and production-hitting; verifies nothing reproducibly. |
+| Transparency vs Aesthetics | "Visual hierarchy well-tested by layout spec" | **Upheld (against Aesthetics)** — spec machine-locked (`ulkoasu_layouts.spec.ts:4`) and production-hitting; verifies nothing reproducibly. |
 | Typing vs Formalism | "Either algebra broken broadly" | **Adjusted** — violation confined to `navigation_repository_impl.dart:14–83` and `fishing_repository_impl.dart:183`; other boundaries comply. |
 | Automation vs Velocity | "Golden tests harmless leftovers" | **Debunked (Velocity stands)** — `ci.yml:98–100` spends CI minutes selecting zero tests under `continue-on-error`. |
 | i18n vs Ergonomics | "a11y adequately started" | **Adjusted** — FAB labeling real (`cockpit.tsx:299–338`) but untranslated label at `:357` and 7 Flutter `Semantics(` instances. |
@@ -204,7 +204,7 @@ Full voter attribution per finding is retained in the audit session transcript; 
 * **Action**: Require consent flag in the cloud-call branch; wire `AiConsentDialog` into the settings enable-flow; add mocktail test asserting cloud refusal without consent (pattern: `hybrid_insight_engine_test.dart:262–301`).
 
 #### P0-2 · Rescue the e2e suite *(F-07, 10 votes)*
-* **Root cause**: Machine-locked artifact path + hardcoded prod URL (`ulkoasu_layouts.spec.ts:3`); assertion-free `live_audit.spec.ts`; no CI invocation.
+* **Root cause**: Machine-locked artifact path + hardcoded prod URL (`ulkoasu_layouts.spec.ts:4,24`); assertion-free `live_audit.spec.ts`; no CI invocation.
 * **Action**: `ARTIFACT_DIR ?? './artifacts'`; honor `baseURL`; add ≥1 assertion to `live_audit.spec.ts`; add optional artifact-uploading e2e job to `ci.yml` (non-blocking initially).
 
 #### P0-3 · Stop silently dropping keys/preferences *(F-09, 9 votes)*
@@ -273,7 +273,7 @@ Key single-source-of-truth files inspected line-by-line: `scripts/architecture_c
 
 ## Appendix B — Limitations
 
-1. **Static-only**: `flutter test`, companion `npm test`, and Playwright suites were not executed in this session; runtime failures may exist beyond these findings. Re-run the full gauntlet before release.
+1. **Runtime re-verification (2026-08-24)**: `flutter test` = 589 passed / 2 skipped / 0 failed; companion `npm test` = 110 passed / 0 failed with `tsc --noEmit` clean. Playwright e2e not executed — the suite itself is finding F-07 (machine-locked). All static findings were independently re-checked against source during the verification pass; one line-number correction applied (`ulkoasu_layouts.spec.ts` path constant at `:4`, previously reported as `:3`).
 2. **Derived counts**: Playwright effective test counts (×browser projects) are arithmetic, not observed runs.
 3. **Secrets**: GitHub Actions secret configuration (`OPENWEATHER_API_KEY`, Cloudflare tokens) not inspectable locally.
 4. **Naming**: "Engine Copilot" (AGENTS.md §5) maps to `marine_technical_copilot_service.dart`; no 1:1 file exists — flagged for the P2-1 documentation pass.
