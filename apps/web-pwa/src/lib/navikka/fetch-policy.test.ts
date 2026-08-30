@@ -115,6 +115,22 @@ describe("decideWeatherFetch", () => {
     if (d.fetch) assert.equal(d.reason, "moved");
   });
 
+  it("snap-line GPS jitter is not a new MET cell (Friday weather storm)", () => {
+    const edge = { lat: 60.174, lng: pos.lng };
+    const hop = { lat: 60.176, lng: pos.lng };
+    const d = decideWeatherFetch({
+      now: 30_000,
+      pos: hop,
+      lastAt: 0,
+      lastPos: edge,
+      lastAttemptAt: 29_000,
+      hidden: false,
+      inflight: false,
+    });
+    assert.equal(d.fetch, false);
+    if (!d.fetch) assert.equal(d.reason, "fresh");
+  });
+
   it("backs off for 60s after a failed fetch attempt when lastAt is null", () => {
     const d1 = decideWeatherFetch({
       now: 10_000,

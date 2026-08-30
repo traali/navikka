@@ -175,7 +175,7 @@ class LocalMarineReasoner {
     if (windSpeed == null) {
       return 'Säätä ei saatavilla — älä oleta tyyntä. Pidä tähystys COLREG-säännön 5 mukaisesti.';
     }
-    final windGust = weather?.windGust ?? windSpeed;
+    final windGust = weather?.windGust;
     final waveKnown = wave?.waveHeight != null;
     final waveHeight = wave?.waveHeight ?? 0.0;
     final wavePeriod = wave?.wavePeriod;
@@ -188,7 +188,10 @@ class LocalMarineReasoner {
         final waveTxt = waveKnown
             ? ' ja aallokko ${waveHeight.toStringAsFixed(1)} m'
             : '';
-        return 'Varoitus: Kova tuuli (${windSpeed.toStringAsFixed(1)} m/s, puuskat ${windGust.toStringAsFixed(1)} m/s)$waveTxt ylittävät pienten alusten turvarajat. Hakeudu suojaisaan satamaan tai ankkuripaikalle.';
+        final gustBit = windGust == null
+            ? ''
+            : ', puuskat ${windGust.toStringAsFixed(1)} m/s';
+        return 'Varoitus: Kova tuuli (${windSpeed.toStringAsFixed(1)} m/s$gustBit)$waveTxt ylittävät pienten alusten turvarajat. Hakeudu suojaisaan satamaan tai ankkuripaikalle.';
       }
       return 'Varoitus: Sääolosuhteet ovat vaaralliset pienten alusten navigoinnille. Seuraa tutkakuvaa ja vältä avoselkäosuuksia.';
     }
@@ -207,8 +210,10 @@ class LocalMarineReasoner {
     }
 
     // 3. Squalls / Gust Factor Evaluation
-    final gustFactor = windSpeed > 2.0 ? (windGust / windSpeed) : 1.0;
-    if (gustFactor >= 1.4 && windGust >= 8.5) {
+    final gustFactor = (windGust != null && windSpeed > 2.0)
+        ? (windGust / windSpeed)
+        : 1.0;
+    if (windGust != null && gustFactor >= 1.4 && windGust >= 8.5) {
       return 'Puuskainen merisää: Tuuli ${windSpeed.toStringAsFixed(1)} m/s, mutta puuskat yltävät ${windGust.toStringAsFixed(1)} m/s (puuskakerroin ${gustFactor.toStringAsFixed(1)}x). Varo äkillisiä tuulenpuuskia saarten kapeikoissa ja selkäalueiden reunoilla.';
     }
 
@@ -327,9 +332,12 @@ class LocalMarineReasoner {
       return 'Merisää on erinomainen matkaveneilyyn.$sailNote Tuuli ${windSpeed.toStringAsFixed(1)} m/s ja aallokko ${waveHeight.toStringAsFixed(1)} m mahdollistavat tasaisen matkanopeuden. Pidä tähystys COLREG-säännön 5 mukaisesti.';
     }
 
+    final gustTxt = windGust == null
+        ? ''
+        : ' (puuskat ${windGust.toStringAsFixed(1)} m/s)';
     return waveKnown
-        ? 'Matkaveneilysää: Tuuli ${windSpeed.toStringAsFixed(1)} m/s (puuskat ${windGust.toStringAsFixed(1)} m/s), aallokko ${waveHeight.toStringAsFixed(1)} m. Olosuhteet ovat hallittavat normaaliin navigointiin.'
-        : 'Tuuli ${windSpeed.toStringAsFixed(1)} m/s (puuskat ${windGust.toStringAsFixed(1)} m/s). Aallokkoa ei saatavilla — älä oleta tyyntä. Pidä tähystys COLREG-säännön 5 mukaisesti.';
+        ? 'Matkaveneilysää: Tuuli ${windSpeed.toStringAsFixed(1)} m/s$gustTxt, aallokko ${waveHeight.toStringAsFixed(1)} m. Olosuhteet ovat hallittavat normaaliin navigointiin.'
+        : 'Tuuli ${windSpeed.toStringAsFixed(1)} m/s$gustTxt. Aallokkoa ei saatavilla — älä oleta tyyntä. Pidä tähystys COLREG-säännön 5 mukaisesti.';
   }
 
   /// Analyzes a planned route and generates an intelligent weather-routing skipper briefing.

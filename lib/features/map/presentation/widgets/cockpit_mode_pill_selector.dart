@@ -6,6 +6,8 @@ import 'package:sakkoja/core/theme/theme_provider.dart';
 import 'package:sakkoja/core/utils/safe_haptics.dart';
 import 'package:sakkoja/features/fishing/presentation/providers/fishing_mode_provider.dart';
 import 'package:sakkoja/features/map/presentation/providers/cockpit_mode_provider.dart';
+import 'package:sakkoja/features/map/presentation/providers/map_provider.dart';
+import 'package:sakkoja/features/map/presentation/widgets/emergency_distress_button.dart';
 
 class CockpitModePillSelector extends ConsumerWidget {
   const CockpitModePillSelector({super.key});
@@ -52,6 +54,18 @@ class CockpitModePillSelector extends ConsumerWidget {
                 onTap: () {
                   SafeHaptics.medium();
                   notifier.setMode(mode);
+
+                  if (mode == CockpitMode.emergency) {
+                    final map = ref.read(mapProvider);
+                    final loc = map.hasLocation && map.isLocationFresh
+                        ? map.userLocation
+                        : null;
+                    showDialog<void>(
+                      context: context,
+                      builder: (_) =>
+                          EmergencyDistressDialog(currentLocation: loc),
+                    );
+                  }
 
                   final isFishingEnabled =
                       ref

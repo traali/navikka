@@ -127,10 +127,13 @@ describe("gauntlet source contracts (companion + Pages)", () => {
     assert.match(map, /if \(s\.gpsSource !== "device"\) return;/);
     const weather = readFileSync(resolve(import.meta.dirname, "./weather.ts"), "utf8");
     assert.match(weather, /missing temp\/wind/);
-    assert.match(weather, /Number.isFinite\(d0\.fog_area_fraction\)/);
+    assert.equal(weather.includes("fog_area_fraction"), false);
     assert.equal(weather.includes("visM: 14000,"), false);
     assert.equal(weather.includes("windMs * 1.4"), false);
-    assert.match(weather, /dewC: Number.isFinite/);
+    assert.equal(weather.includes("pressureHpa: 1012"), false);
+    assert.match(weather, /dewC: finiteOrNull/);
+    assert.match(cockpit, /gpsLive && weather/);
+    assert.match(cockpit, /gpsSource !== "device"/);
     assert.match(panels, /gpsLive \? `\$\{nmBetween/);
   });
 

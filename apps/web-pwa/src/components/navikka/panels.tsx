@@ -66,10 +66,10 @@ export function WeatherPanel() {
         <span>{lang === "fi" ? fog.fi : fog.en}</span>
       </div>
       <div className="stat-grid">
-        <Stat label={c.wind} value={fmtWind(w.windMs, windUnit)} sub={padCourse(w.windDir)} />
+        <Stat label={c.wind} value={fmtWind(w.windMs, windUnit)} sub={w.windDir == null ? "—" : padCourse(w.windDir)} />
         <Stat label={c.gust} value={w.gustMs == null ? "—" : fmtWind(w.gustMs, windUnit)} />
         <Stat label={c.waves} value={w.waveM == null ? "—" : fmtDepth(w.waveM, depthUnit)} sub={w.wavePeriod == null ? "" : `${c.period} ${w.wavePeriod.toFixed(0)} s`} />
-        <Stat label={c.pressure} value={`${Math.round(w.pressureHpa)} hPa`} />
+        <Stat label={c.pressure} value={w.pressureHpa == null ? "—" : `${Math.round(w.pressureHpa)} hPa`} />
         <Stat label={c.water} value={w.waterC == null ? "—" : `${w.waterC.toFixed(1)} °C`} />
         <Stat label={c.vis} value={w.visM == null ? "—" : w.visM >= 10000 ? "10+ km" : `${(w.visM / 1000).toFixed(1)} km`} />
       </div>

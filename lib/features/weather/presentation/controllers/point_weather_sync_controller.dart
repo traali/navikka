@@ -83,6 +83,11 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
     ) {
       if (_isDisposed) return;
       if (!next.$2) return;
+      final wasLocated = prev?.$2 ?? false;
+      if (!wasLocated) {
+        unawaited(_staggeredStartup(next.$1));
+        return;
+      }
       _checkBoatTriggers(next.$1);
     });
 
@@ -114,7 +119,7 @@ class PointWeatherSyncController extends _$PointWeatherSyncController {
     // ── TIMER TRIGGERS ──
     _startTimers();
 
-    return const PointWeatherSyncState(isSyncing: true);
+    return const PointWeatherSyncState();
   }
 
   void _startTimers() {

@@ -31,13 +31,13 @@ export type WeatherSnap = {
   tempC: number;
   windMs: number;
   gustMs: number | null;
-  windDir: number;
-  pressureHpa: number;
-  humidity: number;
+  windDir: number | null;
+  pressureHpa: number | null;
+  humidity: number | null;
   visM: number | null;
-  cloudPct: number;
+  cloudPct: number | null;
   waveM: number | null;
-  waveDir: number;
+  waveDir: number | null;
   wavePeriod: number | null;
   waterC: number | null;
   dewC: number | null;
@@ -270,6 +270,7 @@ export const useNav = create<NavState>()(
         catches: s.catches,
         weather: s.weather,
         weatherAt: s.weatherAt,
+        weatherPos: s.weatherPos,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<NavState>;
@@ -316,8 +317,7 @@ export function ukcNow() {
   const s = useNav.getState();
   const fw = nearestFairwayDepth(s.pos);
   if (!fw) return { fw: null, ukc: null };
-  const sea = s.weather?.waveM == null ? 0 : s.weather.waveM * -0.05;
-  return { fw, ukc: underKeelClearance(fw.depthM, s.vessel.draftM, sea) };
+  return { fw, ukc: underKeelClearance(fw.depthM, s.vessel.draftM, 0) };
 }
 
 export function speedZoneLimitKmh(pos: LatLng) {

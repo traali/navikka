@@ -5,11 +5,12 @@ export function fogStatus(w: {
   visM: number | null;
   tempC: number;
   dewC: number | null;
-  humidity: number;
+  humidity: number | null;
 }) {
+  const rh = w.humidity ?? 0;
   const spread = w.dewC == null ? Infinity : Math.abs(w.tempC - w.dewC);
   if (w.visM == null) {
-    if (spread <= 1.2 && w.humidity >= 90) {
+    if (spread <= 1.2 && rh >= 90) {
       return {
         level: "yellow" as const,
         fi: "Utua / merisumuriski.",
@@ -34,7 +35,7 @@ export function fogStatus(w: {
       fi: "Sumuvaroitus — tähystäjä, AIS/tutka.",
       en: "Fog warning — post lookout, watch AIS.",
     };
-  if (w.visM <= 2500 || (spread <= 1.2 && w.humidity >= 90))
+  if (w.visM <= 2500 || (spread <= 1.2 && rh >= 90))
     return {
       level: "yellow" as const,
       fi: "Utua / merisumuriski.",

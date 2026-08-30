@@ -45,5 +45,21 @@ void main() {
       expect(recap.estimatedFuelLiters, 0.0);
       expect(recap.narrativeRecap, contains('Puhdas sähköajo'));
     });
+
+    test('does not invent 5.0 m/s peak wind when none was recorded', () {
+      final recap = AiVoyageLogbookService.generateRecap(
+        tripName: 'Lyhyt siirto',
+        totalDistanceMeters: 1852,
+        totalDurationSeconds: 600,
+        maxSpeedKmh: 10.0,
+        avgSpeedKmh: 6.0,
+        maxWindSpeedMs: null,
+        fuelType: 'Bensiini',
+        engineDisplacementLiters: null,
+      );
+      expect(recap.maxWindSpeedMs, isNull);
+      expect(recap.narrativeRecap, contains('tuulta ei kirjattu'));
+      expect(recap.narrativeRecap.contains('5.0 m/s'), isFalse);
+    });
   });
 }

@@ -87,8 +87,8 @@ class WeatherRepositoryImpl implements WeatherRepository {
       _EntityCache();
   final _EntityCache<WeatherForecastDto, WeatherForecast> _forecastCache =
       _EntityCache();
-  final _EntityCache<SeaLevelDto, SeaLevel> _seaLevelCache = _EntityCache();
-  final _EntityCache<SeaLevelDto, SeaLevel> _seaLevelNearestCache =
+  final _EntityCache<SeaLevelDto, SeaLevel?> _seaLevelCache = _EntityCache();
+  final _EntityCache<SeaLevelDto, SeaLevel?> _seaLevelNearestCache =
       _EntityCache();
   final _EntityCache<WeatherAlertDto, WeatherAlert> _alertCache =
       _EntityCache();
@@ -146,7 +146,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
 
   WeatherData _obsToEntity(WeatherObservationDto dto) => dto.toEntity();
   WeatherForecast _forecastToEntity(WeatherForecastDto dto) => dto.toEntity();
-  SeaLevel _seaLevelToEntity(SeaLevelDto dto) => dto.toEntity();
+  SeaLevel? _seaLevelToEntity(SeaLevelDto dto) => dto.toEntityOrNull();
   WeatherAlert _alertToEntity(WeatherAlertDto dto) => dto.toEntity();
   LightningStrike _lightningToEntity(LightningStrikeDto dto) => dto.toEntity();
 
@@ -473,7 +473,12 @@ class WeatherRepositoryImpl implements WeatherRepository {
           WeatherSyncConstants.seaLevelTtl,
           syncSeaLevel,
         );
-        return Right(localData.map((dto) => dto.toEntity()).toList());
+        return Right(
+          localData
+              .map((dto) => dto.toEntityOrNull())
+              .whereType<SeaLevel>()
+              .toList(),
+        );
       }
     } catch (e, s) {
       Log.w('WeatherRepo: Cache access failed', e, s);
@@ -487,7 +492,10 @@ class WeatherRepositoryImpl implements WeatherRepository {
       );
       await _localDataSource.cacheSeaLevels(seaLevelsDto);
 
-      final seaLevels = seaLevelsDto.map((dto) => dto.toEntity()).toList();
+      final seaLevels = seaLevelsDto
+          .map((dto) => dto.toEntityOrNull())
+          .whereType<SeaLevel>()
+          .toList();
 
       if (seaLevels.isNotEmpty) {
         final latest = seaLevels.last;
@@ -505,7 +513,12 @@ class WeatherRepositoryImpl implements WeatherRepository {
         Log.i(
           'WeatherRepo: Returning ${localData.length} cached sea level records.',
         );
-        return Right(localData.map((dto) => dto.toEntity()).toList());
+        return Right(
+          localData
+              .map((dto) => dto.toEntityOrNull())
+              .whereType<SeaLevel>()
+              .toList(),
+        );
       }
 
       Log.e('WeatherRepo: No remote OR cached sea level available.', e, s);
@@ -581,7 +594,10 @@ class WeatherRepositoryImpl implements WeatherRepository {
   @override
   Stream<List<SeaLevel>> watchSeaLevel() {
     return _localDataSource.watchSeaLevels().map(
-      (dtos) => _seaLevelCache.transform(dtos, _seaLevelToEntity),
+      (dtos) => _seaLevelCache
+          .transform(dtos, _seaLevelToEntity)
+          .whereType<SeaLevel>()
+          .toList(),
     );
   }
 
@@ -590,7 +606,10 @@ class WeatherRepositoryImpl implements WeatherRepository {
     return _localDataSource
         .watchSeaLevelsNearest(lat, lon)
         .map(
-          (dtos) => _seaLevelNearestCache.transform(dtos, _seaLevelToEntity),
+          (dtos) => _seaLevelNearestCache
+              .transform(dtos, _seaLevelToEntity)
+              .whereType<SeaLevel>()
+              .toList(),
         );
   }
 
