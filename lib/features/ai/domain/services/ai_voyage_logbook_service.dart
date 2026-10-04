@@ -16,7 +16,7 @@ class VoyageLogbookSummary {
   final int durationMinutes;
   final double maxSpeedKnots;
   final double avgSpeedKnots;
-  final double maxWindSpeedMs;
+  final double? maxWindSpeedMs;
   final double estimatedFuelLiters;
   final List<String> milestones;
   final String narrativeRecap;
@@ -38,7 +38,7 @@ class AiVoyageLogbookService {
     final durationMinutes = (totalDurationSeconds / 60).round();
     final maxSpeedKn = maxSpeedKmh * 0.539957;
     final avgSpeedKn = avgSpeedKmh * 0.539957;
-    final wind = maxWindSpeedMs ?? 5.0;
+    final wind = maxWindSpeedMs;
 
     // Fuel consumption estimation model:
     // Planing boat ~ 1.1 L/NM, Displacement boat ~ 0.4 L/NM, Electric ~ 0.0 L
@@ -59,13 +59,20 @@ class AiVoyageLogbookService {
     final durationStr = hours > 0 ? '$hours h $mins min' : '$mins min';
 
     final milestones = <String>[
-      'Lähtö: Satamasta irtautuminen (keli: ${wind.toStringAsFixed(1)} m/s)',
+      if (wind != null)
+        'Lähtö: Satamasta irtautuminen (keli: ${wind.toStringAsFixed(1)} m/s)'
+      else
+        'Lähtö: Satamasta irtautuminen (tuulta ei kirjattu)',
       if (distanceNm >= 3.0)
-        'Matkanopeuden saavutus: Huippunopeus ${maxSpeedKn.toStringAsFixed(1)} kn',
-      if (wind >= 10.0)
-        'Huomio: Kovan tuulen osuus (${wind.toStringAsFixed(1)} m/s) avoselällä',
+        'Matkanopeus: huippu ${maxSpeedKn.toStringAsFixed(1)} kn',
+      if (wind != null && wind >= 10.0)
+        'Kova tuuli avoselällä (${wind.toStringAsFixed(1)} m/s)',
       'Saapuminen: Kiinnittyminen laituriin ja reitin päätös ($durationStr)',
     ];
+
+    final windLine = wind != null
+        ? 'Huipputuuli matkan aikana: ${wind.toStringAsFixed(1)} m/s.'
+        : 'Huipputuulta ei kirjattu.';
 
     final narrative =
         '''
@@ -73,7 +80,7 @@ Matkayhteenveto: $tripName
 Etäisyys: ${distanceNm.toStringAsFixed(1)} NM (${(totalDistanceMeters / 1000).toStringAsFixed(1)} km)
 Ajoaika: $durationStr • Keskinopeus: ${avgSpeedKn.toStringAsFixed(1)} kn • Huippunopeus: ${maxSpeedKn.toStringAsFixed(1)} kn
 ${isElectric ? 'Sähkönkulutus: Puhdas sähköajo (0 L polttoainetta)' : 'Arvioitu polttoaine: ${estimatedFuel.toStringAsFixed(1)} litraa ($fuelType)'}
-Huipputuuli matkan aikana: ${wind.toStringAsFixed(1)} m/s.
+$windLine
 Matka sujui turvallisesti ja aluksen suorituskyky pysyi normaaleissa rajoissa.
 ''';
 

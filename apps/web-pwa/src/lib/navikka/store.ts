@@ -31,13 +31,13 @@ export type WeatherSnap = {
   tempC: number;
   windMs: number;
   gustMs: number | null;
-  windDir: number;
-  pressureHpa: number;
-  humidity: number;
+  windDir: number | null;
+  pressureHpa: number | null;
+  humidity: number | null;
   visM: number | null;
-  cloudPct: number;
+  cloudPct: number | null;
   waveM: number | null;
-  waveDir: number;
+  waveDir: number | null;
   wavePeriod: number | null;
   waterC: number | null;
   dewC: number | null;
