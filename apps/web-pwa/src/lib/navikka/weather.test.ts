@@ -145,6 +145,11 @@ describe("fetchWeather failure must not look live", () => {
       assert.equal(w.dewC, null);
       assert.equal(w.gustMs, null);
       assert.equal(w.visM, null);
+      assert.equal(w.pressureHpa, null);
+      assert.equal(w.windDir, null);
+      assert.equal(w.humidity, null);
+      assert.equal(w.cloudPct, null);
+      assert.equal(w.waveDir, null);
     } finally {
       globalThis.fetch = orig;
     }
